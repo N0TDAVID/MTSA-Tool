@@ -16,6 +16,7 @@ import mimetypes
 import os
 import re
 import sys
+import threading
 import traceback
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
@@ -197,12 +198,18 @@ ROUTES = [
 ]
 COMPILED = [(m, re.compile("^" + p + "$"), h) for m, p, h in ROUTES]
 
+# The server is threaded so idle browser connections cannot stall it, but the
+# facade does read-modify-write on the answer set, so requests are serialised.
+# Two answers saved in the same instant would otherwise overwrite each other.
+_SESSION_LOCK = threading.Lock()
+
 
 def dispatch(session, method, path, query, body):
     for m, pattern, handler in COMPILED:
         match = pattern.match(path)
         if match and m == method:
-            return handler(session, match.groups(), query, body)
+            with _SESSION_LOCK:
+                return handler(session, match.groups(), query, body)
     raise LookupError("no route for %s %s" % (method, path))
 
 

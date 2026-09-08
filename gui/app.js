@@ -1,10 +1,16 @@
 /* MTSA CSP GUI. Vanilla JS. Talks to /api on 127.0.0.1 and nowhere else.
    The facade decides what is real; this file only renders. Anything the API
-   marks {placeholder: true} is rendered with a PLACEHOLDER badge. */
+   marks {placeholder: true} is rendered with a PLACEHOLDER badge.
+
+   The page is served under a strict Content Security Policy (no inline script,
+   no inline style), so every control is wired through delegated listeners on
+   data-action (click) and data-change (change) attributes. Never use onclick. */
 
 "use strict";
 
-const state = { plan: null, data: null, screen: "facilities" };
+const state = { plan: null, data: null, screen: "facilities", simulate: false, auditRun: null, facility: null };
+const lists = {};   // entity_list editors on the interview screen, keyed by question id
+let categories = [];
 
 // ---------------------------------------------------------------- helpers
 
@@ -43,7 +49,7 @@ function cites(list) { return (list || []).map(cite).join(""); }
 function badge(status) {
   const map = { pass: "pass", fail: "fail", not_applicable: "na", unavailable: "unavailable",
     binding: "binding", best_practice: "best_practice" };
-  return `<span class="badge ${map[status] || "info"}">${esc(status.replace("_", " "))}</span>`;
+  return `<span class="badge ${map[status] || "info"}">${esc(String(status).replace("_", " "))}</span>`;
 }
 
 function table(columns, rows, render) {
@@ -61,6 +67,9 @@ function fmt(v) {
 }
 function pre(o) { return `<pre>${esc(JSON.stringify(o, null, 1))}</pre>`; }
 function err(e) { return `<div class="error">${esc(e.message || e)}</div>`; }
+function attr(el, name) { return el.dataset[name]; }
+function val(id) { const el = document.getElementById(id); return el ? el.value : ""; }
+function notify(msg) { const n = document.getElementById("notice"); n.textContent = msg; n.hidden = false; clearTimeout(notify.t); notify.t = setTimeout(() => { n.hidden = true; }, 2500); }
 
 const main = document.getElementById("main");
 function setMain(html) { main.innerHTML = html; }
@@ -68,7 +77,28 @@ function ssi(on, extra) {
   document.getElementById("ssi").textContent = on ? (state.data.ssi_notice + (extra ? " " + extra : "")) : "";
 }
 
-// ---------------------------------------------------------------- boot
+// ---------------------------------------------------------------- delegated events
+
+const ACTIONS = {};
+const CHANGES = {};
+
+document.addEventListener("click", async e => {
+  const el = e.target.closest("[data-action]");
+  if (!el) return;
+  e.preventDefault();
+  const fn = ACTIONS[attr(el, "action")];
+  if (!fn) return;
+  try { await fn(el); } catch (ex) { notify("Error: " + ex.message); console.error(ex); }
+});
+document.addEventListener("change", async e => {
+  const el = e.target.closest("[data-change]");
+  if (!el) return;
+  const fn = CHANGES[attr(el, "change")];
+  if (!fn) return;
+  try { await fn(el); } catch (ex) { notify("Error: " + ex.message); console.error(ex); }
+});
+
+// ---------------------------------------------------------------- boot and routing
 
 async function boot() {
   state.data = await get("/api/state");
@@ -76,7 +106,7 @@ async function boot() {
   sel.innerHTML = state.data.plans.map(p => `<option value="${esc(p.id)}">${esc(p.title)}</option>`).join("");
   state.plan = state.plan || state.data.plans[0].id;
   sel.value = state.plan;
-  sel.onchange = () => { state.plan = sel.value; route(); };
+  sel.addEventListener("change", () => { state.plan = sel.value; route(); });
   const v = state.data.versions;
   document.getElementById("asof").textContent = `as_of ${state.data.as_of}`;
   document.getElementById("footer").innerHTML =
@@ -94,6 +124,9 @@ async function route() {
   setMain(`<p class="muted">Loading.</p>`);
   try {
     state.data = await get("/api/state");
+    document.getElementById("footer").querySelector("span") && (document.getElementById("footer").innerHTML =
+      `ruleset ${esc(state.data.versions.ruleset_pin)} | question module ${esc(state.data.versions.question_module)} | clause library ${esc(state.data.versions.clause_library)} | ` +
+      `entitlements: ${esc(state.data.capabilities.join(", ") || "(none)")} | ${ph(state.data.versions.ruleset_signature)}`);
     await (SCREENS[screen] || SCREENS.facilities)();
   } catch (e) { setMain(err(e)); }
 }
@@ -128,7 +161,7 @@ SCREENS.facilities = async function () {
       if (c === "transfer") {
         const others = d.tenants.filter(t => t.id !== f.tenant_id);
         return `<div class="inline"><select id="xfer-${esc(f.id)}">${others.map(t => `<option value="${esc(t.id)}">${esc(t.name)}</option>`).join("")}</select>
-          <button class="secondary" onclick="transferFacility('${esc(f.id)}')">Transfer</button></div>`;
+          <button class="secondary" data-action="transferFacility" data-fid="${esc(f.id)}">Transfer</button></div>`;
       }
       return fmt(f[c]);
     })}
@@ -152,41 +185,33 @@ SCREENS.facilities = async function () {
 
   <div class="panel"><h2>Frozen versions of ${esc(plan.title)}</h2>
     <p class="small">Every export writes an immutable plan_version pinning four things: ruleset (with the KEV catalog inside the pin), question module, clause library, plan. Attachments are pinned by hash, not embedded.</p>
-    <div class="inline"><button onclick="freezePlan()">Freeze current answers</button>
+    <div class="inline"><button data-action="freezePlan">Freeze current answers</button>
     <span class="small muted">Live answers are never rendered or audited; freeze first.</span></div>
     ${table(["sequence", "version_id", "as_of", "frozen_by", "pins", "attachments", "verify"], plan.versions, (c, v) => {
       if (c === "version_id") return `<code>${esc(v.version_id.slice(0, 16))}</code>`;
-      if (c === "pins") return `<code class="small">${esc(Object.entries(v.pins).map(([k, x]) => k + "=" + x).join("\n"))}</code>`;
+      if (c === "pins") return `<code class="small">${esc(Object.entries(v.pins).map(([k, x]) => k + "=" + x).join(" | "))}</code>`;
       if (c === "attachments") return `<span class="small">${esc(Object.keys(v.attachments).length)} pinned by sha256</span>`;
       if (c === "verify") return v.verify.length ? `<span class="badge fail">hash mismatch</span>` : `<span class="badge pass">hashes verify</span>`;
       return fmt(v[c]);
     })}
-    ${plan.versions.length > 1 ? `<div class="inline"><button class="secondary" onclick="showDiff('${esc(plan.versions[plan.versions.length - 2].version_id)}','${esc(plan.versions[plan.versions.length - 1].version_id)}')">Amendment diff: last two versions</button></div><div id="diff"></div>` : ""}
+    ${plan.versions.length > 1 ? `<div class="inline"><button class="secondary" data-action="showDiff" data-from="${esc(plan.versions[plan.versions.length - 2].version_id)}" data-to="${esc(plan.versions[plan.versions.length - 1].version_id)}">Amendment diff: last two versions</button></div><div id="diff"></div>` : ""}
   </div>
 
   <div class="grid2">
-  <div class="panel"><h2>14-section spine</h2>
-    ${table(["number", "title", "status", "requirements"], d.spine)}
-  </div>
-  <div class="panel"><h2>22 appendices</h2>
-    ${table(["designation", "title", "kind", "register", "controlled_attachment"], d.appendices)}
-  </div>
+  <div class="panel"><h2>14-section spine</h2>${table(["number", "title", "status", "requirements"], d.spine)}</div>
+  <div class="panel"><h2>22 appendices</h2>${table(["designation", "title", "kind", "register", "controlled_attachment"], d.appendices)}</div>
   </div>`);
 };
 
-window.transferFacility = async function (fid) {
-  const to = document.getElementById("xfer-" + fid).value;
-  try {
-    const r = await post(`/api/facility/${fid}/transfer`, { to_tenant_id: to, reason: "transfer from GUI" });
-    alert(`Moved ${r.facility_id} from ${r.from} to ${r.to}. Plans moved: ${r.plans_moved.join(", ") || "none"}. Held (multi-facility): ${r.plans_held_multi_facility.map(h => h.plan_id).join(", ") || "none"}.`);
-    route();
-  } catch (e) { alert(e.message); }
+ACTIONS.transferFacility = async el => {
+  const fid = attr(el, "fid");
+  const r = await post(`/api/facility/${fid}/transfer`, { to_tenant_id: val("xfer-" + fid), reason: "transfer from GUI" });
+  notify(`Moved ${r.facility_id} from ${r.from} to ${r.to}. Plans moved: ${r.plans_moved.join(", ") || "none"}. Held: ${r.plans_held_multi_facility.map(h => h.plan_id).join(", ") || "none"}.`);
+  route();
 };
-window.freezePlan = async function () {
-  try { await post(`/api/plan/${state.plan}/freeze`, { frozen_by: "gui" }); route(); } catch (e) { alert(e.message); }
-};
-window.showDiff = async function (a, b) {
-  const d = await get(`/api/plan/${state.plan}/diff?from=${a}&to=${b}`);
+ACTIONS.freezePlan = async () => { const v = await post(`/api/plan/${state.plan}/freeze`, { frozen_by: "gui" }); notify(`Frozen as sequence ${v.sequence}.`); route(); };
+ACTIONS.showDiff = async el => {
+  const d = await get(`/api/plan/${state.plan}/diff?from=${attr(el, "from")}&to=${attr(el, "to")}`);
   document.getElementById("diff").innerHTML = `<p class="small">${cites(d.citations)} Answer changes between versions. Pin changes: ${d.pins.length}.</p>` +
     table(["path", "change", "from", "to"], d.answers);
 };
@@ -201,7 +226,8 @@ SCREENS.interview = async function () {
   const titles = Object.fromEntries(state.data.spine.map(s => [s.number, s.title]));
   let html = `<h1>Interview</h1>
   <p class="lead">Question module ${esc(q.question_module_version)}. Applicability is decided by the engine from each node's applies_to predicate against the asset type discriminator.
-  Constrained answer types only; identifier and short_text fields may only be presence-checked; narrative fields are never read by a predicate. Saving re-runs nothing here: open the gap report to see the effect.</p>`;
+  Constrained answer types only; identifier and short_text fields may only be presence-checked; narrative fields are never read by a predicate.
+  Single answers save when you change them. Lists save with their Save list button. Open the gap report to see the effect.</p>`;
   for (const sec of Object.keys(bySection).sort((a, b) => a - b)) {
     html += `<div class="panel"><h2>Section ${sec}: ${esc(titles[sec])}</h2>` + bySection[sec].map(renderQuestion).join("") + `</div>`;
   }
@@ -216,19 +242,20 @@ function renderQuestion(n) {
   if (!n.applicable) {
     return `<div class="q na"><div class="prompt">${esc(n.prompt)} <span class="badge na">not applicable</span></div>${meta}</div>`;
   }
-  return `<div class="q"><div class="prompt">${esc(n.prompt)}</div>${meta}${inputFor(n)}</div>`;
+  return `<div class="q" id="q-${esc(n.id)}"><div class="prompt">${esc(n.prompt)}</div>${meta}${inputFor(n)}</div>`;
 }
 
-function scalarInput(id, type, value, options, format) {
+function scalarInput(id, type, value, options, format, change) {
   const v = value == null ? "" : value;
-  if (type === "boolean") return `<select id="${id}"><option value="">(unanswered)</option><option value="true" ${v === true ? "selected" : ""}>true</option><option value="false" ${v === false ? "selected" : ""}>false</option></select>`;
-  if (type === "enum" || type === "tri_state") return `<select id="${id}"><option value="">(unanswered)</option>${options.map(o => `<option ${v === o ? "selected" : ""}>${esc(o)}</option>`).join("")}</select>`;
-  if (type === "enum_multi") return `<span id="${id}" class="inline">${options.map(o => `<label><input type="checkbox" value="${esc(o)}" ${(Array.isArray(v) && v.includes(o)) ? "checked" : ""}> ${esc(o)}</label>`).join("")}</span>`;
-  if (type === "date") return `<input type="date" id="${id}" value="${esc(v)}">`;
-  if (type === "number") return `<input type="number" id="${id}" value="${esc(v)}">`;
-  if (type === "narrative") return `<textarea id="${id}">${esc(v)}</textarea>`;
-  if (type === "identifier_list") return `<input type="text" id="${id}" value="${esc(Array.isArray(v) ? v.join(", ") : v)}" placeholder="comma separated${format ? ", format " + format : ""}">`;
-  return `<input type="text" id="${id}" value="${esc(v)}" ${format ? `pattern="${esc(format)}" title="format ${esc(format)}"` : ""}>`;
+  const ch = change ? ` data-change="${change}"` : "";
+  if (type === "boolean") return `<select id="${id}"${ch}><option value="">(unanswered)</option><option value="true" ${v === true ? "selected" : ""}>true</option><option value="false" ${v === false ? "selected" : ""}>false</option></select>`;
+  if (type === "enum" || type === "tri_state") return `<select id="${id}"${ch}><option value="">(unanswered)</option>${options.map(o => `<option ${v === o ? "selected" : ""}>${esc(o)}</option>`).join("")}</select>`;
+  if (type === "enum_multi") return `<span id="${id}" class="inline">${options.map(o => `<label><input type="checkbox" value="${esc(o)}"${ch} ${(Array.isArray(v) && v.includes(o)) ? "checked" : ""}> ${esc(o)}</label>`).join("")}</span>`;
+  if (type === "date") return `<input type="date" id="${id}" value="${esc(v)}"${ch}>`;
+  if (type === "number") return `<input type="number" id="${id}" value="${esc(v)}"${ch}>`;
+  if (type === "narrative") return `<textarea id="${id}"${ch}>${esc(v)}</textarea>`;
+  if (type === "identifier_list") return `<input type="text" id="${id}" value="${esc(Array.isArray(v) ? v.join(", ") : v)}" placeholder="comma separated${format ? ", format " + format : ""}"${ch}>`;
+  return `<input type="text" id="${id}" value="${esc(v)}" ${format ? `pattern="${esc(format)}" title="format ${esc(format)}"` : ""}${ch}>`;
 }
 function readScalar(id, type) {
   const el = document.getElementById(id);
@@ -244,34 +271,43 @@ function readScalar(id, type) {
 function inputFor(n) {
   const id = "in-" + n.id;
   if (n.type === "entity_list") {
-    const rows = Array.isArray(n.value) ? n.value : [];
-    window.__lists = window.__lists || {};
-    window.__lists[n.id] = { node: n, rows: JSON.parse(JSON.stringify(rows)) };
+    lists[n.id] = { node: n, rows: JSON.parse(JSON.stringify(Array.isArray(n.value) ? n.value : [])) };
     return `<div id="${id}">${renderList(n.id)}</div>`;
   }
-  return `<div class="inline">${scalarInput(id, n.type, n.value, n.options, n.format)}
-    <button class="secondary" onclick="saveScalar('${esc(n.id)}','${esc(n.path)}','${esc(n.type)}')">Save</button></div>`;
+  // The input carries what the save needs; the change listener reads it back.
+  return `<div class="inline" data-qid="${esc(n.id)}" data-path="${esc(n.path)}" data-type="${esc(n.type)}">
+    ${scalarInput(id, n.type, n.value, n.options, n.format, "saveScalar")}<span class="small muted saved"></span></div>`;
 }
 function renderList(qid) {
-  const { node, rows } = window.__lists[qid];
+  const { node, rows } = lists[qid];
   const head = node.fields.map(f => `<th>${esc(f.prompt)}<br><span class="small muted">${esc(f.type)}</span></th>`).join("") + "<th></th>";
   const body = rows.map((r, i) => `<tr>${node.fields.map(f => `<td>${scalarInput(`li-${qid}-${i}-${f.key}`, f.type, r[f.key], f.options, f.format)}</td>`).join("")}
-    <td><button class="secondary" onclick="listRemove('${qid}',${i})">Remove</button></td></tr>`).join("");
+    <td><button class="secondary" data-action="listRemove" data-qid="${esc(qid)}" data-index="${i}">Remove</button></td></tr>`).join("");
   return `<div class="scroll"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>
-    <div class="inline"><button class="secondary" onclick="listAdd('${qid}')">Add row</button><button onclick="listSave('${qid}')">Save list (${rows.length})</button></div>`;
+    <div class="inline"><button class="secondary" data-action="listAdd" data-qid="${esc(qid)}">Add row</button>
+    <button data-action="listSave" data-qid="${esc(qid)}">Save list (${rows.length} rows)</button><span class="small muted saved"></span></div>`;
 }
 function collectList(qid) {
-  const { node, rows } = window.__lists[qid];
+  const { node, rows } = lists[qid];
   return rows.map((r, i) => { const o = {}; node.fields.forEach(f => { o[f.key] = readScalar(`li-${qid}-${i}-${f.key}`, f.type); }); return o; });
 }
-window.listAdd = function (qid) { window.__lists[qid].rows = collectList(qid); window.__lists[qid].rows.push({}); document.getElementById("in-" + qid).innerHTML = renderList(qid); };
-window.listRemove = function (qid, i) { const rows = collectList(qid); rows.splice(i, 1); window.__lists[qid].rows = rows; document.getElementById("in-" + qid).innerHTML = renderList(qid); };
-window.listSave = async function (qid) {
+ACTIONS.listAdd = el => { const qid = attr(el, "qid"); lists[qid].rows = collectList(qid); lists[qid].rows.push({}); document.getElementById("in-" + qid).innerHTML = renderList(qid); };
+ACTIONS.listRemove = el => { const qid = attr(el, "qid"); const rows = collectList(qid); rows.splice(Number(attr(el, "index")), 1); lists[qid].rows = rows; document.getElementById("in-" + qid).innerHTML = renderList(qid); };
+ACTIONS.listSave = async el => {
+  const qid = attr(el, "qid");
   const rows = collectList(qid);
-  try { await post(`/api/plan/${state.plan}/answer`, { path: window.__lists[qid].node.path, value: rows }); route(); } catch (e) { alert(e.message); }
+  await post(`/api/plan/${state.plan}/answer`, { path: lists[qid].node.path, value: rows });
+  lists[qid].rows = rows;
+  document.getElementById("in-" + qid).innerHTML = renderList(qid);
+  document.querySelector(`#in-${CSS.escape(qid)} .saved`).textContent = `saved ${rows.length} rows`;
+  notify(`Saved ${lists[qid].node.path} (${rows.length} rows).`);
 };
-window.saveScalar = async function (qid, path, type) {
-  try { await post(`/api/plan/${state.plan}/answer`, { path, value: readScalar("in-" + qid, type) }); route(); } catch (e) { alert(e.message); }
+CHANGES.saveScalar = async el => {
+  const wrap = el.closest("[data-qid]");
+  const qid = attr(wrap, "qid"), type = attr(wrap, "type"), path = attr(wrap, "path");
+  const value = readScalar("in-" + qid, type);
+  await post(`/api/plan/${state.plan}/answer`, { path, value });
+  wrap.querySelector(".saved").textContent = "saved";
 };
 
 // ---------------------------------------------------------------- 3 criticality
@@ -280,9 +316,23 @@ SCREENS.criticality = async function () {
   ssi(true);
   const c = await get(`/api/plan/${state.plan}/criticality`);
   const s = c.session;
-  const pOpts = s.participants.map(p => `<option value="${esc(p.id)}">${esc(p.name)} (${esc(p.role)})</option>`).join("");
+  const pOpts = sel => s.participants.map(p => `<option value="${esc(p.id)}" ${p.id === sel ? "selected" : ""}>${esc(p.name)} (${esc(p.role)})</option>`).join("");
+  state.recorder = s.participants.some(p => p.id === state.recorder) ? state.recorder : s.facilitator;
+  state.onBehalf = s.participants.some(p => p.id === state.onBehalf) ? state.onBehalf : "";
+  const q1 = c.questions.find(q => q.id === "is_critical"), q2 = c.questions.find(q => q.id === "tsi_possible");
+
+  const effCell = (a, qid) => {
+    const e = a.effective[qid];
+    const by = Object.entries(e.by).map(([k, v]) => `${k}: ${v}`).join("; ");
+    const cls = e.state === "agreed" ? (e.value === "yes" ? "pass" : "na") : (e.state === "disputed" ? "fail" : "warn");
+    return `<span class="badge ${cls}">${esc(e.state)}${e.value ? " " + e.value : ""}</span>
+      <select data-change="critAnswer" data-asset="${esc(a.nickname)}" data-question="${qid}" title="record an answer as the participant selected above">
+        <option value="">record answer</option><option>yes</option><option>no</option><option>not_applicable</option></select>
+      ${by ? `<div class="small muted">${esc(by)}</div>` : ""}`;
+  };
+
   setMain(`<h1>Criticality workshop</h1>
-  <p class="lead">Two-stage narrowing. Stage 1 scopes: is it critical, and could compromise cause a Transportation Security Incident. Stage 2 ranks survivors by consequence.
+  <p class="lead">Two-stage narrowing. Stage 1 scopes each asset with two separate questions. Stage 2 ranks survivors by consequence.
   Stage 1 is a group activity: every answer is attributed to a participant, and a facilitator may record on a client's behalf.
   ${c.licensed ? "" : `<span class="badge unavailable">criticality capability not licensed: the projection onto the answer set is not applied</span>`}</p>
 
@@ -292,29 +342,32 @@ SCREENS.criticality = async function () {
     <h3>Add participant</h3>
     <div class="inline"><input type="text" id="p-id" placeholder="id"><input type="text" id="p-name" placeholder="name">
       <select id="p-role">${c.roles.map(r => `<option>${esc(r)}</option>`).join("")}</select>
-      <button class="secondary" onclick="addParticipant()">Add</button></div>
+      <button class="secondary" data-action="addParticipant">Add</button></div>
   </div>
 
   <div class="stage"><h2>Stage 1: scope</h2>
-    <p class="small">${c.questions.map(q => `<b>${esc(q.id)}</b>: ${esc(q.prompt)} ${cites(q.citations)}`).join("<br>")}</p>
-    <p class="small muted">Consensus rule: the latest answer from every source must agree. Disagreement is <b>disputed</b> and does not scope an asset in.</p>
-    ${table(["asset", "OT", "SAM is_critical_system", "is_critical", "tsi_possible", "record answer"], c.assets, (col, a) => {
+    <div class="panel"><div class="inline">
+      <label>Recording as <select id="recorder" data-change="setRecorder">${pOpts(state.recorder)}</select></label>
+      <label>On behalf of <select id="on-behalf" data-change="setOnBehalf"><option value="">(self)</option>${pOpts(state.onBehalf)}</select></label>
+      <span class="small muted">Attribution for every answer recorded below. The source is the on-behalf participant when set, otherwise the recorder.</span>
+    </div></div>
+
+    <h3>Question 1: ${esc(q1.prompt)} ${cites(q1.citations)}</h3>
+    ${table(["asset", "OT", "SAM is_critical_system", "is_critical"], c.assets, (col, a) => {
       if (col === "asset") return esc(a.nickname);
       if (col === "OT") return fmt(a.is_ot);
       if (col === "SAM is_critical_system") return fmt(a.sam_is_critical_system);
-      if (col === "is_critical" || col === "tsi_possible") {
-        const e = a.effective[col];
-        const by = Object.entries(e.by).map(([k, v]) => `${k}: ${v}`).join("; ");
-        return `<span class="badge ${e.state === "agreed" ? (e.value === "yes" ? "pass" : "na") : (e.state === "disputed" ? "fail" : "warn")}">${esc(e.state)}${e.value ? " " + e.value : ""}</span><br><span class="small muted">${esc(by)}</span>`;
-      }
-      const k = esc(a.nickname);
-      return `<div class="inline">
-        <select id="cq-${k}">${c.questions.map(q => `<option value="${esc(q.id)}">${esc(q.id)}</option>`).join("")}</select>
-        <select id="cv-${k}"><option>yes</option><option>no</option><option>not_applicable</option></select>
-        <select id="cp-${k}" title="recorded by">${pOpts}</select>
-        <select id="co-${k}" title="on behalf of"><option value="">(self)</option>${pOpts}</select>
-        <button class="secondary" onclick="critAnswer('${k}')">Record</button></div>`;
+      return effCell(a, "is_critical");
     })}
+
+    <h3>Question 2: ${esc(q2.prompt)} ${cites(q2.citations)}</h3>
+    ${table(["asset", "OT", "tsi_possible"], c.assets, (col, a) => {
+      if (col === "asset") return esc(a.nickname);
+      if (col === "OT") return fmt(a.is_ot);
+      return effCell(a, "tsi_possible");
+    })}
+
+    <p class="small muted">Consensus rule: the latest answer from every source must agree. Disagreement is <b>disputed</b> and does not scope an asset in. An asset is in scope only when both questions are agreed <b>yes</b>.</p>
     <div class="grid2">
       <div class="panel"><h3>In scope (${c.stage1.in_scope.length})</h3>${table(["asset_id", "outcome"], c.stage1.in_scope)}</div>
       <div class="panel"><h3>Out of scope (${c.stage1.out_of_scope.length}) / pending (${c.stage1.pending.length})</h3>${table(["asset_id", "outcome", "reason"], c.stage1.out_of_scope.concat(c.stage1.pending))}</div>
@@ -326,16 +379,19 @@ SCREENS.criticality = async function () {
     <p class="small">Survivors awaiting ranking: ${esc(c.stage2.survivors.map(r => r.asset_id).join(", ") || "none")}. The CFDD weighted instrument lives in SAM and is extended there with TSI questions; no ordering is invented here.</p>
   </div>`);
 };
-window.addParticipant = async function () {
-  try { await post(`/api/plan/${state.plan}/criticality/participant`, { id: document.getElementById("p-id").value, name: document.getElementById("p-name").value, role: document.getElementById("p-role").value }); route(); } catch (e) { alert(e.message); }
+CHANGES.setRecorder = el => { state.recorder = el.value; };
+CHANGES.setOnBehalf = el => { state.onBehalf = el.value; };
+ACTIONS.addParticipant = async () => {
+  await post(`/api/plan/${state.plan}/criticality/participant`, { id: val("p-id"), name: val("p-name"), role: val("p-role") });
+  notify("Participant added."); route();
 };
-window.critAnswer = async function (k) {
-  try {
-    await post(`/api/plan/${state.plan}/criticality/answer`, {
-      asset_id: k, question_id: document.getElementById("cq-" + k).value, value: document.getElementById("cv-" + k).value,
-      participant_id: document.getElementById("cp-" + k).value, on_behalf_of: document.getElementById("co-" + k).value || null });
-    route();
-  } catch (e) { alert(e.message); }
+CHANGES.critAnswer = async el => {
+  if (!el.value) return;
+  await post(`/api/plan/${state.plan}/criticality/answer`, {
+    asset_id: attr(el, "asset"), question_id: attr(el, "question"), value: el.value,
+    participant_id: state.recorder, on_behalf_of: state.onBehalf || null });
+  notify(`Recorded ${attr(el, "question")} = ${el.value} for ${attr(el, "asset")}.`);
+  route();
 };
 
 // ---------------------------------------------------------------- 4 registers
@@ -409,7 +465,7 @@ SCREENS.licensing = async function () {
   <div class="panel"><h2>Active entitlement set (draft toggle)</h2>
     ${phBox(L.placeholders.override)}
     <div class="inline">${L.toggleable.map(c => `<label><input type="checkbox" class="ent" value="${esc(c)}" ${L.active_entitlements.includes(c) ? "checked" : ""}> ${esc(c)}</label>`).join("")}
-    <button onclick="saveEntitlements()">Apply</button></div>
+    <button data-action="saveEntitlements">Apply</button></div>
     <p>Live effect on <code>kev-without-delay</code>: ${badge(kv.status)} ${badge(kv.severity)} | export allowed: <b>${run.summary.export_allowed}</b> | unavailable ${run.summary.unavailable}</p>
   </div>
 
@@ -439,18 +495,18 @@ SCREENS.licensing = async function () {
   </div>
   </div>`);
 };
-window.saveEntitlements = async function () {
+ACTIONS.saveEntitlements = async () => {
   const caps = Array.from(document.querySelectorAll("input.ent:checked")).map(i => i.value);
-  try { await post("/api/license/entitlements", { capabilities: caps }); route(); } catch (e) { alert(e.message); }
+  await post("/api/license/entitlements", { capabilities: caps });
+  notify(`Entitlements now: ${caps.join(", ") || "(none)"}.`); route();
 };
 
 // ---------------------------------------------------------------- 8 surveillance
 
 SCREENS.surveillance = async function () {
   ssi(true, "Agent-local findings below name assets; the outbound shapes do not.");
-  const sim = state.simulate ? "1" : "0";
-  const S = await get(`/api/plan/${state.plan}/surveillance?simulate=${sim}`);
-  const toggle = `<div class="inline"><label><input type="checkbox" id="sim" ${state.simulate ? "checked" : ""} onchange="state.simulate=this.checked;route()"> Simulate a change (labelled placeholder) so the shape of each path is visible</label></div>`;
+  const S = await get(`/api/plan/${state.plan}/surveillance?simulate=${state.simulate ? "1" : "0"}`);
+  const toggle = `<div class="inline"><label><input type="checkbox" id="sim" data-change="toggleSim" ${state.simulate ? "checked" : ""}> Simulate a change (labelled placeholder) so the shape of each path is visible</label></div>`;
   if (!S.frozen_version) { setMain(`<h1>Surveillance</h1><p>${esc(S.note)}</p><p><a href="#facilities">Freeze on the facilities screen.</a></p>`); return; }
   const t1 = S.trigger1, t2 = S.trigger2;
   setMain(`<h1>Surveillance</h1>
@@ -477,6 +533,7 @@ SCREENS.surveillance = async function () {
   </div>
   <div class="panel"><h2>Trigger 3: criticality re-check</h2>${phBox(S.trigger3)}</div>`);
 };
+CHANGES.toggleSim = el => { state.simulate = el.checked; route(); };
 
 // ---------------------------------------------------------------- 9 audit
 
@@ -484,22 +541,23 @@ SCREENS.audit = async function () {
   ssi(true);
   const runs = await get(`/api/plan/${state.plan}/audits`);
   const spine = state.data.spine;
-  let html = `<h1>Audit mode</h1>
+  setMain(`<h1>Audit mode</h1>
   <p class="lead">Section-scoped. An auditor samples a few sections chosen with the client; the report states its scope and names what it did not examine. Deficiency (failed binding requirement, cited, carries remediation) and recommendation (enhancement, no failure behind it) are different objects. Runs are over a frozen plan_version.</p>
   <div class="panel"><h2>New run</h2>
-    <div class="inline">${spine.map(s => `<label><input type="checkbox" class="scope" value="${s.number}"> ${s.number}</label>`).join(" ")}</div>
-    <div class="inline"><input type="text" id="auditor" placeholder="auditor" value="auditor"><input type="text" id="client-rep" placeholder="client representative"><button onclick="startAudit()">Start scoped run</button></div>
+    <div class="inline">${spine.map(s => `<label title="${esc(s.title)}"><input type="checkbox" class="scope" value="${s.number}"> ${s.number}</label>`).join(" ")}</div>
+    <div class="inline"><input type="text" id="auditor" placeholder="auditor" value="auditor"><input type="text" id="client-rep" placeholder="client representative"><button data-action="startAudit">Start scoped run</button></div>
   </div>
-  <div class="panel"><h2>Runs</h2>${table(["id", "scope", "auditor", "as_of", "status", "findings", "open"], runs, (c, r) => c === "open" ? `<button class="secondary" onclick="openAudit('${esc(r.id)}')">Open</button>` : fmt(r[c]))}</div>
-  <div id="audit-run"></div>`;
-  setMain(html);
-  if (state.auditRun && runs.some(r => r.id === state.auditRun)) openAudit(state.auditRun);
+  <div class="panel"><h2>Runs</h2>${table(["id", "scope", "auditor", "as_of", "status", "findings", "open"], runs, (c, r) => c === "open" ? `<button class="secondary" data-action="openAudit" data-run="${esc(r.id)}">Open</button>` : fmt(r[c]))}</div>
+  <div id="audit-run"></div>`);
+  if (state.auditRun && runs.some(r => r.id === state.auditRun)) await openAudit(state.auditRun);
 };
-window.startAudit = async function () {
+ACTIONS.startAudit = async () => {
   const scope = Array.from(document.querySelectorAll("input.scope:checked")).map(i => Number(i.value));
-  try { const v = await post(`/api/plan/${state.plan}/audit`, { scope, auditor: document.getElementById("auditor").value, client_representative: document.getElementById("client-rep").value }); state.auditRun = v.run.id; route(); } catch (e) { alert(e.message); }
+  const v = await post(`/api/plan/${state.plan}/audit`, { scope, auditor: val("auditor"), client_representative: val("client-rep") });
+  state.auditRun = v.run.id; notify(`Run ${v.run.id} opened.`); route();
 };
-window.openAudit = async function (id) {
+ACTIONS.openAudit = el => openAudit(attr(el, "run"));
+async function openAudit(id) {
   state.auditRun = id;
   const v = await get(`/api/audit/${id}`);
   const rep = v.report;
@@ -509,8 +567,9 @@ window.openAudit = async function (id) {
     if (c === "severity") return badge(f.severity);
     return fmt(f[c]);
   };
+  const open = v.run.status === "open";
   document.getElementById("audit-run").innerHTML = `
-  <div class="panel"><h2>Run ${esc(v.run.id)} <span class="badge ${v.run.status === "open" ? "info" : "na"}">${esc(v.run.status)}</span></h2>
+  <div class="panel"><h2>Run ${esc(v.run.id)} <span class="badge ${open ? "info" : "na"}">${esc(v.run.status)}</span></h2>
     <p><b>${esc(rep.scope_statement)}</b></p>
     <p class="small">Over frozen version <code>${esc(v.frozen_version.version_id.slice(0, 16))}</code>, pins ${esc(Object.values(v.frozen_version.pins).join(" | "))}. Finding templates version ${esc(v.templates_version)}: none authored.</p>
     <h3>Candidate findings from in-scope verdicts (${v.candidates.length}; ${v.out_of_scope_verdicts} verdicts out of scope, dropped)</h3>
@@ -521,23 +580,26 @@ window.openAudit = async function (id) {
       if (c === "template") return ph(f.template);
       return fmt(f[c]);
     })}
-    <div class="inline"><button ${v.run.status !== "open" ? "disabled" : ""} onclick="acceptCands('${esc(v.run.id)}')">Accept selected into the run</button></div>
+    <div class="inline"><button ${open ? "" : "disabled"} data-action="acceptCands" data-run="${esc(v.run.id)}">Accept selected into the run</button></div>
     <h3>Deficiencies (${rep.counts.deficiencies}; ${rep.counts.deficiencies_without_remediation} without remediation)</h3>
     ${table(["id", "section", "severity", "citations", "text", "remediation"], rep.deficiencies, findingRow)}
     <h3>Recommendations (${rep.counts.recommendations})</h3>
     ${table(["id", "section", "severity", "citations", "text", "remediation"], rep.recommendations, findingRow)}
-    <div class="inline"><select id="rec-sec">${v.run.scope.map(s => `<option>${s}</option>`).join("")}</select><input type="text" id="rec-text" placeholder="recommendation text (free text is allowed here)"><button class="secondary" ${v.run.status !== "open" ? "disabled" : ""} onclick="addRec('${esc(v.run.id)}')">Add recommendation</button>
-      <button class="secondary" ${v.run.status !== "open" ? "disabled" : ""} onclick="closeAudit('${esc(v.run.id)}')">Close run</button></div>
+    <div class="inline"><select id="rec-sec">${v.run.scope.map(s => `<option>${s}</option>`).join("")}</select><input type="text" id="rec-text" placeholder="recommendation text (free text is allowed here)">
+      <button class="secondary" ${open ? "" : "disabled"} data-action="addRec" data-run="${esc(v.run.id)}">Add recommendation</button>
+      <button class="secondary" ${open ? "" : "disabled"} data-action="closeAudit" data-run="${esc(v.run.id)}">Close run</button></div>
   </div>`;
-};
-window.acceptCands = async function (id) {
+}
+ACTIONS.acceptCands = async el => {
   const ids = Array.from(document.querySelectorAll("input.cand:checked")).map(i => i.value);
-  try { await post(`/api/audit/${id}/accept`, { candidate_ids: ids }); openAudit(id); } catch (e) { alert(e.message); }
+  await post(`/api/audit/${attr(el, "run")}/accept`, { candidate_ids: ids });
+  notify(`Accepted ${ids.length} finding(s).`); await openAudit(attr(el, "run"));
 };
-window.addRec = async function (id) {
-  try { await post(`/api/audit/${id}/recommendation`, { section: document.getElementById("rec-sec").value, text: document.getElementById("rec-text").value }); openAudit(id); } catch (e) { alert(e.message); }
+ACTIONS.addRec = async el => {
+  await post(`/api/audit/${attr(el, "run")}/recommendation`, { section: val("rec-sec"), text: val("rec-text") });
+  notify("Recommendation added."); await openAudit(attr(el, "run"));
 };
-window.closeAudit = async function (id) { try { await post(`/api/audit/${id}/close`); route(); } catch (e) { alert(e.message); } };
+ACTIONS.closeAudit = async el => { await post(`/api/audit/${attr(el, "run")}/close`); notify("Run closed."); route(); };
 
 // ---------------------------------------------------------------- 10 records
 
@@ -547,10 +609,10 @@ SCREENS.records = async function () {
   const fid = state.facility && plan.facility_ids.includes(state.facility) ? state.facility : plan.facility_ids[0];
   state.facility = fid;
   const R = await get(`/api/facility/${fid}/records`);
-  const catOpts = R.categories.map(c => `<option value="${esc(c.id)}">${esc(c.label)}</option>`).join("");
+  categories = R.categories;
   setMain(`<h1>Records</h1>
   <p class="lead">The six activities records must be created for at a minimum, with retention read from each category, never a constant. The ${esc(R.custodian_role)} keeps the record; the ${esc(R.accountable_role)} ensures it is maintained. These are the only artifacts with a real retention clock and the one thing an inspection looks back at.</p>
-  <div class="inline"><label>Facility <select onchange="state.facility=this.value;route()">${plan.facility_ids.map(f => `<option value="${esc(f)}" ${f === fid ? "selected" : ""}>${esc(f)}</option>`).join("")}</select></label>
+  <div class="inline"><label>Facility <select id="facility" data-change="setFacility">${plan.facility_ids.map(f => `<option value="${esc(f)}" ${f === fid ? "selected" : ""}>${esc(f)}</option>`).join("")}</select></label>
     <span class="small">asset type <b>${esc(R.asset_type)}</b> | recordkeeping section: ${R.recordkeeping_authority.placeholder ? ph(R.recordkeeping_authority) : cite(R.recordkeeping_authority)}</span></div>
 
   <div class="panel"><h2>Categories for ${esc(R.asset_type)}</h2>
@@ -572,28 +634,31 @@ SCREENS.records = async function () {
       return fmt(r[c]);
     })}
     <h3>Add record</h3>
-    <div class="inline"><select id="rec-cat" onchange="recordFields()">${catOpts}</select>
+    <div class="inline"><select id="rec-cat" data-change="recordFields">${R.categories.map(c => `<option value="${esc(c.id)}">${esc(c.label)}</option>`).join("")}</select>
       <input type="text" id="rec-cust" placeholder="custodian (${esc(R.custodian_role)})"><input type="text" id="rec-acct" placeholder="accountable officer (${esc(R.accountable_role)})"></div>
     <div id="rec-fields"></div>
-    <div class="inline"><button onclick="addRecord('${esc(fid)}')">Add</button></div>
+    <div class="inline"><button data-action="addRecord" data-fid="${esc(fid)}">Add</button></div>
   </div>
 
   <div class="panel"><h2>Drill and exercise cadence ${cites(R.cadence_citations)}</h2>
     <table class="kv"><tbody>${Object.entries(R.cadence).filter(([k]) => k !== "authority_ids").map(([k, v]) => `<tr><td>${esc(k)}</td><td>${fmt(v)}</td></tr>`).join("")}</tbody></table>
     <p class="small muted">Counts and gaps only. Whether the cadence is compliant is a ruleset question, and no rule reads these records yet.</p>
   </div>`);
-  window.__cats = R.categories;
-  recordFields();
+  CHANGES.recordFields();
 };
-window.recordFields = function () {
-  const cat = window.__cats.find(c => c.id === document.getElementById("rec-cat").value);
-  document.getElementById("rec-fields").innerHTML = `<div class="inline">` + cat.fields.map(f => `<input type="${f === cat.clock_field ? "date" : "text"}" id="rf-${esc(f)}" placeholder="${esc(f)}">`).join("") + `</div>`;
+CHANGES.setFacility = el => { state.facility = el.value; route(); };
+CHANGES.recordFields = () => {
+  const cat = categories.find(c => c.id === val("rec-cat"));
+  if (!cat) return;
+  document.getElementById("rec-fields").innerHTML = `<div class="inline">` + cat.fields.map(f =>
+    `<input type="${f === cat.clock_field ? "date" : "text"}" id="rf-${esc(f)}" placeholder="${esc(f)}${f === "attendees" || f === "participants" ? " (comma separated)" : ""}">`).join("") + `</div>`;
 };
-window.addRecord = async function (fid) {
-  const cat = window.__cats.find(c => c.id === document.getElementById("rec-cat").value);
+ACTIONS.addRecord = async el => {
+  const cat = categories.find(c => c.id === val("rec-cat"));
   const fields = {};
-  cat.fields.forEach(f => { const v = document.getElementById("rf-" + f).value; fields[f] = (f === "attendees" || f === "participants") ? v.split(",").map(s => s.trim()).filter(Boolean) : v; });
-  try { await post(`/api/facility/${fid}/record`, { category: cat.id, fields, custodian: document.getElementById("rec-cust").value, accountable_officer: document.getElementById("rec-acct").value, created_by: "gui" }); route(); } catch (e) { alert(e.message); }
+  cat.fields.forEach(f => { const v = val("rf-" + f); fields[f] = (f === "attendees" || f === "participants") ? v.split(",").map(s => s.trim()).filter(Boolean) : v; });
+  await post(`/api/facility/${attr(el, "fid")}/record`, { category: cat.id, fields, custodian: val("rec-cust"), accountable_officer: val("rec-acct"), created_by: "gui" });
+  notify("Record added."); route();
 };
 
 boot().catch(e => setMain(err(e)));

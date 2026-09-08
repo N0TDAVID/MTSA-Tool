@@ -17,7 +17,7 @@ import os
 import re
 import sys
 import traceback
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
 import app
@@ -219,13 +219,16 @@ class Handler(BaseHTTPRequestHandler):
 
     def _json(self, status, payload):
         data = json.dumps(payload, sort_keys=True, default=str).encode("utf-8")
-        self.send_response(status)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Content-Length", str(len(data)))
-        self.send_header("Cache-Control", "no-store")
-        self.send_header("X-SSI", "49 CFR 1520")
-        self.end_headers()
-        self.wfile.write(data)
+        try:
+            self.send_response(status)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(data)))
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("X-SSI", "49 CFR 1520")
+            self.end_headers()
+            self.wfile.write(data)
+        except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError):
+            pass  # the browser navigated away mid-response; nothing to recover
 
     def _api(self, method):
         url = urlparse(self.path)
@@ -270,6 +273,11 @@ class Handler(BaseHTTPRequestHandler):
             self._api("GET")
         else:
             self._static()
+
+    def do_HEAD(self):
+        self.send_response(200 if not self.path.startswith("/api/") else 405)
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
 
     def do_POST(self):
         if self.path.startswith("/api/"):
@@ -365,7 +373,10 @@ def main(argv):
         return check(args.as_of)
 
     Handler.session = app.Session.open(workspace=args.workspace, as_of=args.as_of)
-    httpd = HTTPServer((BIND, args.port), Handler)
+    # Threading, because a browser holds speculative idle connections open and a
+    # single-threaded server would block on one of them while the page waits.
+    httpd = ThreadingHTTPServer((BIND, args.port), Handler)
+    httpd.daemon_threads = True
     print("serving on http://127.0.0.1:%d/  workspace=%s  as_of=%s"
           % (args.port, args.workspace, Handler.session.as_of))
     try:

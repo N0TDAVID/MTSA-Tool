@@ -50,7 +50,7 @@ function table(columns, rows, render) {
   if (!rows.length) return `<p class="muted small">No rows.</p>`;
   const head = columns.map(c => `<th>${esc(c)}</th>`).join("");
   const body = rows.map(r => `<tr>${columns.map(c => `<td>${render ? render(c, r) : fmt(r[c])}</td>`).join("")}</tr>`).join("");
-  return `<div style="overflow:auto"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+  return `<div class="scroll"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
 }
 function fmt(v) {
   if (v === null || v === undefined) return `<span class="muted">(absent)</span>`;
@@ -257,7 +257,7 @@ function renderList(qid) {
   const head = node.fields.map(f => `<th>${esc(f.prompt)}<br><span class="small muted">${esc(f.type)}</span></th>`).join("") + "<th></th>";
   const body = rows.map((r, i) => `<tr>${node.fields.map(f => `<td>${scalarInput(`li-${qid}-${i}-${f.key}`, f.type, r[f.key], f.options, f.format)}</td>`).join("")}
     <td><button class="secondary" onclick="listRemove('${qid}',${i})">Remove</button></td></tr>`).join("");
-  return `<div style="overflow:auto"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>
+  return `<div class="scroll"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>
     <div class="inline"><button class="secondary" onclick="listAdd('${qid}')">Add row</button><button onclick="listSave('${qid}')">Save list (${rows.length})</button></div>`;
 }
 function collectList(qid) {
@@ -385,7 +385,7 @@ SCREENS.gap = async function () {
     | evaluated ${s.evaluated} | passed ${s.passed} | <b>blocking ${s.blocking}</b> | warnings ${s.warnings} | not applicable ${s.not_applicable} | unavailable ${s.unavailable}</p>
   </div>
   ${table(["status", "severity", "rule", "section", "citations", "message", "evidence"], run.verdicts, (c, v) => {
-    if (c === "status") return badge(v.status) + (v.status === "fail" && v.severity === "binding" ? `<br><span class="blocks small">blocks export</span>` : v.status === "fail" ? `<br><span class="small" style="color:var(--warn)">warning</span>` : v.status === "unavailable" && v.severity === "binding" ? `<br><span class="blocks small">blocks export</span>` : "");
+    if (c === "status") return badge(v.status) + (v.status === "fail" && v.severity === "binding" ? `<br><span class="blocks small">blocks export</span>` : v.status === "fail" ? `<br><span class="small warn-text">warning</span>` : v.status === "unavailable" && v.severity === "binding" ? `<br><span class="blocks small">blocks export</span>` : "");
     if (c === "severity") return badge(v.severity);
     if (c === "rule") return `<code>${esc(v.rule_id)}</code>${v.requires_capability ? `<br><span class="small muted">requires ${esc(v.requires_capability)}</span>` : ""}`;
     if (c === "section") return `${v.section} <span class="small muted">${esc(v.section_title)}</span>`;

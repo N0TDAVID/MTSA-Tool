@@ -226,6 +226,8 @@ class Session:
             meta["versions"] = len(self.store.where("plan_versions", plan_id=p["id"]))
             meta["asset_type"] = (p.get("answers", {}).get("asset") or {}).get("type")
             out.append(meta)
+        # Creation order, not id order, so the plan with the assessment data is first.
+        out.sort(key=lambda m: (m.get("sequence", 0), m["id"]))
         return out
 
     def plan(self, plan_id):
@@ -842,7 +844,7 @@ def seed(answer_store, content, as_of):
                 "CySO can be shown; carries no assessment data of its own"})
     answer_store.put("plans", "meg-westport-csp", {
         "tenant_id": "harbor-cyber-consulting", "facility_ids": ["meg-westport"],
-        "title": "MEG Westport Cybersecurity Plan", "delivery_mode": "separate_submission",
+        "title": "MEG Westport Cybersecurity Plan", "delivery_mode": "separate_submission", "sequence": 1,
         "seed": "fixtures/meg-westport-original.answers.json", "answers": answers})
     multi = copy.deepcopy(answers)
     multi["asset"] = {"type": "ocs_facility", "name": content["facility"]["profile"]["offshore_asset"],
@@ -851,7 +853,7 @@ def seed(answer_store, content, as_of):
     answer_store.put("plans", "meg-group-multi-facility-csp", {
         "tenant_id": "harbor-cyber-consulting", "facility_ids": ["meg-westport", "meg-1-platform"],
         "title": "MEG multi-facility Cybersecurity Plan (101.630(d)(2))",
-        "delivery_mode": "annex",
+        "delivery_mode": "annex", "sequence": 2,
         "seed": "derived from the fixture: organisation and CySO answers copied, inventory emptied",
         "answers": multi})
     for i, (cat, fields) in enumerate([

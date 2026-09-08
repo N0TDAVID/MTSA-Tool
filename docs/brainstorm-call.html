@@ -1,0 +1,746 @@
+<!-- Call record. Companion to csp-pipeline.html, same design system.
+     Source: reference/MTSA Tool Brainstorm.vtt (auto-captioned, lossy).
+
+     Published at: (not yet published)
+     To update: edit THIS file, then republish passing that URL as `url`.
+     Publishing without it claims a new URL and forks the record into a
+     second artifact, leaving the link already circulated to the team stale. -->
+<title>MTSA Tool Brainstorm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+  :root {
+    color-scheme: light;
+    --ground:   #EDF1F2;
+    --surface:  #FFFFFF;
+    --sunk:     #E3E9EB;
+    --ink:      #10222B;
+    --ink-2:    #4A626D;
+    --rule:     #C7D6DB;
+    --accent:   #0E6E7D;
+    --accent-2: #2C5C8A;
+    --port:     #B3372B;
+    --starboard:#1C7A4D;
+    --amber:    #B0730A;
+    --band:     rgba(14,110,125,0.055);
+
+    --display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+    --body:    'Source Serif 4', Georgia, 'Times New Roman', serif;
+    --mono:    'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --ground:   #0B1519;
+      --surface:  #12222A;
+      --sunk:     #0E1D24;
+      --ink:      #E4EEF1;
+      --ink-2:    #93AAB3;
+      --rule:     #24404B;
+      --accent:   #4FC3D4;
+      --accent-2: #7FB3E0;
+      --port:     #E8705F;
+      --starboard:#57C88C;
+      --amber:    #E9A93C;
+      --band:     rgba(79,195,212,0.07);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --ground:   #0B1519;
+    --surface:  #12222A;
+    --sunk:     #0E1D24;
+    --ink:      #E4EEF1;
+    --ink-2:    #93AAB3;
+    --rule:     #24404B;
+    --accent:   #4FC3D4;
+    --accent-2: #7FB3E0;
+    --port:     #E8705F;
+    --starboard:#57C88C;
+    --amber:    #E9A93C;
+    --band:     rgba(79,195,212,0.07);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 28px 120px;
+  }
+  .prose { max-width: 720px; margin-inline: auto; }
+  .prose > * + * { margin-top: 1.1em; }
+
+  /* ---------- masthead ---------- */
+  header.masthead {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 88px 0 40px;
+  }
+  .kicker {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 20px;
+  }
+  h1 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(38px, 6vw, 58px);
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+    margin: 0;
+  }
+  .standfirst {
+    font-size: 20px;
+    line-height: 1.5;
+    color: var(--ink-2);
+    margin: 22px 0 0;
+    text-wrap: pretty;
+  }
+  .byline {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-2);
+    margin-top: 30px;
+    padding-top: 18px;
+    border-top: 1px solid var(--rule);
+  }
+
+  /* ---------- sections ---------- */
+  section { margin-top: 76px; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+  h2 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: clamp(25px, 3.2vw, 33px);
+    line-height: 1.16;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+    margin: 0 0 4px;
+  }
+  h3 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 18px;
+    letter-spacing: -0.005em;
+    margin: 0 0 6px;
+  }
+  p { margin: 0; }
+  strong { font-weight: 600; }
+  code, .cite {
+    font-family: var(--mono);
+    font-size: 0.87em;
+    color: var(--accent);
+  }
+
+  /* ---------- who said it ---------- */
+  .who {
+    font-family: var(--mono);
+    font-size: 0.76em;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-2);
+    white-space: nowrap;
+  }
+
+  /* ---------- participants ---------- */
+  .room {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-top: 3px solid var(--accent);
+    margin-top: 34px;
+  }
+  .room div { background: var(--surface); padding: 18px; }
+  .room b {
+    display: block;
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 16px;
+    letter-spacing: -0.01em;
+  }
+  .room span {
+    display: block;
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--ink-2);
+    margin-top: 7px;
+  }
+
+  /* ---------- figure ---------- */
+  figure {
+    margin: 40px 0 0;
+    max-width: 1180px;
+  }
+  .scroller { overflow-x: auto; padding-bottom: 4px; }
+  figure svg {
+    display: block;
+    width: 100%;
+    min-width: 720px;
+    max-width: 100%;
+    height: auto;
+    color: var(--ink);
+  }
+  figcaption {
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--ink-2);
+    margin-top: 16px;
+    max-width: 720px;
+    margin-inline: auto;
+    text-align: center;
+    text-wrap: pretty;
+  }
+  .n-box { fill: var(--surface); stroke: var(--rule); stroke-width: 1.5; }
+  .n-name { font-family: var(--display); font-weight: 600; font-size: 14px; fill: var(--ink); }
+  .n-sub  { font-family: var(--body); font-size: 11.5px; fill: var(--ink-2); }
+  .n-tag  { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.11em; }
+  .z-lab  { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.15em; fill: var(--ink-2); }
+  .edge   { stroke: var(--ink); stroke-width: 1.5; fill: none; opacity: 0.55; }
+
+  /* ---------- positions ---------- */
+  .positions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    margin-top: 34px;
+  }
+  .pos { background: var(--surface); padding: 20px 18px; border-top: 3px solid var(--rule); }
+  .pos.a { border-top-color: var(--port); }
+  .pos.b { border-top-color: var(--starboard); }
+  .pos.c { border-top-color: var(--amber); }
+  .pos .who { display: block; margin-bottom: 9px; }
+  .pos h3 { font-size: 16.5px; margin-bottom: 8px; }
+  .pos p { font-size: 14.5px; line-height: 1.55; color: var(--ink-2); }
+
+  /* ---------- numbered chain ---------- */
+  .phases { margin-top: 36px; display: flex; flex-direction: column; gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  .phase {
+    background: var(--surface);
+    display: grid;
+    grid-template-columns: 60px 1fr 128px;
+    gap: 20px;
+    align-items: start;
+    padding: 18px 22px;
+  }
+  .phase-n {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-2);
+    line-height: 1.2;
+  }
+  .phase h3 { margin-bottom: 3px; }
+  .phase p { font-size: 15px; line-height: 1.5; color: var(--ink-2); }
+  .lane {
+    justify-self: end;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 9px;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+  }
+  .lane.tool   { color: var(--accent); }
+  .lane.human  { color: var(--accent-2); }
+
+  /* ---------- callout ---------- */
+  .callout {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--amber);
+    padding: 22px 24px;
+    margin-top: 30px;
+  }
+  .callout.port { border-left-color: var(--port); }
+  .callout.accent { border-left-color: var(--accent); }
+  .callout.starboard { border-left-color: var(--starboard); }
+  .callout p + p { margin-top: 0.8em; }
+
+  /* ---------- tables ---------- */
+  table.modes {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 30px;
+    font-size: 14.5px;
+  }
+  table.modes th, table.modes td {
+    text-align: left;
+    padding: 13px 14px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  table.modes th {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    font-weight: 400;
+  }
+  table.modes td:first-child { font-family: var(--display); font-weight: 600; }
+  table.modes tr:last-child td { border-bottom: none; }
+  .tbl-wrap { overflow-x: auto; }
+
+  /* ---------- risk list ---------- */
+  .risks { margin-top: 30px; display: flex; flex-direction: column; gap: 20px; }
+  .risk { display: grid; grid-template-columns: 12px 1fr; gap: 16px; align-items: start; }
+  .risk .dot { width: 9px; height: 9px; border-radius: 50%; margin-top: 9px; }
+  .risk p { font-size: 15.5px; line-height: 1.55; }
+  .risk p b { font-family: var(--display); font-size: 15px; }
+
+  footer {
+    margin-top: 90px;
+    padding-top: 26px;
+    border-top: 1px solid var(--rule);
+    max-width: 720px;
+    margin-inline: auto;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--ink-2);
+  }
+  footer p + p { margin-top: 0.9em; }
+
+  @media (max-width: 620px) {
+    body { font-size: 16px; }
+    .page { padding: 0 18px 80px; }
+    header.masthead { padding-top: 56px; }
+    .phase { grid-template-columns: 44px 1fr; }
+    .lane { grid-column: 2; justify-self: start; margin-top: 8px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <p class="kicker">Call record &middot; Internal briefing</p>
+    <h1>What the brainstorm actually settled</h1>
+    <p class="standfirst">A four-way call on the MTSA tool: one assumption corrected, one architecture split three ways, a business model borrowed whole from oil spill response, and the priority moved off the plan and onto the assessment.</p>
+    <p class="byline">Source: reference/MTSA Tool Brainstorm.vtt &middot; 251 speaker turns &middot; auto-captioned and lossy, several turns reconstructed from partial lines</p>
+  </header>
+
+  <div class="prose">
+    <section style="margin-top:20px">
+      <p class="eyebrow">The room</p>
+      <h2>Who argued for what</h2>
+      <p style="margin-top:18px">The framing was Daniel's and unchanged from the pipeline briefing: turn the regulation into a TurboTax-style interview, feed it from tools we already own, generate the plan from the answers. What the call added was three things that framing did not cover, each pushed by a different person.</p>
+    </section>
+  </div>
+
+  <div class="room">
+    <div>
+      <b>Daniel Avila</b>
+      <span>Building the tool. Owns the engine, the interview, and the freeze-and-hash record.</span>
+    </div>
+    <div>
+      <b>Julio Gonzalez</b>
+      <span>Regulatory side. Writing the template spine, and the source of the two biggest corrections in the call.</span>
+    </div>
+    <div>
+      <b>Austin Schall</b>
+      <span>Coast Guard MSRAM background. Brought the boxcar architecture and CISO as a service.</span>
+    </div>
+    <div>
+      <b>Justin Gazick</b>
+      <span>Data and ingestion. Proposed the reduced-fidelity profile and folding CFDD into ingest.</span>
+    </div>
+  </div>
+
+  <div class="prose">
+    <section>
+      <p class="eyebrow">Assumption corrected</p>
+      <h2>Inspectors only look at the current plan</h2>
+      <p style="margin-top:18px">Daniel had been building against an IRS-shaped threat model: keep every past version, because an inspector may one day ask to compare against the plan from four or five years ago. Julio said that is not how Coast Guard inspections work.</p>
+    </section>
+  </div>
+
+  <div class="prose">
+    <div class="callout port">
+      <p><span class="who">Julio</span> &nbsp;An inspection assesses the <strong>current</strong> CSP and nothing else. The only records they reach back for are exercise records, retained two to three years. "Let me see your plan from five years ago" does not happen.</p>
+    </div>
+    <p style="margin-top:1.1em">This does not kill <code>plan_version</code>, but it does move the justification. Immutable frozen versions still earn their keep for amendment diffing, the five-year renewal, and replaying a surveillance run against a ruleset that has since changed. They are not an audit-lookback requirement. Anything in the roadmap that was priced as inspector-driven retention should be repriced.</p>
+  </div>
+
+  <div class="prose">
+    <section>
+      <p class="eyebrow">Priority moved</p>
+      <h2>The plan is boilerplate, the assessment is not</h2>
+      <p style="margin-top:18px">Julio's second correction, and the most substantive technical argument in the call. Building the prose generator first optimizes the easy half. Clients do not struggle to write the plan, they struggle to work out which of their assets actually matter and why. He laid out the chain he wants the tool to walk.</p>
+    </section>
+  </div>
+
+  <div class="phases">
+    <div class="phase">
+      <div class="phase-n">1</div>
+      <div>
+        <h3>Asset inventory</h3>
+        <p>Everything, unfiltered. SARA and SAM already produce this half.</p>
+      </div>
+      <div class="lane tool">Tool</div>
+    </div>
+    <div class="phase">
+      <div class="phase-n">2</div>
+      <div>
+        <h3>Assessment against known vulnerabilities</h3>
+        <p>Nessus data joined to the inventory, per asset.</p>
+      </div>
+      <div class="lane tool">Tool</div>
+    </div>
+    <div class="phase">
+      <div class="phase-n">3</div>
+      <div>
+        <h3>Criticality and vulnerability rated</h3>
+        <p>The CFDD questionnaire's algorithm, extended with MTSA-specific questions.</p>
+      </div>
+      <div class="lane tool">Tool</div>
+    </div>
+    <div class="phase">
+      <div class="phase-n">4</div>
+      <div>
+        <h3>Would compromise cause a TSI</h3>
+        <p>The gate question, and the one the tool cannot answer. It comes out of a conversation with operations, security, and the cyber and IT teams.</p>
+      </div>
+      <div class="lane human">Interview</div>
+    </div>
+    <div class="phase">
+      <div class="phase-n">5</div>
+      <div>
+        <h3>Inventory narrowed to what is critical and applicable</h3>
+        <p>The output of step 4 cuts the raw list down. Everything after this runs on the short list.</p>
+      </div>
+      <div class="lane tool">Tool</div>
+    </div>
+    <div class="phase">
+      <div class="phase-n">6</div>
+      <div>
+        <h3>Critical assets ranked by consequence</h3>
+        <p>Racked and stacked on stated consequences, so the ordering is defensible instead of being one person's opinion that this asset matters more than that one.</p>
+      </div>
+      <div class="lane tool">Tool</div>
+    </div>
+    <div class="phase">
+      <div class="phase-n">7</div>
+      <div>
+        <h3>Ranked list crossed with the vulnerabilities</h3>
+        <p>Produces the remediation table. Julio called it both a headache and very, very handy.</p>
+      </div>
+      <div class="lane tool">Tool</div>
+    </div>
+  </div>
+
+  <div class="prose">
+    <p style="margin-top:1.6em">On that last table: one of the documents the Coast Guard sent requires showing every known vulnerability alongside what is being done about it, and that explicitly includes the accept-and-document case. We know it is a vulnerability, remediation costs money, here is what we are doing instead. That is the risk acceptance and compensating control register, and it is a hard requirement rather than a nice-to-have.</p>
+  </div>
+
+  <div class="prose">
+    <section>
+      <p class="eyebrow">The hard problem</p>
+      <h2>Where the SSI lives</h2>
+      <p style="margin-top:18px">Everyone agreed LLMs cannot read CSPs directly and that ingesting a plan written by another provider stays manual for now. Nobody agreed on where the data should sit. Three positions, none of them resolved on the call.</p>
+    </section>
+  </div>
+
+  <div class="positions">
+    <div class="pos a">
+      <span class="who">Julio</span>
+      <h3>Hosted portal</h3>
+      <p>Clients log in, see their facility and their data. We hold backend visibility across every MTSA-regulated client, so a regulation change gets run once and everyone affected gets an alert explaining what moved. His precedent: Homeport already accepts plan uploads and SSI, so a hosted model is not automatically disqualified.</p>
+    </div>
+    <div class="pos b">
+      <span class="who">Austin</span>
+      <h3>Engine and boxcar</h3>
+      <p>How MSRAM was actually built. We own the engine, the calculation logic. The customer owns the boxcar, their data file. They attach it locally, process, save, submit. We never hold the sensitive data. Control the engine with a redistribution agreement and a registration key tied to the install, while accepting that people will share it anyway.</p>
+    </div>
+    <div class="pos c">
+      <span class="who">Justin</span>
+      <h3>Reduced-fidelity profile</h3>
+      <p>Keep only a generic client profile server-side, enough to know which clients an update touches and to notify them, without their granular data. He also flagged that holding any of it likely means formally designating a system and segmenting that data.</p>
+    </div>
+  </div>
+
+  <figure>
+    <div class="scroller">
+      <svg viewBox="0 0 1140 470" role="img" aria-label="Three architectures compared across the SSI boundary. In the boxcar model the engine ships out to the client and no data crosses back. In the portal model all facility data crosses to our hosted infrastructure. In the reduced profile model only a low-fidelity profile crosses.">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" opacity="0.55"/>
+          </marker>
+        </defs>
+
+        <rect x="140" y="66" width="440" height="364" fill="var(--band)"/>
+        <rect x="660" y="66" width="470" height="364" fill="var(--band)"/>
+        <text class="z-lab" x="144" y="54">CLIENT SIDE &middot; LOCAL</text>
+        <text class="z-lab" x="664" y="54">OUR INFRASTRUCTURE</text>
+
+        <line x1="620" y1="36" x2="620" y2="440" stroke="var(--port)" stroke-width="1.5" stroke-dasharray="5 5" opacity="0.8"/>
+        <text class="n-tag" x="620" y="462" text-anchor="middle" fill="var(--port)">SSI BOUNDARY</text>
+
+        <!-- row 1: boxcar -->
+        <text class="z-lab" x="20" y="122">BOXCAR</text>
+        <text class="n-tag" x="20" y="140" fill="var(--accent-2)">AUSTIN</text>
+        <g>
+          <rect class="n-box" x="160" y="90" width="180" height="76" rx="2"/>
+          <text class="n-name" x="250" y="120" text-anchor="middle">Their boxcar</text>
+          <text class="n-sub"  x="250" y="140" text-anchor="middle">the facility's own</text>
+          <text class="n-sub"  x="250" y="155" text-anchor="middle">data file</text>
+        </g>
+        <g>
+          <rect class="n-box" x="380" y="90" width="180" height="76" rx="2" stroke="var(--starboard)"/>
+          <text class="n-name" x="470" y="120" text-anchor="middle">Engine, installed</text>
+          <text class="n-sub"  x="470" y="140" text-anchor="middle">licensed, keyed</text>
+          <text class="n-sub"  x="470" y="155" text-anchor="middle">to the machine</text>
+        </g>
+        <path class="edge" d="M 700 128 L 580 128" marker-end="url(#ah)"/>
+        <g>
+          <rect class="n-box" x="700" y="90" width="180" height="76" rx="2"/>
+          <text class="n-name" x="790" y="120" text-anchor="middle">Engine builds</text>
+          <text class="n-sub"  x="790" y="140" text-anchor="middle">logic and rules</text>
+          <text class="n-sub"  x="790" y="155" text-anchor="middle">only</text>
+        </g>
+        <rect x="558" y="176" width="124" height="20" fill="var(--surface)" stroke="var(--starboard)" stroke-width="1"/>
+        <text class="n-tag" x="620" y="190" text-anchor="middle" fill="var(--starboard)">ENGINE GOES OUT</text>
+
+        <!-- row 2: portal -->
+        <text class="z-lab" x="20" y="242">PORTAL</text>
+        <text class="n-tag" x="20" y="260" fill="var(--accent-2)">JULIO</text>
+        <g>
+          <rect class="n-box" x="380" y="210" width="180" height="76" rx="2"/>
+          <text class="n-name" x="470" y="240" text-anchor="middle">Facility data</text>
+          <text class="n-sub"  x="470" y="260" text-anchor="middle">assets, scans,</text>
+          <text class="n-sub"  x="470" y="275" text-anchor="middle">the plan itself</text>
+        </g>
+        <path class="edge" d="M 560 248 L 700 248" marker-end="url(#ah)"/>
+        <g>
+          <rect class="n-box" x="700" y="210" width="180" height="76" rx="2" stroke="var(--port)"/>
+          <text class="n-name" x="790" y="240" text-anchor="middle">Hosted portal</text>
+          <text class="n-sub"  x="790" y="260" text-anchor="middle">every client's SSI</text>
+          <text class="n-sub"  x="790" y="275" text-anchor="middle">in one place</text>
+        </g>
+        <rect x="558" y="296" width="124" height="20" fill="var(--surface)" stroke="var(--port)" stroke-width="1"/>
+        <text class="n-tag" x="620" y="310" text-anchor="middle" fill="var(--port)">ALL OF IT CROSSES</text>
+
+        <!-- row 3: reduced profile -->
+        <text class="z-lab" x="20" y="362">PROFILE</text>
+        <text class="n-tag" x="20" y="380" fill="var(--accent-2)">JUSTIN</text>
+        <g>
+          <rect class="n-box" x="160" y="330" width="180" height="76" rx="2"/>
+          <text class="n-name" x="250" y="360" text-anchor="middle">Granular data</text>
+          <text class="n-sub"  x="250" y="380" text-anchor="middle">stays where</text>
+          <text class="n-sub"  x="250" y="395" text-anchor="middle">it is</text>
+        </g>
+        <g>
+          <rect class="n-box" x="380" y="330" width="180" height="76" rx="2" stroke="var(--amber)"/>
+          <text class="n-name" x="470" y="360" text-anchor="middle">Profile extract</text>
+          <text class="n-sub"  x="470" y="380" text-anchor="middle">asset classes,</text>
+          <text class="n-sub"  x="470" y="395" text-anchor="middle">no specifics</text>
+        </g>
+        <path class="edge" d="M 560 368 L 700 368" marker-end="url(#ah)"/>
+        <g>
+          <rect class="n-box" x="700" y="330" width="180" height="76" rx="2"/>
+          <text class="n-name" x="790" y="360" text-anchor="middle">Alert service</text>
+          <text class="n-sub"  x="790" y="380" text-anchor="middle">knows who to</text>
+          <text class="n-sub"  x="790" y="395" text-anchor="middle">notify, not why</text>
+        </g>
+        <rect x="558" y="416" width="124" height="20" fill="var(--surface)" stroke="var(--amber)" stroke-width="1"/>
+        <text class="n-tag" x="620" y="430" text-anchor="middle" fill="var(--amber)">PROFILE ONLY</text>
+      </svg>
+    </div>
+    <figcaption>The same boundary, crossed three different ways. Austin's objection to the portal was not intellectual property, it was not wanting to hold that much SSI in one place; his phrase for a breach of a consolidated store was that it becomes a party for whoever got in. Daniel's landing point was to keep the engine separate and possibly ship two things, which leaves this open.</figcaption>
+  </figure>
+
+  <div class="prose">
+    <section>
+      <p class="eyebrow">Three surfaces</p>
+      <h2>Authoring, audit, surveillance</h2>
+      <p style="margin-top:18px">Daniel described the engine as the beating heart driving three products. The pipeline briefing already made the case that they are one evaluation engine invoked differently. What the call added was detail on the two that are not the plan builder.</p>
+    </section>
+  </div>
+
+  <div class="prose">
+    <div class="tbl-wrap">
+      <table class="modes">
+        <thead>
+          <tr><th>Surface</th><th>What it does</th><th>Constraint raised</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Authoring</td>
+            <td>The interview, then generation. Blocks export while required items are missing; the example given was an unanswered on-call protocol, which throws rather than producing a partial plan.</td>
+            <td>Dropdowns keep answers structured, free text gets messy quick. Unresolved.</td>
+          </tr>
+          <tr>
+            <td>Audit</td>
+            <td>Julio's idea. Audit any plan, including ones we did not write. Auditor walks a checklist, clicks a deficiency, gets the CFR citation attached to it plus pre-written remediation language and a free text field. Two triggers: routine annual review, or a Coast Guard finding.</td>
+            <td>Plans are SSI, so the first version is manual.</td>
+          </tr>
+          <tr>
+            <td>Surveillance</td>
+            <td>Named outright as the recurring revenue stream. Holds the plan, watches for regulation changes and new vulnerabilities, tells the client which specific point of their CSP just stopped being compliant.</td>
+            <td>Turnaround after a reg change is unknown. Sales cannot promise it.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="prose">
+    <section>
+      <p class="eyebrow">Say these out loud</p>
+      <h2>Two ways surveillance goes wrong</h2>
+    </section>
+  </div>
+
+  <div class="prose">
+    <div class="risks">
+      <div class="risk">
+        <div class="dot" style="background: var(--port)"></div>
+        <p><b>Selling instant turnaround.</b> <span class="who">Daniel</span> The regulation changes and twenty minutes later the client gets an email is not a promise we can keep. Getting a rule change through the ruleset takes as long as it takes, and nobody knows that number yet. Salespeople need to say shortly after and leave the slack in.</p>
+      </div>
+      <div class="risk">
+        <div class="dot" style="background: var(--amber)"></div>
+        <p><b>Crying wolf.</b> <span class="who">Daniel</span> A generic go look at your CSP alert trains clients to ignore alerts. Every notification has to name the specific thing that moved. Julio's version of the same point is the useful one: key the alert to the client's own critical asset list, so it reads as reconsider the criticality of this asset, or a new vulnerability now affects an asset you listed.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="prose">
+    <section>
+      <p class="eyebrow">Already built</p>
+      <h2>What we are not writing from scratch</h2>
+      <p style="margin-top:18px">Four things came up as existing assets rather than new work.</p>
+    </section>
+  </div>
+
+  <div class="prose">
+    <div class="tbl-wrap">
+      <table class="modes">
+        <tbody>
+          <tr>
+            <td>SARA and SAM</td>
+            <td>Carry over roughly as-is minus the compliance dropdown. They are RMF-shaped, so MTSA requirements get added and things that do not apply come out; STIGs were the example. SAM already has a selectable report-profile mechanism, which is the hook a compliance profile hangs on.</td>
+          </tr>
+          <tr>
+            <td>CFDD questionnaire</td>
+            <td>Exposure and integrity questions, an algorithm assigning qualitative values, aggregated into a per-asset criticality rating. Daniel wants more questions and a scoring pass so like items rate alike. <span class="who">Justin</span> fold it into data ingestion as its own tab rather than shipping it as a standalone deliverable people scroll away to.</td>
+          </tr>
+          <tr>
+            <td>Coast Guard inspector job aid</td>
+            <td>The published checklist inspectors will actually use on CSPs. Basic, high level, non-technical, structured like the existing physical security one, and subject to change. <span class="who">Justin</span> break its items into applicability branching so a user is told this applies, this does not.</td>
+          </tr>
+          <tr>
+            <td>Nessus ingest</td>
+            <td>Feeds the per-asset vulnerability register. Each finding gets an answer: patched or fixed, who fixed it, what the resolution was. Findings that cannot be resolved capture compensating controls and a date to re-look. Daniel's read of the regulation is that unresolved and unexplained does not pass.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="prose">
+    <section>
+      <p class="eyebrow">The business model</p>
+      <h2>Borrow the structure from oil spill response</h2>
+      <p style="margin-top:18px">Julio's argument, and the part of the call that had the most conviction behind it. Do not invent a pricing model. Copy the one the maritime industry already understands and already budgets for.</p>
+    </section>
+    <div class="callout accent">
+      <p><span class="who">Julio</span> &nbsp;An oil spill response contract is an annual fee covering plan maintenance, updates, and recurrent training, with separate published rates for actual response. The industry is already used to it. We just have to work out what the pricing looks like.</p>
+      <p>His read on timing: cyber today is where oil spill response was before it was regulated. Incidents are happening all day, every day, and response is where the revenue is. His prediction is that the Coast Guard eventually requires a contracted cyber response team on retainer, able to act within a set time, the same way it requires oil spill response contracts. Sell ahead of that.</p>
+    </div>
+  </div>
+
+  <div class="prose">
+    <div class="tbl-wrap">
+      <table class="modes">
+        <thead>
+          <tr><th>Tier</th><th>Shape</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>One-off</td>
+            <td>Build the plan, hand it over, they deal with it. <span class="who">Julio</span> write the first Coast Guard inspection into the contract, so the deliverable is the plan plus support through the inspection that proves it holds.</td>
+          </tr>
+          <tr>
+            <td>Self-service</td>
+            <td>They hold the tool and update things themselves. This is the tier the boxcar architecture serves cleanly.</td>
+          </tr>
+          <tr>
+            <td>Managed</td>
+            <td>We hold more access and run the updates. Volume pricing attaches here; Austin's example was a fleet wanting all eleven ships managed together.</td>
+          </tr>
+          <tr>
+            <td>CISO as a service</td>
+            <td><span class="who">Austin</span> Clients resist naming a CySO because they understand the responsibility attached. Offer to be it. Data piped to our SOC, then either act on their behalf or notify them with the procedures to follow, with incident response baked in. Cost driver is data ingest and Splunk licensing. OT alert volume is low, IT higher; ask Ethan's team for real numbers. Julio floated roughly $15k a month for a facility, heavily hedged.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.4em">Austin also flagged a separate opportunity outside MTSA entirely: shipyard program management from design through construction, currently run on a pile of Excel sheets.</p>
+  </div>
+
+  <div class="prose">
+    <section>
+      <p class="eyebrow">Agreed on the call</p>
+      <h2>What each person is doing next</h2>
+    </section>
+    <div class="callout starboard">
+      <p><strong>Daniel.</strong> Build on a standard database this time. He referenced an earlier build where changing one thing broke everything, and wants sections addable and removable and questions changeable without that. Talk to Gage about what storage looks like on our side before anything is built, so the architecture is compatible with the tiering. Small demo program first. Design around how it will be sold rather than building one monolith and trying to split it later.</p>
+      <p><strong>Julio.</strong> Finishing the first template section this week, a short week, and sending the individual documents over. Check in at the end of the week to pick the next priority. His own framing: template work is the best use of his time right now, before billable work takes it.</p>
+    </div>
+  </div>
+
+  <div class="prose">
+    <section>
+      <p class="eyebrow">Left open</p>
+      <h2>Nothing on this list got an answer</h2>
+    </section>
+    <div class="tbl-wrap">
+      <table class="modes">
+        <tbody>
+          <tr><td>Where the SSI lives</td><td>Boxcar, portal, or reduced profile. Three positions, no decision. Same item as stack and deployment target.</td></tr>
+          <tr><td>Ingesting foreign plans</td><td>Wanted, unsolved, no LLM available for it. Manual at first, with no plan for what comes after manual.</td></tr>
+          <tr><td>Dropdowns versus free text</td><td>Structure against expressiveness, across 172 requirement bullets.</td></tr>
+          <tr><td>Reg change turnaround</td><td>Unknown, and sales messaging depends on it.</td></tr>
+          <tr><td>Pricing</td><td>The oil spill structure is agreed. The numbers in it are not.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer>
+    <p>Companion to csp-pipeline.html. That document argues the build; this one records what the room said about it.</p>
+    <p>Transcribed from reference/MTSA Tool Brainstorm.vtt. The captioner dropped words mid-sentence throughout, so quoted phrasing is reconstructed rather than verbatim and should not be treated as a quotation of record. Austin left the call early, before the pricing discussion finished.</p>
+  </footer>
+
+</div>

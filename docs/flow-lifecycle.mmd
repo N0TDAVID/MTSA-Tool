@@ -1,0 +1,123 @@
+flowchart TB
+
+subgraph P1["1. ENGAGE"]
+  T["consultant tenant opens<br/>facility added as child entity"]
+  OWN["owner/operator named<br/>the responsible party, 101.620(a)<br/>not the consultant"]
+  CY["CySO designated + alternate<br/>101.615 definition<br/>reachable 24/7, 101.620(b)(3)"]
+  MODE["delivery mode chosen, 101.630(a)<br/>in the FSP/VSP, annex,<br/>part of an ASP, or standalone"]
+  T --> OWN --> CY --> MODE
+end
+
+subgraph P2["2. SCOPE THE FOOTPRINT - facilitated workshop, the part clients cannot do alone"]
+  INV["asset inventory in<br/>IT and OT"]
+  ROOM["one room: operations, security,<br/>cyber, IT<br/>no single role knows both what an<br/>asset does and what breaks"]
+  ST1{"stage 1 - is it critical,<br/>and could compromise<br/>cause a TSI?"}
+  OUTS["out of scope<br/>most of the inventory<br/>recorded, not covered"]
+  ST2["stage 2 - rank survivors<br/>by consequence<br/>sets KEV tracking priority"]
+  INV --> ROOM --> ST1
+  ST1 -->|no| OUTS
+  ST1 -->|yes| ST2
+end
+
+subgraph P3["3. FIND AND DISPOSE"]
+  SCAN["scans + KEV/CVE feed<br/>joined to critical assets only"]
+  CROSS["CROSSWALK<br/>asset, vulnerability, disposition<br/>the artifact the Coast Guard asks for<br/>and the hardest to build by hand"]
+  D{"disposition<br/>every row resolves"}
+  M1["mitigated"]
+  M2["planned<br/>owner + date + cost"]
+  M3["accepted<br/>owner, justification,<br/>compensating control,<br/>review date<br/>not a dismissal button"]
+  ST2 --> SCAN --> CROSS --> D
+  D --> M1
+  D --> M2
+  D --> M3
+end
+
+subgraph P4["4. INTERVIEW AND DRAFT"]
+  B14["Sections 1-4<br/>standard blurb, Julio's templates<br/>but the training / drill / exercise /<br/>incident RECORDS live here"]
+  B514["Sections 5-14<br/>assessment, answered in the tool<br/>typed answers only"]
+  APX["22 appendices<br/>15 authored, 7 rendered registers"]
+  M1 --> S11["Section 11<br/>what was resolved"]
+  M2 --> S11
+  M3 --> S12["Section 12<br/>what was not"]
+  S11 --> B514
+  S12 --> B514
+end
+
+subgraph P5["5. GAP CHECK - the product feature, not a lint pass"]
+  GC{"gap check"}
+  BIND["binding failure<br/>EXPORT BLOCKED"]
+  BEST["best practice failure<br/>warning only"]
+  FIX["remediate or answer<br/>the open item"]
+  B14 --> GC
+  B514 --> GC
+  APX --> GC
+  GC --> BIND --> FIX
+  GC --> BEST
+  FIX -.-> B514
+end
+
+subgraph P6["6. FREEZE, SIGN, SUBMIT"]
+  FRZ["plan_version frozen<br/>answers + ruleset + clauses pinned<br/>attachments pinned by reference"]
+  DOC["document rendered<br/>same answers always produce<br/>the same document"]
+  SIG["owner/operator e-signs<br/>bound to the content hash"]
+  SUB["submit, 101.630(d)<br/>COTP or OCMI for facilities and OCS<br/>Marine Safety Center for US-flagged vessels"]
+  APR["approved<br/>valid 5 years, 101.630(d)(3)"]
+  GC -->|clean| FRZ --> DOC --> SIG --> SUB --> APR
+end
+
+subgraph P7["7. FIRST AUDIT - bundled into the engagement"]
+  AUD["we walk the facility against<br/>the plan we wrote<br/>section-scoped, findings cited to the CFR"]
+  DEF["deficiency<br/>failed binding requirement<br/>carries remediation"]
+  REC["recommendation<br/>enhancement, no failure behind it"]
+  CERT["certification states on its face:<br/>the plan as written, and separately<br/>what was physically verified and when"]
+  APR --> AUD --> DEF --> CERT
+  AUD --> REC --> CERT
+  DEF -.remediate.-> FIX
+end
+
+subgraph P8["8. OPERATE - the only real retention clock in the plan"]
+  RECS["records created and kept<br/>training, drills, exercises,<br/>threats, incidents, plan audits<br/>101.640"]
+  RET["kept at least 2 years per category<br/>104.235 / 105.225 / 106.230<br/>DoS 90 days after its period<br/>manned vessels keep the last 10 aboard"]
+  ROLE["FSO/VSO keeps the record<br/>CySO ensures it is maintained<br/>two different fields"]
+  IR["reportable incident<br/>to the NRC without delay<br/>101.650(g)(1)"]
+  CERT --> RECS --> RET
+  RECS --> ROLE
+  RECS --> IR
+end
+
+subgraph P9["9. INSPECTION"]
+  CGI["Coast Guard inspects the<br/>CURRENT plan only<br/>compares plan in force against<br/>what the facility actually does"]
+  RET --> CGI
+end
+
+subgraph P10["10. STAY COMPLIANT - the recurring half"]
+  W1["ruleset changed"]
+  W2["new KEV hits an old scan"]
+  W3["new vuln on a covered asset<br/>= re-examine its criticality"]
+  RE["agent re-evaluates locally<br/>against the frozen answers"]
+  AL["alert: rule ids and severities only<br/>asset detail stays on the client side"]
+  CH{"what changed?"}
+  A1["attachment only<br/>new switch, new scan<br/>no filing"]
+  A2["general amendment<br/>to the Coast Guard 30 days<br/>before it takes effect<br/>101.630(e)(2)"]
+  A3["CySO change<br/>96 hours to notify,<br/>96 hours to submit the amended part<br/>101.630(e)(4) - the 30-day rule<br/>does NOT apply"]
+  REN["5-year renewal"]
+  APR --> RE
+  W1 --> RE
+  W2 --> RE
+  W3 --> RE
+  RE --> AL --> CH
+  CH --> A1
+  CH --> A2
+  CH --> A3
+  A2 --> FRZ
+  A3 --> FRZ
+  APR --> REN --> FRZ
+  W3 -.-> ST1
+end
+
+classDef block fill:#4a1f22,stroke:#e07b7b,color:#fdeaea
+classDef value fill:#1f3a5f,stroke:#7fb2e5,color:#eaf2fb
+classDef clock fill:#3a2a12,stroke:#d6a24a,color:#fbf3e6
+class BIND,DEF block
+class CROSS,ROOM,AUD value
+class RET,A3,A2,IR,REN clock

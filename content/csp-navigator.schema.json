@@ -1,0 +1,476 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/schemas/csp-navigator.schema.json",
+  "title": "CSP Navigator Content Model",
+  "description": "Authoring schema for a regulatory plan-review exercise. One course contains a regulation registry, a facility cast, and N sections. Each section pairs a deficient draft with a strengthened draft and explains the delta.",
+  "type": "object",
+  "required": ["schema_version", "course_id", "title", "regulatory_basis", "authorities", "sections"],
+  "additionalProperties": false,
+
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "course_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "title": { "type": "string" },
+    "subtitle": { "type": "string" },
+    "regulatory_basis": {
+      "type": "string",
+      "description": "Human-readable citation of the governing rule, e.g. '33 CFR Part 101 Subpart F'."
+    },
+    "facility": { "$ref": "#/$defs/facility" },
+    "authorities": {
+      "type": "object",
+      "description": "Shared citation registry spanning every kind of authority the plan cites, not regulations alone. Sections reference entries by key. An authority may be referenced by gap_analysis without appearing in connected_authority_ids, which is how a reveal introduces citations the learner was not shown up front.",
+      "propertyNames": { "$ref": "#/$defs/authority_id" },
+      "additionalProperties": { "$ref": "#/$defs/authority" },
+      "minProperties": 1
+    },
+    "sections": {
+      "type": "array",
+      "description": "The 14-section spine fixed by 101.630(c). Exactly 14, in ascending order by number.",
+      "items": { "$ref": "#/$defs/section" },
+      "minItems": 14,
+      "maxItems": 14
+    },
+    "appendices": {
+      "type": "array",
+      "description": "The 22 appendices the plan outline carries, A through V. A first-class artifact type, deliberately not a section: appendices sit outside the 14-section spine fixed by 101.630(c) and several are rendered from the entity store rather than authored.",
+      "items": { "$ref": "#/$defs/appendix" }
+    }
+  },
+
+  "$defs": {
+
+    "authority_id": {
+      "type": "string",
+      "pattern": "^(cfr:[0-9]{2,3}(\\.[0-9]{3})?(\\([a-z0-9]+\\))*|(pl|nvic|fr|wi|guide):[a-z0-9][a-z0-9.\\-]*)$",
+      "description": "Namespaced citation key. 'cfr:' takes a bare part ('cfr:105') or a paragraph ('cfr:101.630(c)(1)', 'cfr:101.650(e)(3)(i)'), always without the section symbol. Guidance uses its own namespace: 'pl:' for CG-5PC policy letters, 'nvic:' for NVICs, 'fr:' for Federal Register cites, 'wi:' for MCP work instructions, 'guide:' for Coast Guard guides, job aids, and FAQs. The namespace is an addressing scheme only. Bindingness is carried by the authority's own flag, never inferred from the prefix."
+    },
+
+    "authority": {
+      "type": "object",
+      "required": ["cite", "title", "text", "authority_type", "binding"],
+      "additionalProperties": false,
+      "properties": {
+        "cite": { "type": "string", "description": "Display form, e.g. '§101.630(c)(1)' or 'CG-5PC Policy Letter 01-25'." },
+        "title": { "type": "string", "description": "Short label for the citation card." },
+        "authority_type": {
+          "type": "string",
+          "enum": ["regulation", "policy_letter", "nvic", "federal_register", "work_instruction", "guide"],
+          "description": "What kind of instrument this is. Drives citation formatting and, with 'binding', how far a gap keyed to it may escalate."
+        },
+        "binding": {
+          "type": "boolean",
+          "description": "true only for codified regulation text that mandates conduct. Policy letters, NVICs, work instructions, and Federal Register preamble are guidance and must be false: the codified CFR text is the binding form of anything they discuss. A gap may be binding only if at least one authority it cites is binding, so this value caps gap severity and is what keeps guidance from blocking an export."
+        },
+        "description": {
+          "type": "string",
+          "description": "Optional author-written plain-language gloss. Distinct from verbatim text and must never be presented as the authority itself."
+        },
+        "text": { "type": "string", "description": "Verbatim text of the cited authority." },
+        "url": { "type": "string", "format": "uri" }
+      },
+      "allOf": [
+        {
+          "description": "Only codified regulation text may be binding.",
+          "if": { "properties": { "binding": { "const": true } }, "required": ["binding"] },
+          "then": { "properties": { "authority_type": { "const": "regulation" } } }
+        }
+      ]
+    },
+
+    "facility": {
+      "type": "object",
+      "description": "Fictional entity the drafts describe. Shared across sections so names and phone numbers stay consistent.",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "abbreviation": { "type": "string" },
+        "site": { "type": "string" },
+        "cognizant_cotp": { "type": "string" },
+        "profile": {
+          "type": "object",
+          "description": "Free-form scale and asset facts, e.g. endpoint counts, network zones, offshore platforms.",
+          "additionalProperties": { "type": ["string", "number"] }
+        },
+        "personnel": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "role"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+              "name": { "type": "string" },
+              "role": { "type": "string" },
+              "reports_to": { "type": "string", "description": "id of another personnel entry" },
+              "contact": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "email": { "type": "string" },
+                  "office": { "type": "string" },
+                  "mobile": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "section": {
+      "type": "object",
+      "required": ["id", "number", "title", "status", "connected_authority_ids"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "number": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 14,
+          "description": "Position in the 14-section spine fixed by 101.630(c). Sections must appear in the array in ascending order: 101.630(c) requires an index only when a Plan departs from that order, so holding the order is what lets the product never generate one."
+        },
+        "title": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": ["complete", "draft_incomplete", "stub"],
+          "description": "Authoring state. Anything other than 'complete' should be excluded from a learner build."
+        },
+        "authoring_notes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Internal notes: missing content, sourcing questions, unverified ground truth. Never rendered."
+        },
+        "connected_authority_ids": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/authority_id" },
+          "uniqueItems": true,
+          "minItems": 1,
+          "description": "Citations displayed to the learner before they attempt the section."
+        },
+        "requirements": {
+          "type": "array",
+          "description": "Authoring scaffolding carried over from the plan outline: the requirement bullets a section must eventually satisfy. Each becomes one or more checklist items once the section is authored. Internal, never rendered to a learner.",
+          "items": {
+            "type": "object",
+            "required": ["id", "text", "authority_ids"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+              "text": { "type": "string", "description": "The requirement as the outline states it." },
+              "authority_ids": {
+                "type": "array",
+                "items": { "$ref": "#/$defs/authority_id" },
+                "minItems": 1
+              }
+            }
+          }
+        },
+        "checklist": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/checklist_item" },
+          "minItems": 1
+        },
+        "free_response_prompt": {
+          "type": "string",
+          "default": "What's missing? What could be improved?"
+        },
+        "drafts": {
+          "type": "object",
+          "required": ["original"],
+          "additionalProperties": false,
+          "properties": {
+            "original": { "$ref": "#/$defs/draft" },
+            "strengthened": { "$ref": "#/$defs/draft" }
+          }
+        },
+        "gap_analysis": { "$ref": "#/$defs/gap_analysis" },
+        "visuals": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/visual" }
+        }
+      },
+      "allOf": [
+        {
+          "description": "Any section past the stub stage must carry a checklist and at least the original draft. A stub is a spine placeholder holding outline scaffolding only, so requiring authored content of it would force invented text.",
+          "if": {
+            "properties": { "status": { "enum": ["complete", "draft_incomplete"] } },
+            "required": ["status"]
+          },
+          "then": { "required": ["checklist", "drafts"] }
+        },
+        {
+          "description": "A section marked complete must carry both drafts and a gap analysis.",
+          "if": { "properties": { "status": { "const": "complete" } } },
+          "then": {
+            "required": ["gap_analysis"],
+            "properties": {
+              "drafts": { "required": ["original", "strengthened"] }
+            }
+          }
+        }
+      ]
+    },
+
+    "appendix": {
+      "type": "object",
+      "description": "One appendix. Distinct from a plan section: it has no drafts, no checklist, and no gap analysis, because an appendix is either authored supporting material or a projection of the entity store.",
+      "required": ["id", "designation", "title", "status", "kind"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "designation": {
+          "type": "string",
+          "pattern": "^[A-V]$",
+          "description": "Appendix letter as the outline assigns it, A through V."
+        },
+        "title": { "type": "string" },
+        "status": { "type": "string", "enum": ["complete", "draft_incomplete", "stub"] },
+        "kind": {
+          "type": "string",
+          "enum": ["authored_prose", "register_view"],
+          "description": "How the content is produced. 'authored_prose' is written into the plan. 'register_view' is a rendered table computed from the entity store and has no authored body at all."
+        },
+        "register": {
+          "type": "string",
+          "enum": [
+            "critical_it_ot",
+            "hardware_software",
+            "remote_access",
+            "kev",
+            "compensating_control",
+            "risk_acceptance",
+            "backup"
+          ],
+          "description": "Which entity-store view this appendix renders. Required for a register_view, meaningless otherwise."
+        },
+        "controlled_attachment": {
+          "type": "boolean",
+          "default": false,
+          "description": "true when the appendix versions separately from the plan body, so a routine technical change (a switch replacement, a new scan result) does not trigger a 30-day amendment filing under 101.630(e)(2). plan_version pins these by reference rather than embedding them. Orthogonal to 'kind': every register is one, and so are the network diagrams, which are uploaded rather than rendered.",
+          "$comment": "Outline note under Section 6: detailed inventories and network maps should be maintained as controlled attachments so routine technical updates do not unnecessarily destabilize the approved plan."
+        },
+        "authority_ids": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/authority_id" },
+          "uniqueItems": true,
+          "description": "What requires or informs this appendix."
+        },
+        "blocks": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/block" },
+          "minItems": 1,
+          "description": "Authored body. Permitted only when kind is 'authored_prose'."
+        }
+      },
+      "allOf": [
+        {
+          "description": "A register view names its entity-store view and carries no authored body.",
+          "if": { "properties": { "kind": { "const": "register_view" } }, "required": ["kind"] },
+          "then": { "required": ["register"], "properties": { "blocks": false } }
+        },
+        {
+          "description": "Authored prose has no entity-store view to name.",
+          "if": { "properties": { "kind": { "const": "authored_prose" } }, "required": ["kind"] },
+          "then": { "properties": { "register": false } }
+        }
+      ]
+    },
+
+    "checklist_item": {
+      "type": "object",
+      "description": "A requirement the learner marks as satisfied or not. Unchecked items become the discussion gaps.",
+      "required": ["id", "label", "authority_ids", "satisfied_by_original"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "label": { "type": "string" },
+        "authority_ids": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/authority_id" },
+          "minItems": 1
+        },
+        "satisfied_by_original": {
+          "type": ["boolean", "null"],
+          "description": "Ground truth for scoring. false means the original draft fails this requirement. null means not yet authored and the item must not be scored."
+        },
+        "gap_ids": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "gap_analysis entry ids that explain a false value. Lets the UI link an unchecked box straight to its explanation."
+        }
+      }
+    },
+
+    "draft": {
+      "type": "object",
+      "required": ["variant", "subsections"],
+      "additionalProperties": false,
+      "properties": {
+        "variant": { "type": "string", "enum": ["original", "strengthened"] },
+        "label": { "type": "string", "description": "Badge text, e.g. 'Original Draft' or 'Strengthened'." },
+        "subsections": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/subsection" },
+          "minItems": 1
+        }
+      }
+    },
+
+    "subsection": {
+      "type": "object",
+      "required": ["number", "heading", "blocks"],
+      "additionalProperties": false,
+      "properties": {
+        "number": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+$" },
+        "heading": { "type": "string" },
+        "blocks": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/block" },
+          "minItems": 1
+        },
+        "misplaced_content": {
+          "type": "boolean",
+          "default": false,
+          "description": "Marks a red herring: content that is plausible and detailed but belongs to a different CSP section. Used by gap_analysis entries of kind 'misplaced_content'."
+        }
+      }
+    },
+
+    "block": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["type", "text"],
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "paragraph" },
+            "text": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "items"],
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "list" },
+            "ordered": { "type": "boolean", "default": false },
+            "items": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+          }
+        },
+        {
+          "type": "object",
+          "description": "Tabular content such as an escalation matrix or a roles roster.",
+          "required": ["type", "columns", "rows"],
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "table" },
+            "caption": { "type": "string" },
+            "columns": { "type": "array", "items": { "type": "string" }, "minItems": 2 },
+            "rows": {
+              "type": "array",
+              "items": { "type": "array", "items": { "type": "string" } },
+              "minItems": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "description": "Contact blocks, designations, and other label/value pairs that must stay machine-readable for consistency checks across sections.",
+          "required": ["type", "entries"],
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "key_value" },
+            "entries": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["key", "value"],
+                "additionalProperties": false,
+                "properties": {
+                  "key": { "type": "string" },
+                  "value": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+
+    "gap_analysis": {
+      "type": "object",
+      "required": ["regulatory_gaps"],
+      "additionalProperties": false,
+      "properties": {
+        "intro": {
+          "type": "string",
+          "default": "The strengthened draft closes each of the gaps below that the original draft left open."
+        },
+        "regulatory_gaps": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/gap" },
+          "description": "Failures against a binding requirement. These are the scorable gaps."
+        },
+        "best_practice_improvements": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/gap" },
+          "description": "Improvements the regulation permits or implies but does not mandate. Must never be scored as compliance failures."
+        }
+      }
+    },
+
+    "gap": {
+      "type": "object",
+      "required": ["id", "authority_ids", "title", "explanation", "kind"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "authority_ids": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/authority_id" },
+          "minItems": 1,
+          "description": "One id for a normal gap. Two or more when the point is that content was filed under the wrong section, in which case the UI renders them as 'A vs B'."
+        },
+        "title": { "type": "string" },
+        "explanation": { "type": "string" },
+        "kind": {
+          "type": "string",
+          "enum": ["omission", "insufficient_detail", "misplaced_content", "unsupported_assertion"],
+          "description": "Drives copy and iconography. 'misplaced_content' is the red-herring case where the draft looks thorough but answers a different section's requirement."
+        },
+        "binding": {
+          "type": "boolean",
+          "description": "true if the cited text mandates the fix, false if it merely permits or implies it. Authors should set this explicitly rather than inferring it from which array the gap sits in. Capped by the authorities cited: this may be true only if at least one entry in authority_ids is itself binding. The converse does not hold, and a binding authority does not make a gap binding. A binding failure blocks export; a best-practice failure only warns."
+        }
+      }
+    },
+
+    "visual": {
+      "type": "object",
+      "required": ["id", "type", "title"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "type": {
+          "type": "string",
+          "enum": ["org_chart", "matrix", "flow", "timeline", "network_diagram", "image"]
+        },
+        "title": { "type": "string" },
+        "caption": { "type": "string" },
+        "depicts": {
+          "type": "string",
+          "enum": ["original", "strengthened", "comparison"],
+          "default": "strengthened",
+          "description": "Which draft the visual illustrates. Gates whether it may render before the reveal."
+        },
+        "source_ref": {
+          "type": "string",
+          "description": "Pointer to the block or subsection the visual is generated from, e.g. 'sections/5/drafts/strengthened/subsections/5.2'."
+        }
+      }
+    }
+  }
+}

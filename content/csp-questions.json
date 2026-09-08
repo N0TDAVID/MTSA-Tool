@@ -1,0 +1,225 @@
+{
+  "question_module_version": "2026.09.08",
+  "notes": "Interview question nodes. Every path a rule reads is a constrained type: enum, enum_multi, boolean, number, date, tri_state, or entity_ref. identifier and short_text are single-line text that a predicate may only presence-check with `answered`; validate.py enforces that no other operator reads them. narrative is free text that feeds the clause library and is never read by a predicate. applies_to is an engine predicate over the answer set, evaluated by the facade; it is linted by validate.py. authority_ids name entries in the content registry and are the only source of citations shown in the UI.",
+  "types": ["enum", "enum_multi", "boolean", "number", "date", "tri_state", "entity_ref", "identifier", "short_text", "narrative", "entity_list"],
+  "questions": [
+    {
+      "id": "q-asset-type",
+      "section": 1,
+      "path": "asset.type",
+      "type": "enum",
+      "options": ["vessel", "facility", "ocs_facility"],
+      "prompt": "What kind of covered asset does this Plan cover?",
+      "help": "The discriminator. Question applicability and rule applicability read it.",
+      "authority_ids": ["cfr:101.630(d)"]
+    },
+    {
+      "id": "q-asset-name",
+      "section": 1,
+      "path": "asset.name",
+      "type": "identifier",
+      "prompt": "Name of the vessel, facility, or OCS facility",
+      "authority_ids": ["cfr:101.630(d)"]
+    },
+    {
+      "id": "q-cognizant-cotp",
+      "section": 1,
+      "path": "asset.cognizant_cotp",
+      "type": "identifier",
+      "prompt": "Cognizant Captain of the Port or OCMI",
+      "applies_to": { "in": ["asset.type", ["facility", "ocs_facility"]] },
+      "authority_ids": ["cfr:101.630(d)"]
+    },
+    {
+      "id": "q-plan-approval-date",
+      "section": 10,
+      "path": "plan.approval_date",
+      "type": "date",
+      "prompt": "Date the Plan was approved, if it has been",
+      "help": "Leave empty for a Plan not yet approved. The 5-year validity rule applies only once this is answered.",
+      "authority_ids": ["cfr:101.630(d)"]
+    },
+    {
+      "id": "q-org-structure-defined",
+      "section": 1,
+      "path": "org.structure_defined",
+      "type": "boolean",
+      "prompt": "Is the cybersecurity organizational structure defined in writing?",
+      "authority_ids": ["cfr:101.620(b)(2)"]
+    },
+    {
+      "id": "q-org-personnel",
+      "section": 1,
+      "path": "org.personnel",
+      "type": "entity_list",
+      "prompt": "Personnel with cybersecurity duties",
+      "fields": [
+        { "key": "name", "type": "identifier", "prompt": "Name" },
+        { "key": "role", "type": "identifier", "prompt": "Role or title" },
+        { "key": "duties", "type": "short_text", "prompt": "Cybersecurity duties" }
+      ],
+      "authority_ids": ["cfr:101.620(b)(2)"]
+    },
+    {
+      "id": "q-cyso-name",
+      "section": 1,
+      "path": "cyso.name",
+      "type": "identifier",
+      "prompt": "CySO name",
+      "authority_ids": ["cfr:101.620(b)(3)"]
+    },
+    {
+      "id": "q-cyso-title",
+      "section": 1,
+      "path": "cyso.title",
+      "type": "identifier",
+      "prompt": "CySO title",
+      "authority_ids": ["cfr:101.620(b)(3)"]
+    },
+    {
+      "id": "q-cyso-designation-in-writing",
+      "section": 1,
+      "path": "cyso.designation_in_writing",
+      "type": "boolean",
+      "prompt": "Is the CySO designated in writing?",
+      "authority_ids": ["cfr:101.620(b)(3)"]
+    },
+    {
+      "id": "q-cyso-appointed-date",
+      "section": 1,
+      "path": "cyso.appointed_date",
+      "type": "date",
+      "prompt": "Date of the CySO designation",
+      "help": "No rule reads this yet. A CySO change starts the two 96-hour clocks.",
+      "authority_ids": ["cfr:101.630(e)(4)"]
+    },
+    {
+      "id": "q-cyso-accessible-24-7",
+      "section": 1,
+      "path": "cyso.accessible_24_7",
+      "type": "boolean",
+      "prompt": "Is the CySO accessible to the Coast Guard 24 hours a day, 7 days a week?",
+      "help": "Business hours with after-hours message relay is not 24/7 accessibility.",
+      "authority_ids": ["cfr:101.620(b)(3)"]
+    },
+    {
+      "id": "q-cyso-mobile-phone",
+      "section": 1,
+      "path": "cyso.contact.mobile_phone",
+      "type": "identifier",
+      "format": "^[0-9+() .-]{7,}$",
+      "prompt": "CySO 24/7 mobile number",
+      "authority_ids": ["cfr:101.620(b)(3)"]
+    },
+    {
+      "id": "q-cyso-oncall-protocol",
+      "section": 1,
+      "path": "cyso.contact.oncall_protocol",
+      "type": "short_text",
+      "prompt": "On-call protocol for reaching the CySO at any time, if a mobile number is not the method",
+      "authority_ids": ["cfr:101.620(b)(3)"]
+    },
+    {
+      "id": "q-cyso-alternate-name",
+      "section": 1,
+      "path": "cyso.alternate.name",
+      "type": "identifier",
+      "prompt": "Alternate CySO name, if one is designated",
+      "help": "Permitted, not required. The definition of Cybersecurity Officer allows an alternate.",
+      "authority_ids": ["cfr:101.615"]
+    },
+    {
+      "id": "q-comms-channels",
+      "section": 5,
+      "path": "communications.channels",
+      "type": "entity_list",
+      "prompt": "Notification channels available to the CySO",
+      "fields": [
+        { "key": "kind", "type": "enum", "options": ["email", "telephone", "public_address", "radio", "sms", "messaging", "other"], "prompt": "Kind" },
+        { "key": "system", "type": "identifier", "prompt": "System" },
+        { "key": "audience", "type": "enum", "options": ["all_personnel", "it_staff", "ot_staff", "management", "individual"], "prompt": "Audience" },
+        { "key": "used_for", "type": "enum_multi", "options": ["cyber_condition_change", "urgent_matters", "building_notice", "incident_notification"], "prompt": "Used for" }
+      ],
+      "authority_ids": ["cfr:101.645(a)"]
+    },
+    {
+      "id": "q-authority-contacts",
+      "section": 5,
+      "path": "communications.authority_contacts",
+      "type": "entity_list",
+      "prompt": "Authority contacts for continuous communications",
+      "help": "List the actual contacts. A statement that a list is kept elsewhere is not a contact.",
+      "fields": [
+        { "key": "organization", "type": "identifier", "prompt": "Organization" },
+        { "key": "contact", "type": "identifier", "prompt": "Contact method" }
+      ],
+      "authority_ids": ["cfr:101.645(b)"]
+    },
+    {
+      "id": "q-vessel-channels",
+      "section": 5,
+      "path": "communications.vessel_channels",
+      "type": "entity_list",
+      "prompt": "Communications channels with interfacing vessels",
+      "applies_to": { "in": ["asset.type", ["facility", "ocs_facility"]] },
+      "fields": [
+        { "key": "vessel_or_class", "type": "identifier", "prompt": "Vessel or vessel class" },
+        { "key": "channel", "type": "identifier", "prompt": "Channel" }
+      ],
+      "authority_ids": ["cfr:101.645(b)"]
+    },
+    {
+      "id": "q-out-of-band-channels",
+      "section": 5,
+      "path": "communications.out_of_band_channels",
+      "type": "entity_list",
+      "prompt": "Out-of-band channels that survive a compromise of email and VoIP",
+      "fields": [
+        { "key": "kind", "type": "enum", "options": ["satellite_phone", "radio", "cellular_sms", "courier", "other"], "prompt": "Kind" },
+        { "key": "description", "type": "short_text", "prompt": "Description" }
+      ],
+      "authority_ids": ["cfr:101.645(a)"]
+    },
+    {
+      "id": "q-devices",
+      "section": 6,
+      "path": "devices",
+      "type": "entity_list",
+      "prompt": "IT and OT inventory",
+      "help": "Supplied by SAM from an assessment. Editable here so the gap report can be exercised. observed_cves comes from scanner output for IT or vendor advisory mapping for OT; the KEV join is computed from it, never typed in.",
+      "fields": [
+        { "key": "nickname", "type": "identifier", "prompt": "Asset" },
+        { "key": "component_type", "type": "enum", "options": ["HMI", "PLC", "RTU", "Server", "Workstation", "Switch", "Firewall", "Other"], "prompt": "Component type" },
+        { "key": "system_function", "type": "enum", "options": ["Automation", "Safety", "Navigation", "Cargo", "Business", "Uncategorized"], "prompt": "System function" },
+        { "key": "is_ot", "type": "boolean", "prompt": "OT" },
+        { "key": "is_critical_system", "type": "boolean", "prompt": "Critical system" },
+        { "key": "public_facing", "type": "boolean", "prompt": "Reachable from the public internet" },
+        { "key": "internet_justification", "type": "short_text", "prompt": "Justification for internet exposure" },
+        { "key": "observed_cves", "type": "identifier_list", "format": "^CVE-\\d{4}-\\d{4,}$", "prompt": "Observed CVEs" },
+        { "key": "compensating_control", "type": "short_text", "prompt": "Compensating control" },
+        { "key": "remediation_plan", "type": "short_text", "prompt": "Remediation plan" },
+        { "key": "risk_acceptance", "type": "short_text", "prompt": "Risk acceptance reference" }
+      ],
+      "authority_ids": ["cfr:101.650(b)", "cfr:101.650(e)(3)(i)"]
+    },
+    {
+      "id": "q-backup-tested",
+      "section": 9,
+      "path": "backup.critical_systems_backup_tested",
+      "type": "tri_state",
+      "options": ["yes", "no", "not_applicable"],
+      "prompt": "Are backups of critical IT and OT systems tested frequently?",
+      "help": "Tri-state: not_applicable is a different finding from no. No rule reads this yet.",
+      "authority_ids": ["cfr:101.650(g)(4)"]
+    },
+    {
+      "id": "q-narrative-s1-intro",
+      "section": 1,
+      "path": "narrative.section_1.intro",
+      "type": "narrative",
+      "prompt": "Section 1 introductory narrative",
+      "help": "Free text. Feeds the clause library. Never read by a predicate.",
+      "authority_ids": ["cfr:101.630(c)(1)"]
+    }
+  ]
+}

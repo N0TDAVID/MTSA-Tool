@@ -1,0 +1,124 @@
+{
+  "_note": "Structured answer set derived from the ORIGINAL (deficient) Section 1 and Section 5 drafts of the MEG Westport fixture in content/csp-navigator.content.json. This is what the interview would have captured from that plan. The `devices` block is what SAM supplies from an assessment. Hand-encoded so the engine can be regression-tested against the seven checklist items whose ground truth is already known.",
+
+  "asset": {
+    "type": "facility",
+    "name": "MEG Westport",
+    "cognizant_cotp": "USCG Sector Puget Sound"
+  },
+
+  "plan": {
+    "approval_date": null
+  },
+
+  "cyso": {
+    "name": "Jordan Kim",
+    "title": "Cybersecurity Officer",
+    "designation_in_writing": true,
+    "appointed_date": "2026-01-15",
+    "reports_to": "COO David Park",
+    "accessible_24_7": false,
+    "after_hours_method": "operations center relays messages, response times vary",
+    "contact": {
+      "email": "jordan.kim@meg-maritime.com",
+      "office_phone": "555-0147 ext. 2841"
+    },
+    "alternate": {}
+  },
+
+  "org": {
+    "structure_defined": true,
+    "personnel": [
+      {
+        "name": "Sarah Chen",
+        "role": "IT Director",
+        "duties": "department budget, vendor relationships, strategic technology initiatives"
+      },
+      {
+        "name": "James Thompson",
+        "role": "IT Security Manager",
+        "duties": "SIEM monitoring, vulnerability scanning, access control administration"
+      },
+      {
+        "name": "Alex Rivera",
+        "role": "Network Administrator",
+        "duties": "network operations, firewall rule management, switch and router configuration"
+      },
+      {
+        "name": "Lisa Wong",
+        "role": "Help Desk Supervisor",
+        "duties": "endpoint provisioning, user access requests, desktop support"
+      }
+    ]
+  },
+
+  "communications": {
+    "channels": [
+      {
+        "kind": "email",
+        "system": "Microsoft 365 Exchange Online",
+        "audience": "it_staff",
+        "used_for": ["cyber_condition_change"]
+      },
+      {
+        "kind": "telephone",
+        "system": "facility PBX",
+        "audience": "individual",
+        "used_for": ["urgent_matters"]
+      },
+      {
+        "kind": "public_address",
+        "system": "PA, Buildings 1 and 3 and Operations Control Center",
+        "audience": "all_personnel",
+        "used_for": ["building_notice"]
+      }
+    ],
+    "authority_contacts": [],
+    "vessel_channels": [],
+    "out_of_band_channels": []
+  },
+
+  "devices": [
+    {
+      "nickname": "OCC-HMI-01",
+      "component_type": "HMI",
+      "system_function": "Automation",
+      "is_ot": true,
+      "is_critical_system": true,
+      "public_facing": false,
+      "open_kevs": ["CVE-2024-38112"],
+      "compensating_control": null
+    },
+    {
+      "nickname": "SCADA-HIST-01",
+      "component_type": "Server",
+      "system_function": "Automation",
+      "is_ot": true,
+      "is_critical_system": true,
+      "public_facing": true,
+      "internet_justification": null,
+      "open_kevs": [],
+      "compensating_control": null
+    },
+    {
+      "nickname": "CORP-FS-01",
+      "component_type": "Server",
+      "system_function": "Uncategorized",
+      "is_ot": false,
+      "is_critical_system": true,
+      "public_facing": false,
+      "open_kevs": [],
+      "compensating_control": null
+    },
+    {
+      "nickname": "WS-ACCT-14",
+      "component_type": "Workstation",
+      "system_function": "Uncategorized",
+      "is_ot": false,
+      "is_critical_system": false,
+      "public_facing": false,
+      "open_kevs": ["CVE-2023-21674"],
+      "compensating_control": null
+    }
+  ]
+}

@@ -1,0 +1,929 @@
+<!-- Team briefing. Published at:
+     https://claude.ai/code/artifact/9a5adff9-1ed6-4c57-af1b-37111dc63766
+
+     To update: edit THIS file, then republish passing that URL as `url`.
+     Publishing without it claims a new URL and forks the briefing into a
+     second artifact, leaving the link already circulated to the team stale. -->
+<title>MTSA CSP Pipeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+  :root {
+    color-scheme: light;
+    --ground:   #EDF1F2;
+    --surface:  #FFFFFF;
+    --sunk:     #E3E9EB;
+    --ink:      #10222B;
+    --ink-2:    #4A626D;
+    --rule:     #C7D6DB;
+    --accent:   #0E6E7D;
+    --accent-2: #2C5C8A;
+    --port:     #B3372B;
+    --starboard:#1C7A4D;
+    --amber:    #B0730A;
+    --band:     rgba(14,110,125,0.055);
+
+    --display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+    --body:    'Source Serif 4', Georgia, 'Times New Roman', serif;
+    --mono:    'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --ground:   #0B1519;
+      --surface:  #12222A;
+      --sunk:     #0E1D24;
+      --ink:      #E4EEF1;
+      --ink-2:    #93AAB3;
+      --rule:     #24404B;
+      --accent:   #4FC3D4;
+      --accent-2: #7FB3E0;
+      --port:     #E8705F;
+      --starboard:#57C88C;
+      --amber:    #E9A93C;
+      --band:     rgba(79,195,212,0.07);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --ground:   #0B1519;
+    --surface:  #12222A;
+    --sunk:     #0E1D24;
+    --ink:      #E4EEF1;
+    --ink-2:    #93AAB3;
+    --rule:     #24404B;
+    --accent:   #4FC3D4;
+    --accent-2: #7FB3E0;
+    --port:     #E8705F;
+    --starboard:#57C88C;
+    --amber:    #E9A93C;
+    --band:     rgba(79,195,212,0.07);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 28px 120px;
+  }
+  .prose { max-width: 720px; margin-inline: auto; }
+  .prose > * + * { margin-top: 1.1em; }
+
+  /* ---------- masthead ---------- */
+  header.masthead {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 88px 0 40px;
+  }
+  .kicker {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 20px;
+  }
+  h1 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(38px, 6vw, 58px);
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+    margin: 0;
+  }
+  .standfirst {
+    font-size: 20px;
+    line-height: 1.5;
+    color: var(--ink-2);
+    margin: 22px 0 0;
+    text-wrap: pretty;
+  }
+  .byline {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-2);
+    margin-top: 30px;
+    padding-top: 18px;
+    border-top: 1px solid var(--rule);
+  }
+
+  /* ---------- sections ---------- */
+  section { margin-top: 76px; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+  h2 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: clamp(25px, 3.2vw, 33px);
+    line-height: 1.16;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+    margin: 0 0 4px;
+  }
+  h3 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 18px;
+    letter-spacing: -0.005em;
+    margin: 0 0 6px;
+  }
+  p { margin: 0; }
+  strong { font-weight: 600; }
+  code, .cite {
+    font-family: var(--mono);
+    font-size: 0.87em;
+    color: var(--accent);
+  }
+
+  /* ---------- figures ---------- */
+  figure {
+    margin: 40px 0 0;
+    max-width: 1180px;
+  }
+  .scroller { overflow-x: auto; padding-bottom: 4px; }
+  figure svg {
+    display: block;
+    width: 100%;
+    min-width: 660px;
+    max-width: 100%;
+    height: auto;
+    color: var(--ink);
+  }
+  figcaption {
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--ink-2);
+    margin-top: 16px;
+    max-width: 720px;
+    margin-inline: auto;
+    text-align: center;
+    text-wrap: pretty;
+  }
+  .n-box { fill: var(--surface); stroke: var(--rule); stroke-width: 1.5; }
+  .n-name { font-family: var(--display); font-weight: 600; font-size: 14px; fill: var(--ink); }
+  .n-sub  { font-family: var(--body); font-size: 11.5px; fill: var(--ink-2); }
+  .n-tag  { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.11em; }
+  .a-lab  { font-family: var(--mono); font-size: 10px; fill: var(--ink-2); letter-spacing: 0.02em; }
+  .z-lab  { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.15em; fill: var(--ink-2); }
+  .edge   { stroke: var(--ink); stroke-width: 1.5; fill: none; opacity: 0.55; }
+
+  /* ---------- stats ---------- */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    margin-top: 34px;
+  }
+  .stat { background: var(--surface); padding: 20px 18px; }
+  .stat b {
+    display: block;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 30px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+  .stat span {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    margin-top: 9px;
+  }
+
+  /* ---------- callout ---------- */
+  .callout {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--amber);
+    padding: 22px 24px;
+    margin-top: 30px;
+  }
+  .callout.port { border-left-color: var(--port); }
+  .callout.accent { border-left-color: var(--accent); }
+  .callout p + p { margin-top: 0.8em; }
+
+  /* ---------- build order ---------- */
+  .phases { margin-top: 36px; display: flex; flex-direction: column; gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  .phase {
+    background: var(--surface);
+    display: grid;
+    grid-template-columns: 60px 1fr 116px;
+    gap: 20px;
+    align-items: start;
+    padding: 18px 22px;
+  }
+  .phase-n {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-2);
+    line-height: 1.2;
+  }
+  .phase h3 { margin-bottom: 3px; }
+  .phase p { font-size: 15px; line-height: 1.5; color: var(--ink-2); }
+  .lane {
+    justify-self: end;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 9px;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+  }
+  .lane.sam  { color: var(--accent); }
+  .lane.saas { color: var(--accent-2); }
+
+  /* ---------- risk list ---------- */
+  .risks { margin-top: 30px; display: flex; flex-direction: column; gap: 20px; }
+  .risk { display: grid; grid-template-columns: 12px 1fr; gap: 16px; align-items: start; }
+  .risk .dot { width: 9px; height: 9px; border-radius: 50%; margin-top: 9px; }
+  .risk p { font-size: 15.5px; line-height: 1.55; }
+  .risk p b { font-family: var(--display); font-size: 15px; }
+
+  table.modes {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 30px;
+    font-size: 14.5px;
+  }
+  table.modes th, table.modes td {
+    text-align: left;
+    padding: 13px 14px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  table.modes th {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    font-weight: 400;
+  }
+  table.modes td:first-child { font-family: var(--display); font-weight: 600; white-space: nowrap; }
+  table.modes tr:last-child td { border-bottom: none; }
+
+  /* ---------- code ---------- */
+  .code {
+    background: var(--sunk);
+    border: 1px solid var(--rule);
+    padding: 18px 20px;
+    margin-top: 26px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.65;
+    white-space: pre;
+    color: var(--ink);
+  }
+  .code .k { color: var(--accent); }
+  .code .c { color: var(--ink-2); }
+  .code .f { color: var(--port); }
+  .code-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    margin: 26px 0 -18px;
+  }
+
+  /* ---------- proof band ---------- */
+  .proof {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-top: 3px solid var(--starboard);
+    margin-top: 34px;
+  }
+  .proof div { background: var(--surface); padding: 20px 18px; }
+  .proof b {
+    display: block;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 27px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    color: var(--starboard);
+  }
+  .proof span {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    margin-top: 9px;
+  }
+
+  /* ---------- guards ---------- */
+  table.guards {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 30px;
+    font-size: 14.5px;
+  }
+  table.guards th, table.guards td {
+    text-align: left;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  table.guards th {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    font-weight: 400;
+  }
+  table.guards td:first-child { font-family: var(--mono); font-size: 12.5px; }
+  table.guards td:last-child { color: var(--ink-2); white-space: nowrap; }
+  table.guards tr:last-child td { border-bottom: none; }
+
+  footer {
+    margin-top: 90px;
+    padding-top: 26px;
+    border-top: 1px solid var(--rule);
+    max-width: 720px;
+    margin-inline: auto;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--ink-2);
+  }
+
+  @media (max-width: 620px) {
+    body { font-size: 16px; }
+    .page { padding: 0 18px 80px; }
+    header.masthead { padding-top: 56px; }
+    .phase { grid-template-columns: 44px 1fr; }
+    .lane { grid-column: 2; justify-self: start; margin-top: 8px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <p class="kicker">Product plan &middot; Internal briefing</p>
+    <h1>Turning a regulation into software</h1>
+    <p class="standfirst">An interview-driven tool that walks a customer through a 33 CFR Part 101 Subpart F Cybersecurity Plan, holds the finished plan, and tells them when the law moves out from under it.</p>
+    <p class="byline">SARA and SAM already cover the collection half. The engine that would cover the rest is prototyped and passing against fixtures whose answers we knew in advance.</p>
+  </header>
+
+  <div class="prose">
+    <section style="margin-top:20px">
+      <p class="eyebrow">The idea</p>
+      <h2>Three products that are secretly one</h2>
+      <p style="margin-top:18px">The pitch was a TurboTax-style builder for Cybersecurity Plans, plus a service that keeps a copy and alerts the client when a regulation change breaks their compliance. The response added a second audience: the same tool, pointed at auditors.</p>
+      <p>Those read as three separate builds, but in practice they are one evaluation engine invoked with different things pinned, which means most of the cost lands once rather than three times.</p>
+    </section>
+  </div>
+
+  <figure>
+    <div class="scroller">
+      <svg viewBox="0 0 1140 400" role="img" aria-label="Pipeline: SARA collects on the asset, SAM aggregates on an offline laptop, an assessment package crosses the SSI boundary into the hosted CSP tool, which produces the plan document, freezes a plan version, and emits alerts that feed back as amendments.">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" opacity="0.55"/>
+          </marker>
+          <marker id="ah-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)"/>
+          </marker>
+        </defs>
+
+        <rect x="10" y="60" width="345" height="200" fill="var(--band)"/>
+        <rect x="405" y="60" width="725" height="200" fill="var(--band)"/>
+        <text class="z-lab" x="14" y="48">OFFLINE &middot; IN THE FIELD</text>
+        <text class="z-lab" x="409" y="48">HOSTED &middot; MULTI-TENANT</text>
+
+        <line x1="380" y1="30" x2="380" y2="330" stroke="var(--port)" stroke-width="1.5" stroke-dasharray="5 5" opacity="0.8"/>
+        <text class="n-tag" x="380" y="352" text-anchor="middle" fill="var(--port)">SSI BOUNDARY</text>
+
+        <g>
+          <rect class="n-box" x="20" y="120" width="130" height="88" rx="2"/>
+          <text class="n-name" x="85" y="152" text-anchor="middle">SARA</text>
+          <text class="n-sub"  x="85" y="172" text-anchor="middle">scrapes the host</text>
+          <text class="n-sub"  x="85" y="188" text-anchor="middle">already built</text>
+        </g>
+        <g>
+          <rect class="n-box" x="205" y="120" width="130" height="88" rx="2"/>
+          <text class="n-name" x="270" y="152" text-anchor="middle">SAM</text>
+          <text class="n-sub"  x="270" y="172" text-anchor="middle">assets + Nessus</text>
+          <text class="n-sub"  x="270" y="188" text-anchor="middle">already built</text>
+        </g>
+        <g>
+          <rect class="n-box" x="425" y="120" width="130" height="88" rx="2"/>
+          <text class="n-name" x="490" y="152" text-anchor="middle">Interview</text>
+          <text class="n-sub"  x="490" y="172" text-anchor="middle">the TurboTax</text>
+          <text class="n-sub"  x="490" y="188" text-anchor="middle">part</text>
+        </g>
+        <g>
+          <rect class="n-box" x="610" y="120" width="130" height="88" rx="2"/>
+          <text class="n-name" x="675" y="148" text-anchor="middle">The Plan</text>
+          <text class="n-sub"  x="675" y="168" text-anchor="middle">14 sections</text>
+          <text class="n-sub"  x="675" y="184" text-anchor="middle">22 appendices</text>
+        </g>
+        <g>
+          <rect class="n-box" x="795" y="120" width="130" height="88" rx="2" stroke="var(--accent)"/>
+          <text class="n-name" x="860" y="148" text-anchor="middle">plan_version</text>
+          <text class="n-sub"  x="860" y="168" text-anchor="middle">answers frozen</text>
+          <text class="n-sub"  x="860" y="184" text-anchor="middle">ruleset pinned</text>
+        </g>
+        <g>
+          <rect class="n-box" x="980" y="120" width="130" height="88" rx="2"/>
+          <text class="n-name" x="1045" y="152" text-anchor="middle">Alerts</text>
+          <text class="n-sub"  x="1045" y="172" text-anchor="middle">the law moved</text>
+          <text class="n-sub"  x="1045" y="188" text-anchor="middle">recurring revenue</text>
+        </g>
+
+        <line class="edge" x1="150" y1="164" x2="199" y2="164" marker-end="url(#ah)"/>
+        <text class="a-lab" x="175" y="154" text-anchor="middle">host data</text>
+
+        <line class="edge" x1="335" y1="164" x2="419" y2="164" marker-end="url(#ah)"/>
+        <rect x="348" y="136" width="62" height="16" fill="var(--ground)"/>
+        <text class="a-lab" x="379" y="148" text-anchor="middle">package</text>
+
+        <line class="edge" x1="555" y1="164" x2="604" y2="164" marker-end="url(#ah)"/>
+        <text class="a-lab" x="580" y="154" text-anchor="middle">answers</text>
+
+        <line class="edge" x1="740" y1="164" x2="789" y2="164" marker-end="url(#ah)"/>
+        <text class="a-lab" x="765" y="154" text-anchor="middle">export</text>
+
+        <line class="edge" x1="925" y1="164" x2="974" y2="164" marker-end="url(#ah)"/>
+        <text class="a-lab" x="950" y="154" text-anchor="middle">re-run</text>
+
+        <path d="M 1045 208 L 1045 300 L 490 300 L 490 214" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#ah-a)"/>
+        <text class="a-lab" x="767" y="292" text-anchor="middle" fill="var(--accent)">amend &mdash; 30 days, or 96 hours for a CySO change</text>
+      </svg>
+    </div>
+    <figcaption>SARA and SAM already exist, and between them they hold most of what the plan's register appendices need. Everything right of the dashed line is new, and the boundary that line marks is the reason the alerting half cannot live inside a desktop application.</figcaption>
+  </figure>
+
+  <div class="prose">
+    <section>
+      <p class="eyebrow">Where we already are</p>
+      <h2>The regulatory spine is built and tested</h2>
+      <p style="margin-top:18px">Before any of this, the content model had to be right, because every source we were handed miscited the regulation. The spine is now checked against the PDF, and a validator gates it.</p>
+    </section>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><b>14</b><span>Plan sections</span></div>
+    <div class="stat"><b>22</b><span>Appendices, A&ndash;V</span></div>
+    <div class="stat"><b>60</b><span>Authorities cited</span></div>
+    <div class="stat"><b>172</b><span>Requirement bullets</span></div>
+    <div class="stat"><b>7</b><span>Regression fixtures</span></div>
+  </div>
+
+  <div class="prose">
+    <p style="margin-top:22px">Of those 60 authorities, 48 are binding CFR text and 12 are guidance: policy letters, NVICs, work instructions, Coast Guard guides. Keeping those two apart is what stops a policy letter from blocking a customer's export.</p>
+  </div>
+
+  <div class="prose">
+    <section>
+      <p class="eyebrow">Existing tools</p>
+      <h2>Add a dropdown, not a fork</h2>
+      <p style="margin-top:18px">SARA and SAM are configured for RMF today. Rather than making either one MTSA-specific, they get a selectable compliance profile. SAM already has this exact mechanism for report profiles, so we are widening something that works rather than inventing one.</p>
+      <p>Everything upstream of the profile is untouched. A scraped host, a Nessus result, and a device record are the same facts whether you are answering to NIST or to the Coast Guard. Only the obligations they get measured against change.</p>
+    </section>
+  </div>
+
+  <figure>
+    <div class="scroller">
+      <svg viewBox="0 0 1040 340" role="img" aria-label="SARA and SAM feed a compliance profile selector, which routes the same collected data to either RMF deliverables or MTSA Cybersecurity Plan deliverables.">
+        <defs>
+          <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" opacity="0.55"/>
+          </marker>
+        </defs>
+
+        <path d="M 20 96 L 20 84 L 330 84 L 330 96" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.35"/>
+        <text class="z-lab" x="175" y="70" text-anchor="middle">UNCHANGED &middot; SAME DATA MODEL</text>
+
+        <rect class="n-box" x="20" y="130" width="140" height="80" rx="2"/>
+        <text class="n-name" x="90" y="163" text-anchor="middle">SARA</text>
+        <text class="n-sub"  x="90" y="182" text-anchor="middle">host collection</text>
+
+        <rect class="n-box" x="190" y="130" width="140" height="80" rx="2"/>
+        <text class="n-name" x="260" y="163" text-anchor="middle">SAM</text>
+        <text class="n-sub"  x="260" y="182" text-anchor="middle">assets, scans, photos</text>
+
+        <line class="edge" x1="160" y1="170" x2="184" y2="170" marker-end="url(#ah2)"/>
+
+        <rect x="400" y="122" width="170" height="96" rx="2" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"/>
+        <text class="n-tag" x="485" y="148" text-anchor="middle" fill="var(--accent)">DROPDOWN</text>
+        <text class="n-name" x="485" y="172" text-anchor="middle">Compliance</text>
+        <text class="n-name" x="485" y="190" text-anchor="middle">profile</text>
+
+        <line class="edge" x1="330" y1="170" x2="394" y2="170" marker-end="url(#ah2)"/>
+
+        <path class="edge" d="M 570 158 L 610 158 L 610 86 L 654 86" marker-end="url(#ah2)"/>
+        <path class="edge" d="M 570 182 L 610 182 L 610 254 L 654 254" marker-end="url(#ah2)"/>
+
+        <rect class="n-box" x="660" y="46" width="360" height="80" rx="2"/>
+        <text class="n-tag" x="678" y="72" fill="var(--ink-2)">RMF &middot; TODAY</text>
+        <text class="n-sub" x="678" y="94">CFDD, HW/SW list, scanning package, STIG</text>
+        <text class="n-sub" x="678" y="112">Marked CUI</text>
+
+        <rect class="n-box" x="660" y="214" width="360" height="80" rx="2" stroke="var(--accent)"/>
+        <text class="n-tag" x="678" y="240" fill="var(--accent)">MTSA &middot; NEW</text>
+        <text class="n-sub" x="678" y="262">14-section Cybersecurity Plan, 22 appendices</text>
+        <text class="n-sub" x="678" y="280">Marked SSI, 49 CFR 1520</text>
+      </svg>
+    </div>
+    <figcaption>The selector is the only thing that differs between the two worlds, and the hard requirement is that choosing RMF produces byte-identical output to today, so existing Military Sealift Command deliverables do not move.</figcaption>
+  </figure>
+
+  <div class="prose">
+    <section>
+      <p class="eyebrow">The engine</p>
+      <h2>One validator, invoked three ways</h2>
+      <p style="margin-top:18px">A rule is a predicate over the customer's answers, tied to a citation and carrying a severity, where a binding failure blocks an export and a best-practice failure only warns. The three products differ only in which ruleset and which set of answers you hand the engine.</p>
+    </section>
+  </div>
+
+  <figure>
+    <div class="scroller">
+      <svg viewBox="0 0 1040 420" role="img" aria-label="Three input pairs converge on a single rule engine and diverge into three outputs: authoring blocks export, audit produces a certification report, surveillance produces an alert.">
+        <defs>
+          <marker id="ah3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" opacity="0.55"/>
+          </marker>
+        </defs>
+
+        <g>
+          <rect class="n-box" x="14" y="42" width="212" height="82" rx="2"/>
+          <text class="n-tag" x="30" y="66" fill="var(--accent)">AUTHORING</text>
+          <text class="n-sub" x="30" y="88">ruleset: current</text>
+          <text class="n-sub" x="30" y="106">answers: live, still changing</text>
+        </g>
+        <g>
+          <rect class="n-box" x="14" y="169" width="212" height="82" rx="2"/>
+          <text class="n-tag" x="30" y="193" fill="var(--accent)">AUDIT</text>
+          <text class="n-sub" x="30" y="215">ruleset: pinned</text>
+          <text class="n-sub" x="30" y="233">answers: frozen</text>
+        </g>
+        <g>
+          <rect class="n-box" x="14" y="296" width="212" height="82" rx="2"/>
+          <text class="n-tag" x="30" y="320" fill="var(--accent)">SURVEILLANCE</text>
+          <text class="n-sub" x="30" y="342">ruleset: newly published</text>
+          <text class="n-sub" x="30" y="360">answers: frozen, unchanged</text>
+        </g>
+
+        <path class="edge" d="M 226 83 L 320 83 L 320 190 L 414 190" marker-end="url(#ah3)"/>
+        <path class="edge" d="M 226 210 L 414 210" marker-end="url(#ah3)"/>
+        <path class="edge" d="M 226 337 L 320 337 L 320 230 L 414 230" marker-end="url(#ah3)"/>
+
+        <rect x="420" y="140" width="180" height="140" rx="2" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"/>
+        <text class="n-name" x="510" y="196" text-anchor="middle" font-size="16">Rule engine</text>
+        <text class="n-sub" x="510" y="218" text-anchor="middle">predicates over</text>
+        <text class="n-sub" x="510" y="235" text-anchor="middle">the answer set</text>
+
+        <path class="edge" d="M 600 190 L 694 190 L 694 83 L 788 83" marker-end="url(#ah3)"/>
+        <path class="edge" d="M 600 210 L 788 210" marker-end="url(#ah3)"/>
+        <path class="edge" d="M 600 230 L 694 230 L 694 337 L 788 337" marker-end="url(#ah3)"/>
+
+        <g>
+          <rect class="n-box" x="794" y="42" width="232" height="82" rx="2" stroke="var(--port)"/>
+          <text class="n-sub" x="810" y="70">Blocks export on a</text>
+          <text class="n-sub" x="810" y="88">binding failure.</text>
+          <text class="n-sub" x="810" y="108" fill="var(--port)">Warns on best practice.</text>
+        </g>
+        <g>
+          <rect class="n-box" x="794" y="169" width="232" height="82" rx="2"/>
+          <text class="n-sub" x="810" y="197">The annual certification</text>
+          <text class="n-sub" x="810" y="215">report the regulation</text>
+          <text class="n-sub" x="810" y="233">already requires.</text>
+        </g>
+        <g>
+          <rect class="n-box" x="794" y="296" width="232" height="82" rx="2" stroke="var(--amber)"/>
+          <text class="n-sub" x="810" y="324">Alert, but only where</text>
+          <text class="n-sub" x="810" y="342">a verdict actually</text>
+          <text class="n-sub" x="810" y="360" fill="var(--amber)">flipped.</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption>The customer builder, the auditor tool, and the change-monitoring service run the same code path, so building the first one carefully gets us most of the way into the other two.</figcaption>
+  </figure>
+
+  <div class="prose">
+    <table class="modes">
+      <thead>
+        <tr><th>Mode</th><th>Who runs it</th><th>What it answers</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Authoring</td><td>The customer</td><td>What do I still have to do before I can file this?</td></tr>
+        <tr><td>Audit</td><td>The annual auditor</td><td>Did this plan meet the requirements, and can I prove it later?</td></tr>
+        <tr><td>Surveillance</td><td>Us, for them</td><td>Did a rule change just break a plan that was fine yesterday?</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="prose">
+    <section>
+      <p class="eyebrow">Feasibility, answered</p>
+      <h2>Four hundred lines and no model</h2>
+      <p style="margin-top:18px">The obvious objection to a compliance engine in 2026 is that it wants to be a language model, and a language model is precisely what Sensitive Security Information forbids. The objection is correct, and it turned out to be moot.</p>
+      <p>The engine is built and running against the real content. It imports <code>json</code>, <code>re</code>, and <code>datetime</code>. Nothing else: no network call, no third-party dependency, no inference of any kind. It runs air-gapped, which is what the SSI boundary demands rather than merely tolerates.</p>
+    </section>
+  </div>
+
+  <div class="proof">
+    <div><b>7 / 7</b><span>Fixtures reproduced</span></div>
+    <div><b>0</b><span>Dependencies</span></div>
+    <div><b>0.18<small style="font-size:15px"> ms</small></b><span>Per plan evaluated</span></div>
+    <div><b>1.8<small style="font-size:15px"> s</small></b><span>To re-check 10,000 plans</span></div>
+  </div>
+
+  <div class="prose">
+    <p style="margin-top:22px">Those seven are the regression fixtures from Sections 1 and 5, whose correct answers were written down before the engine existed. Handed the deficient plan as structured answers, the engine arrives at all seven verdicts on its own.</p>
+
+    <p class="code-label">A rule is JSON</p>
+    <div class="code"><span class="c">// The CySO must be reachable by the Coast Guard at any hour.</span>
+{
+  <span class="k">"id"</span>: "cyso-24-7",
+  <span class="k">"authority_ids"</span>: ["cfr:101.620(b)(3)"],
+  <span class="k">"severity"</span>: "binding",
+  <span class="k">"predicate"</span>: {
+    <span class="k">"all"</span>: [
+      { <span class="k">"eq"</span>: ["cyso.accessible_24_7", true] },
+      { <span class="k">"any"</span>: [
+        { <span class="k">"answered"</span>: "cyso.contact.mobile_phone" },
+        { <span class="k">"answered"</span>: "cyso.contact.oncall_protocol" }
+      ]}
+    ]
+  }
+}</div>
+
+    <p style="margin-top:26px">The language stops there: boolean combinators, presence, six comparisons, pattern and membership tests, counts, quantifiers over collections, and a single date operator. A closed set that fits on one page is a set an auditor can actually read through.</p>
+
+    <p>The quantifiers are what let a rule reach into SAM. The KEV check reads, in full: for every device where <code>is_critical_system</code> is true and the open-KEV list is not empty, require a documented compensating control.</p>
+
+    <p class="code-label">Every verdict shows its work</p>
+    <div class="code">EVIDENCE  why cyso-24-7 failed
+  cyso.accessible_24_7           False        <span class="f">NOT SATISFIED</span>
+  cyso.contact.mobile_phone      (absent)     <span class="f">NOT SATISFIED</span>
+  cyso.contact.oncall_protocol   (absent)     <span class="f">NOT SATISFIED</span></div>
+
+    <p style="margin-top:26px">A model could not produce that trail reliably even if the classification allowed one. The combinators deliberately keep going past the first failure, because an auditor asking what was checked is owed the whole list rather than the first thing that went wrong, and the evaluation date is passed in rather than read from the clock, so re-running a pinned plan version reproduces its report exactly. That is not for the Coast Guard, who only ever inspect the plan currently in force. It is what makes a surveillance diff mean anything: without it, a second run differs for reasons nobody can separate.</p>
+    <p>Determinism is worth having on engineering grounds well before the classification enters into it, and that it also satisfies the lawyers is convenient rather than the reason for it.</p>
+  </div>
+
+  <div class="prose">
+    <section>
+      <p class="eyebrow">Quality gate</p>
+      <h2>Bad rules cannot ship</h2>
+      <p style="margin-top:18px">A compliance tool that silently passes an unparseable rule is worse than no tool at all, so six kinds of broken rule were deliberately introduced to find out what would happen. All six were rejected before they reached the engine.</p>
+    </section>
+  </div>
+
+  <div class="prose">
+    <table class="guards">
+      <thead><tr><th>What was tried</th><th>Caught by</th></tr></thead>
+      <tbody>
+        <tr><td>Binding rule citing only a policy letter</td><td>Bindingness cap</td></tr>
+        <tr><td><code>equals</code> typo buried in a filter</td><td>Static linter</td></tr>
+        <tr><td>Malformed regular expression</td><td>Static linter</td></tr>
+        <tr><td>Two rules sharing an id</td><td>Ruleset check</td></tr>
+        <tr><td>Citation absent from the registry</td><td>Dangling-authority check</td></tr>
+        <tr><td>Invented severity level</td><td>Shape check</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:24px">The second row is the awkward one, because a filter over an empty list never runs its own body and no amount of testing would have caught that typo. Finding it needed a separate pass that reads rules without executing them, and every rule is now linted that way before it can be used.</p>
+    <div class="callout accent">
+      <p><strong>Two real bugs surfaced by building it rather than describing it.</strong></p>
+      <p style="margin-top:12px">A rule escalating from best practice to binding produced <em>zero</em> reported changes, while quietly turning an exportable plan into a blocked one. The diff compared pass and fail but not severity, which would have left the most consequential alert we send as the one least likely to fire.</p>
+      <p style="margin-top:12px">Separately, failing rules only showed the first unmet condition rather than all of them, which would have made audit reports thinner than an auditor needs. Both fixed.</p>
+    </div>
+  </div>
+
+  <div class="prose">
+    <section>
+      <p class="eyebrow">The mechanism</p>
+      <h2>Why we can tell the law moved</h2>
+      <p style="margin-top:18px">Alerting sounds simple until you ask how you know what changed. If both the plan and the rules drift, a failed check tells you nothing about whose fault it is.</p>
+      <p>Freezing the answers is what makes the question answerable. We already decided to freeze them for amendment diffs and the five-year renewal. The alerting product falls out of that decision for free.</p>
+    </section>
+  </div>
+
+  <figure>
+    <div class="scroller">
+      <svg viewBox="0 0 1000 330" role="img" aria-label="One frozen answer set is evaluated twice, against the old ruleset and the new ruleset. Comparing the two verdict sets isolates the change to the rule, producing a single alert.">
+        <defs>
+          <marker id="ah4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" opacity="0.55"/>
+          </marker>
+        </defs>
+
+        <rect x="20" y="118" width="182" height="94" rx="2" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"/>
+        <text class="n-tag" x="36" y="144" fill="var(--accent)">FROZEN</text>
+        <text class="n-name" x="36" y="168">The customer's</text>
+        <text class="n-name" x="36" y="186">answers</text>
+        <text class="n-sub"  x="36" y="203">never move</text>
+
+        <path class="edge" d="M 202 148 L 250 148 L 250 84 L 296 84" marker-end="url(#ah4)"/>
+        <path class="edge" d="M 202 182 L 250 182 L 250 246 L 296 246" marker-end="url(#ah4)"/>
+
+        <rect class="n-box" x="302" y="44" width="200" height="80" rx="2"/>
+        <text class="n-tag" x="318" y="70" fill="var(--ink-2)">RUN 1</text>
+        <text class="n-sub" x="318" y="92">Ruleset v3</text>
+        <text class="n-sub" x="318" y="110" fill="var(--starboard)">42 pass &middot; 0 fail</text>
+
+        <rect class="n-box" x="302" y="206" width="200" height="80" rx="2"/>
+        <text class="n-tag" x="318" y="232" fill="var(--ink-2)">RUN 2</text>
+        <text class="n-sub" x="318" y="254">Ruleset v4, new CFR text</text>
+        <text class="n-sub" x="318" y="272" fill="var(--port)">42 pass &middot; 1 fail</text>
+
+        <path class="edge" d="M 502 84 L 556 84 L 556 148 L 602 148" marker-end="url(#ah4)"/>
+        <path class="edge" d="M 502 246 L 556 246 L 556 182 L 602 182" marker-end="url(#ah4)"/>
+
+        <rect class="n-box" x="608" y="118" width="160" height="94" rx="2"/>
+        <text class="n-name" x="688" y="158" text-anchor="middle">Diff</text>
+        <text class="n-sub"  x="688" y="180" text-anchor="middle">one verdict</text>
+        <text class="n-sub"  x="688" y="196" text-anchor="middle">flipped</text>
+
+        <line class="edge" x1="768" y1="165" x2="814" y2="165" marker-end="url(#ah4)"/>
+
+        <rect x="820" y="128" width="162" height="74" rx="2" fill="var(--surface)" stroke="var(--amber)" stroke-width="2"/>
+        <text class="n-name" x="901" y="160" text-anchor="middle" fill="var(--amber)">One alert</text>
+        <text class="n-sub"  x="901" y="180" text-anchor="middle">to one client</text>
+      </svg>
+    </div>
+    <figcaption>Because the answer set on the left cannot move, anything that changes on the right is attributable to the regulation rather than to the customer, and that constraint is what keeps the alerting service defensible instead of noisy.</figcaption>
+  </figure>
+
+  <div class="prose">
+    <section>
+      <p class="eyebrow">The part nobody expects</p>
+      <h2>Two required sections are just the validator's output</h2>
+      <p style="margin-top:18px">Read literally, two of the fourteen required sections are a record of what your compliance checks turned up: Section 11 holds the findings you resolved, and Section 12 holds the ones you decided not to.</p>
+      <p>Which means "dismiss this warning" cannot simply be a button, because a declined finding is a risk acceptance record and needs an owner, a justification, a compensating control, and a date to revisit. Handled that way, the most irritating part of a compliance tool ends up writing the section customers dread most.</p>
+    </section>
+  </div>
+
+  <figure>
+    <div class="scroller">
+      <svg viewBox="0 0 940 260" role="img" aria-label="A validator finding branches two ways: fixed findings become Section 11 and Appendix R, declined findings become Section 12 risk acceptance records in Appendices O and N.">
+        <defs>
+          <marker id="ah5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" opacity="0.55"/>
+          </marker>
+        </defs>
+
+        <rect class="n-box" x="20" y="94" width="176" height="76" rx="2"/>
+        <text class="n-name" x="108" y="126" text-anchor="middle">A finding</text>
+        <text class="n-sub"  x="108" y="146" text-anchor="middle">from the validator</text>
+
+        <path class="edge" d="M 196 118 L 250 118 L 250 54 L 324 54" marker-end="url(#ah5)"/>
+        <path class="edge" d="M 196 146 L 250 146 L 250 210 L 324 210" marker-end="url(#ah5)"/>
+        <text class="a-lab" x="258" y="44" fill="var(--starboard)">customer fixes it</text>
+        <text class="a-lab" x="258" y="234" fill="var(--port)">customer declines</text>
+
+        <rect class="n-box" x="330" y="18" width="590" height="72" rx="2" stroke="var(--starboard)"/>
+        <text class="n-name" x="350" y="46">Section 11 &mdash; audit and inspection reports</text>
+        <text class="n-sub"  x="350" y="68">Appendix R. Documented resolution, which the regulation requires by name.</text>
+
+        <rect class="n-box" x="330" y="174" width="590" height="72" rx="2" stroke="var(--port)"/>
+        <text class="n-name" x="350" y="202">Section 12 &mdash; unresolved vulnerabilities</text>
+        <text class="n-sub"  x="350" y="224">Appendices O and N. Risk acceptance, with an owner and a review date.</text>
+      </svg>
+    </div>
+    <figcaption>Wired into Sections 11 and 12, the compliance checking stops being a feature bolted onto the document and starts producing two of its fourteen required sections.</figcaption>
+  </figure>
+
+  <div class="prose">
+    <section>
+      <p class="eyebrow">The wedge</p>
+      <h2>The one thing no existing tool does</h2>
+      <div class="callout accent">
+        <p><strong>Nessus severity is not the KEV catalog.</strong> A medium-severity finding can be a Known Exploited Vulnerability, while a critical-severity finding often is not one at all.</p>
+        <p style="margin-top:12px">The regulation requires KEVs in critical systems to be patched or compensated <em>without delay</em> &mdash; no day count, no grace period. Satisfying that means joining scan results against the live CISA KEV catalog and scoping to the devices actually flagged critical. Nothing in the RMF pipeline does this today.</p>
+        <p style="margin-top:12px">It also gives the alerting service a second trigger that has nothing to do with regulations: a newly published KEV matching an old scan result can break a customer's compliance overnight, with no law changing at all.</p>
+      </div>
+    </section>
+  </div>
+
+  <div class="prose">
+    <section>
+      <p class="eyebrow">Sequencing</p>
+      <h2>Build order</h2>
+      <p style="margin-top:18px">Steps 0 through 3 are work inside SAM, and they are gated on the RMF package work finishing first, which bounds when any of this starts. Steps 4 through 8 are the hosted service and the agent, and can run in parallel once the export format is settled.</p>
+    </section>
+  </div>
+
+  <div class="phases">
+    <div class="phase">
+      <div class="phase-n">00</div>
+      <div><h3>Golden-output harness</h3><p>Regenerate the two existing vessel assessments and capture them as fixtures. Nothing else starts until we can prove we have not broken anything.</p></div>
+      <div class="lane sam">SAM</div>
+    </div>
+    <div class="phase">
+      <div class="phase-n">01</div>
+      <div><h3>Profile mechanism</h3><p>The dropdown, with the RMF profile as an exact no-op. The harness stays green through this and every later step.</p></div>
+      <div class="lane sam">SAM</div>
+    </div>
+    <div class="phase">
+      <div class="phase-n">02</div>
+      <div><h3>Asset type discriminator</h3><p>Vessel, facility, and offshore facility as first-class, defaulting to vessel so existing work keeps its meaning.</p></div>
+      <div class="lane sam">SAM</div>
+    </div>
+    <div class="phase">
+      <div class="phase-n">03</div>
+      <div><h3>The MTSA profile</h3><p>Field sets, taxonomy, SSI marking, and the register export that feeds the appendices.</p></div>
+      <div class="lane sam">SAM</div>
+    </div>
+    <div class="phase">
+      <div class="phase-n">04</div>
+      <div><h3>Criticality and the crosswalk</h3><p>The two-stage narrowing, extending SAM's existing CFDD questionnaire with the TSI questions RMF has no equivalent of, and the mitigation crosswalk it feeds. This is where clients actually get stuck, so it moves ahead of rule authoring.</p></div>
+      <div class="lane saas">SaaS</div>
+    </div>
+    <div class="phase">
+      <div class="phase-n">05</div>
+      <div><h3>KEV feed and join</h3><p>The catalog integration and the join against scan results, scoped to critical systems, feeding the crosswalk.</p></div>
+      <div class="lane saas">SaaS</div>
+    </div>
+    <div class="phase">
+      <div class="phase-n">06</div>
+      <div><h3>Rule authoring at depth</h3><p>The mechanism is built and holds up at 13 rules over 11 of the 172 bullets, so what remains here is authoring volume, and volume is not the bottleneck. Sections 5 through 14: the first four are standard blurb authored outside the tool.</p></div>
+      <div class="lane saas">SaaS</div>
+    </div>
+    <div class="phase">
+      <div class="phase-n">07</div>
+      <div><h3>Freeze, then audit mode</h3><p>The immutable plan version, then section-scoped audit runs, the citation-keyed finding templates, the certification report, and the auditor independence guard.</p></div>
+      <div class="lane saas">SaaS</div>
+    </div>
+    <div class="phase">
+      <div class="phase-n">08</div>
+      <div><h3>Surveillance and alerting</h3><p>The recurring-revenue half, and the thing that was originally pitched.</p></div>
+      <div class="lane saas">SaaS</div>
+    </div>
+  </div>
+
+  <div class="prose">
+    <section>
+      <p class="eyebrow">Say these out loud</p>
+      <h2>Five things that will bite us</h2>
+      <div class="risks">
+        <div class="risk">
+          <div class="dot" style="background:var(--amber)"></div>
+          <p><b>The model question comes back at ingest.</b> Nothing in the engine needs one, but reading a Cybersecurity Plan somebody else already wrote is genuine text understanding, and that is where a convenient API will start looking reasonable to somebody. Settle now that it has to be structured extraction with mandatory human confirmation, self-hosted, and never generation, because the decision gets considerably harder once there is a working prototype to point at.</p>
+        </div>
+        <div class="risk">
+          <div class="dot" style="background:var(--port)"></div>
+          <p><b>We validate the document, not the facility.</b> We can check that a plan says the right things, but not whether multifactor authentication is actually switched on anywhere. Since the annual audit covers the plan <em>and its implementation</em>, that boundary has to be printed on the report itself, or the certification quietly becomes a liability. The answer is commercial rather than technical: bundle the first audit into the plan engagement, so we build it, then go verify the facility matches it. The disclosure stays on the report either way.</p>
+        </div>
+        <div class="risk">
+          <div class="dot" style="background:var(--amber)"></div>
+          <p><b>Ruleset updates are staffed work.</b> Somebody has to read the Federal Register and write the rules, so the responsiveness of the alerting product is bounded by that staffing rather than by the software, and we should be careful not to sell it as automatic.</p>
+        </div>
+        <div class="risk">
+          <div class="dot" style="background:var(--amber)"></div>
+          <p><b>Guidance and compliance move separately.</b> A new policy letter shifts best practice, while only codified text shifts compliance. We already carry that distinction in the data, and it has to survive into the alerts, or we burn the channel crying wolf.</p>
+        </div>
+        <div class="risk">
+          <div class="dot" style="background:var(--port)"></div>
+          <p><b>Holding the plans means holding SSI, so by default we will not hold them.</b> Surveillance appeared to require keeping completed plans, which are Sensitive Security Information, and custody at scale is a liability nobody wanted. It turns out not to require it. The engine is already a pure stdlib library with no ambient state, so the same code runs on a customer workstation; the client keeps the answer set, their agent re-evaluates when a new ruleset arrives, and what comes back is the diff shape alone, rule ids and severities, which are not SSI. Full custody survives as an opt-in tier for clients already piping data to the SOC. The cost is that alerts naming a specific asset are a custody-tier feature, so alert copy must not quietly assume data we do not have.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <p>33 CFR Part 101 Subpart F, current as of 25 August 2026. Citations verified against the regulation PDF rather than secondary sources, every one of which got something wrong.</p>
+  </footer>
+
+</div>

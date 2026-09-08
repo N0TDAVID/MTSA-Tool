@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+workspace/
+# Source material that is not project output: third-party tools, scan data, course
+# PDFs, and an internal call transcript. Kept locally, never pushed.
+reference/Example files/
+reference/Existing tools/
+reference/MTSA Tool Brainstorm.vtt
+reference/lesson_*.PDF
+.claude/

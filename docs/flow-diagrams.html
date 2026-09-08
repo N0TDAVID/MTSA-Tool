@@ -1,0 +1,297 @@
+<!-- Two diagrams, rendered from flow-architecture.mmd and flow-lifecycle.mmd.
+     Those .mmd files are the source of truth: edit them, then regenerate this
+     file. They also paste directly onto a Miro board, which renders Mermaid
+     natively as editable shapes. -->
+<title>MTSA CSP Flow Diagrams</title>
+<style>
+  :root { color-scheme: light dark; --ground:#EDF1F2; --ink:#10222B; --ink-2:#4A626D; --rule:#C7D6DB; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --ground:#0B1519; --ink:#E4EEF1; --ink-2:#93AAB3; --rule:#24404B; }
+  }
+  :root[data-theme="dark"] { --ground:#0B1519; --ink:#E4EEF1; --ink-2:#93AAB3; --rule:#24404B; }
+  body { background:var(--ground); color:var(--ink); font:15px/1.5 system-ui, sans-serif; margin:0; padding:24px; }
+  h1 { font-size:20px; margin:0 0 4px; }
+  h2 { font-size:16px; margin:32px 0 2px; padding-top:20px; border-top:1px solid var(--rule); }
+  p  { color:var(--ink-2); margin:0 0 12px; max-width:70ch; }
+  .frame { overflow-x:auto; border:1px solid var(--rule); border-radius:6px; padding:12px; }
+  .mermaid svg { max-width:none; }
+</style>
+
+<h1>MTSA CSP flow diagrams</h1>
+<p>Two views of the same system. The first is where data goes and what the code
+   must not do. The second is what a customer walks through.</p>
+
+<h2>1. Architecture and trust boundary</h2>
+<p>Collection is SARA and SAM, which already exist and are RMF-shaped; the
+   compliance profile is the only seam between the two worlds. Authoring on our
+   side, everything SSI-bearing inside the customer agent, freeze at
+   plan_version, surveillance carrying diff shape only.</p>
+<div class="frame"><pre class="mermaid" id="g1"></pre></div>
+
+<h2>2. Product lifecycle</h2>
+<p>Engagement through Coast Guard inspection, then the recurring half: three
+   surveillance triggers and three change paths with different filing clocks.</p>
+<div class="frame"><pre class="mermaid" id="g2"></pre></div>
+
+<script type="text/plain" id="s1">
+flowchart TB
+
+subgraph OURS["OUR SIDE - we hold the logic, never the SSI"]
+  PDF["reference/ 33 CFR Subpart F PDF<br/>+ 104.235 / 105.225 / 106.230<br/>authoritative, read-only"]
+  CONTENT["content/<br/>schema + instance + authorities<br/>14 sections, 22 appendices"]
+  AUTH["authoring<br/>requirement bullet to checklist item<br/>rules, clauses, finding templates"]
+  VAL["validate.py<br/>schema + invariants + lint<br/>bindingness cap, 7 fixtures"]
+  SEAL["sealed release<br/>ruleset + question module<br/>+ clause library + templates<br/>signed, per-install key, expiry"]
+  PDF --> CONTENT --> AUTH --> VAL --> SEAL
+  FR["Federal Register watch<br/>+ Subpart F era job aid successor"] --> AUTH
+end
+
+subgraph AGENT["CUSTOMER INSTALL - agent inside the SSI boundary"]
+  LIC["license check<br/>N-of-M machine fingerprint<br/>online or offline challenge-response"]
+  VERIFY["signature verify<br/>unsigned ruleset never loads"]
+  SEAL -.ship.-> LIC --> VERIFY
+
+  subgraph COLLECT["COLLECTION - already built, RMF-shaped today"]
+    SARA["SARA v1.3.0 - host collection<br/>state backup, local users, services, open ports,<br/>installed software, certs, password policy<br/>preps Nessus + Evaluate-STIG, then reverts"]
+    NESS["Nessus scan<br/>per-host result, joined per asset"]
+    SAM["SAM assessment tree<br/>locations, device_data, checklist_data, photos<br/>is_critical_system, public_facing, software[]<br/>vessel-shaped: ship, hull, compartments"]
+    CFDD["CFDD questionnaire<br/>exposure + integrity, weighted<br/>lives in SAM today"]
+    SARA --> NESS --> SAM
+    SARA --> SAM
+    CFDD --- SAM
+  end
+
+  PROF{"compliance profile<br/>SAM report-profile mechanism<br/>widened, not forked"}
+  SAM --> PROF
+  PROF -->|RMF - today| RMFOUT["RMF package<br/>CFDD, HW/SW list, scanning package, STIG<br/>marked CUI<br/>MUST stay byte-identical - golden-output harness"]
+  PROF -->|MTSA - new| MTSAOUT["MTSA register export<br/>field sets, taxonomy, asset type discriminator<br/>vessel / facility / OCS facility<br/>marked SSI, 49 CFR 1520"]
+
+  subgraph INTAKE["intake"]
+    WS["criticality workshop<br/>multi-participant, facilitated<br/>ops + security + cyber + IT"]
+    S1["stage 1 SCOPE<br/>critical? TSI consequence?<br/>most of inventory falls out"]
+    S2["stage 2 RANK<br/>CFDD extended, ordered by consequence<br/>sets KEV tracking priority"]
+    WS --> S1 --> S2
+    Q["interview<br/>typed answers only<br/>enum / bool / num / date / entity ref<br/>tri-state yes-no-NA"]
+    ENT["entity store<br/>assets, remote access, backups<br/>training / drill / exercise / incident<br/>/ threat / audit records"]
+    Q -->|"101.640 records<br/>in neither tool today"| ENT
+    S2 --> ENT
+  end
+
+  MTSAOUT -->|raw inventory| WS
+  MTSAOUT -->|"assets, software, remote access"| ENT
+  CFDD -.extended by.-> S2
+  S1 -.->|"writes is_critical_system<br/>string Yes/No today, needs tri-state"| SAM
+
+  STORE[("answer store<br/>behind an interface<br/>engine never reaches around it")]
+  INTAKE --> STORE
+
+  ENGINE["engine.py<br/>pure library, stdlib only<br/>no clock, no network, no ambient state<br/>inputs: ruleset + answers + as_of"]
+  VERIFY --> ENGINE
+  STORE --> ENGINE
+
+  VERD["verdicts<br/>status + severity + evidence paths<br/>all/any do not short-circuit"]
+  ENGINE --> VERD
+
+  GAP["gap report<br/>binding fail BLOCKS export<br/>best practice WARNS"]
+  VERD --> GAP
+
+  KEV["KEV / CVE feed<br/>catalog half is new<br/>scan half is Nessus, already collected"] --> XW
+  NESS -.scan results.-> KEV
+  XW["mitigation CROSSWALK<br/>asset x vulnerability x disposition<br/>view over appendices I, M, N, O<br/>NOT an eighth register"]
+  ENT --> XW
+  XW --> DISP{"disposition"}
+  DISP -->|mitigated| S11["Section 11<br/>what was resolved"]
+  DISP -->|planned: owner, date, cost| S11
+  DISP -->|accepted: owner, justification,<br/>compensating control, review date| S12["Section 12 + Appendix O"]
+end
+
+subgraph OUT["FREEZE AND OUTPUT"]
+  PV["plan_version - immutable<br/>freezes answer set<br/>pins ruleset, question module,<br/>clause library, plan<br/>attachments pinned by reference"]
+  DOC["deterministic render<br/>clause library slots + narrative<br/>no generative model, ever"]
+  REG["register views<br/>7 rendered tables I K L M N O P"]
+  ATT["controlled attachments<br/>registers + J, T, U<br/>version apart from the body"]
+  ESIGN["owner/operator e-sign<br/>binds to plan_version content hash"]
+  SUB["submission<br/>COTP/OCMI - facility & OCS<br/>MSC - US-flagged vessel<br/>valid 5 years"]
+  GAP --> PV
+  S11 --> PV
+  S12 --> PV
+  ENT --> REG --> ATT
+  PV --> DOC --> ESIGN --> SUB
+  ATT -.pinned by ref.-> PV
+end
+
+subgraph AUDIT["AUDIT MODE - in the field, inside the agent"]
+  SCOPE["section-scoped run<br/>scope stated on the report"]
+  FIND["findings keyed by authority_id<br/>deficiency = failed binding req<br/>recommendation = no failure behind it"]
+  CERT["certification output<br/>states plan-as-written vs<br/>what was physically verified and when"]
+  PV --> SCOPE --> FIND --> CERT
+end
+
+subgraph SURV["SURVEILLANCE - three triggers"]
+  T1["ruleset change"]
+  T2["new KEV matches old scan"]
+  T3["new vuln on a planned asset<br/>= criticality question, not patching"]
+  RERUN["local re-eval against<br/>frozen answers, pinned as_of<br/>~0.2 ms per plan"]
+  DIFF["diff shape ONLY<br/>rule id, old/new status,<br/>old/new severity<br/>no answers, no asset or facility names"]
+  LOCAL["local finding in the agent<br/>asset-level detail stays here"]
+  T1 --> RERUN
+  T2 --> RERUN
+  T3 --> RERUN
+  PV --> RERUN
+  SEAL -.new ruleset.-> T1
+  RERUN --> DIFF
+  RERUN --> LOCAL
+  DIFF --> PORTAL["our portal<br/>alert copy names rules, not assets"]
+  LOCAL -.custody tier only.-> PORTAL
+end
+
+subgraph TIERS["TIERS - determine what must stay separable"]
+  A["one-off<br/>plan + first audit bundled<br/>ruleset current at delivery"]
+  B["maintained<br/>ruleset subscription + surveillance"]
+  C["CySO as a service<br/>FULL CUSTODY<br/>data to SOC, IR through us<br/>only tier that can name an asset"]
+end
+
+classDef ours fill:#1f3a5f,stroke:#7fb2e5,color:#eaf2fb
+classDef agent fill:#3a2a12,stroke:#d6a24a,color:#fbf3e6
+classDef hard fill:#4a1f22,stroke:#e07b7b,color:#fdeaea
+class PDF,CONTENT,AUTH,VAL,SEAL,FR ours
+class ENGINE,STORE,VERD,XW hard
+class LIC,VERIFY,DIFF,LOCAL hard
+class SARA,NESS,SAM,CFDD agent
+class RMFOUT hard
+</script>
+<script type="text/plain" id="s2">
+flowchart TB
+
+subgraph P1["1. ENGAGE"]
+  T["consultant tenant opens<br/>facility added as child entity"]
+  OWN["owner/operator named<br/>the responsible party, 101.620(a)<br/>not the consultant"]
+  CY["CySO designated + alternate<br/>101.615 definition<br/>reachable 24/7, 101.620(b)(3)"]
+  MODE["delivery mode chosen, 101.630(a)<br/>in the FSP/VSP, annex,<br/>part of an ASP, or standalone"]
+  T --> OWN --> CY --> MODE
+end
+
+subgraph P2["2. SCOPE THE FOOTPRINT - facilitated workshop, the part clients cannot do alone"]
+  INV["asset inventory in<br/>IT and OT"]
+  ROOM["one room: operations, security,<br/>cyber, IT<br/>no single role knows both what an<br/>asset does and what breaks"]
+  ST1{"stage 1 - is it critical,<br/>and could compromise<br/>cause a TSI?"}
+  OUTS["out of scope<br/>most of the inventory<br/>recorded, not covered"]
+  ST2["stage 2 - rank survivors<br/>by consequence<br/>sets KEV tracking priority"]
+  INV --> ROOM --> ST1
+  ST1 -->|no| OUTS
+  ST1 -->|yes| ST2
+end
+
+subgraph P3["3. FIND AND DISPOSE"]
+  SCAN["scans + KEV/CVE feed<br/>joined to critical assets only"]
+  CROSS["CROSSWALK<br/>asset, vulnerability, disposition<br/>the artifact the Coast Guard asks for<br/>and the hardest to build by hand"]
+  D{"disposition<br/>every row resolves"}
+  M1["mitigated"]
+  M2["planned<br/>owner + date + cost"]
+  M3["accepted<br/>owner, justification,<br/>compensating control,<br/>review date<br/>not a dismissal button"]
+  ST2 --> SCAN --> CROSS --> D
+  D --> M1
+  D --> M2
+  D --> M3
+end
+
+subgraph P4["4. INTERVIEW AND DRAFT"]
+  B14["Sections 1-4<br/>standard blurb, Julio's templates<br/>but the training / drill / exercise /<br/>incident RECORDS live here"]
+  B514["Sections 5-14<br/>assessment, answered in the tool<br/>typed answers only"]
+  APX["22 appendices<br/>15 authored, 7 rendered registers"]
+  M1 --> S11["Section 11<br/>what was resolved"]
+  M2 --> S11
+  M3 --> S12["Section 12<br/>what was not"]
+  S11 --> B514
+  S12 --> B514
+end
+
+subgraph P5["5. GAP CHECK - the product feature, not a lint pass"]
+  GC{"gap check"}
+  BIND["binding failure<br/>EXPORT BLOCKED"]
+  BEST["best practice failure<br/>warning only"]
+  FIX["remediate or answer<br/>the open item"]
+  B14 --> GC
+  B514 --> GC
+  APX --> GC
+  GC --> BIND --> FIX
+  GC --> BEST
+  FIX -.-> B514
+end
+
+subgraph P6["6. FREEZE, SIGN, SUBMIT"]
+  FRZ["plan_version frozen<br/>answers + ruleset + clauses pinned<br/>attachments pinned by reference"]
+  DOC["document rendered<br/>same answers always produce<br/>the same document"]
+  SIG["owner/operator e-signs<br/>bound to the content hash"]
+  SUB["submit, 101.630(d)<br/>COTP or OCMI for facilities and OCS<br/>Marine Safety Center for US-flagged vessels"]
+  APR["approved<br/>valid 5 years, 101.630(d)(3)"]
+  GC -->|clean| FRZ --> DOC --> SIG --> SUB --> APR
+end
+
+subgraph P7["7. FIRST AUDIT - bundled into the engagement"]
+  AUD["we walk the facility against<br/>the plan we wrote<br/>section-scoped, findings cited to the CFR"]
+  DEF["deficiency<br/>failed binding requirement<br/>carries remediation"]
+  REC["recommendation<br/>enhancement, no failure behind it"]
+  CERT["certification states on its face:<br/>the plan as written, and separately<br/>what was physically verified and when"]
+  APR --> AUD --> DEF --> CERT
+  AUD --> REC --> CERT
+  DEF -.remediate.-> FIX
+end
+
+subgraph P8["8. OPERATE - the only real retention clock in the plan"]
+  RECS["records created and kept<br/>training, drills, exercises,<br/>threats, incidents, plan audits<br/>101.640"]
+  RET["kept at least 2 years per category<br/>104.235 / 105.225 / 106.230<br/>DoS 90 days after its period<br/>manned vessels keep the last 10 aboard"]
+  ROLE["FSO/VSO keeps the record<br/>CySO ensures it is maintained<br/>two different fields"]
+  IR["reportable incident<br/>to the NRC without delay<br/>101.650(g)(1)"]
+  CERT --> RECS --> RET
+  RECS --> ROLE
+  RECS --> IR
+end
+
+subgraph P9["9. INSPECTION"]
+  CGI["Coast Guard inspects the<br/>CURRENT plan only<br/>compares plan in force against<br/>what the facility actually does"]
+  RET --> CGI
+end
+
+subgraph P10["10. STAY COMPLIANT - the recurring half"]
+  W1["ruleset changed"]
+  W2["new KEV hits an old scan"]
+  W3["new vuln on a covered asset<br/>= re-examine its criticality"]
+  RE["agent re-evaluates locally<br/>against the frozen answers"]
+  AL["alert: rule ids and severities only<br/>asset detail stays on the client side"]
+  CH{"what changed?"}
+  A1["attachment only<br/>new switch, new scan<br/>no filing"]
+  A2["general amendment<br/>to the Coast Guard 30 days<br/>before it takes effect<br/>101.630(e)(2)"]
+  A3["CySO change<br/>96 hours to notify,<br/>96 hours to submit the amended part<br/>101.630(e)(4) - the 30-day rule<br/>does NOT apply"]
+  REN["5-year renewal"]
+  APR --> RE
+  W1 --> RE
+  W2 --> RE
+  W3 --> RE
+  RE --> AL --> CH
+  CH --> A1
+  CH --> A2
+  CH --> A3
+  A2 --> FRZ
+  A3 --> FRZ
+  APR --> REN --> FRZ
+  W3 -.-> ST1
+end
+
+classDef block fill:#4a1f22,stroke:#e07b7b,color:#fdeaea
+classDef value fill:#1f3a5f,stroke:#7fb2e5,color:#eaf2fb
+classDef clock fill:#3a2a12,stroke:#d6a24a,color:#fbf3e6
+class BIND,DEF block
+class CROSS,ROOM,AUD value
+class RET,A3,A2,IR,REN clock
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+<script>
+  document.getElementById('g1').textContent = document.getElementById('s1').textContent;
+  document.getElementById('g2').textContent = document.getElementById('s2').textContent;
+  var dark = document.documentElement.getAttribute('data-theme') === 'dark' ||
+    (document.documentElement.getAttribute('data-theme') !== 'light' &&
+     window.matchMedia('(prefers-color-scheme: dark)').matches);
+  mermaid.initialize({ startOnLoad:true, theme: dark ? 'dark' : 'default',
+    maxTextSize:200000, htmlLabels:true, flowchart:{ useMaxWidth:false, htmlLabels:true } });
+</script>

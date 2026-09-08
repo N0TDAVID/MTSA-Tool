@@ -1,0 +1,202 @@
+{
+  "ruleset_version": "2026.09.03",
+  "supersedes": null,
+  "notes": "Predicates over the answer set. Severity is capped by authority bindingness: a rule may be binding only if at least one authority it cites is binding. validate.py enforces that cap, the same way it already enforces it for authored gaps. Rules whose id matches a Section 1 or Section 5 checklist item id are pinned to that fixture's known ground truth.",
+  "rules": [
+    {
+      "id": "struct-defined",
+      "authority_ids": ["cfr:101.620(b)(2)"],
+      "requirement_id": "s1-01-cybersecurity-organizational-structure",
+      "severity": "binding",
+      "section": 1,
+      "kind": "omission",
+      "message": "Define the cybersecurity organizational structure and identify who sits in it.",
+      "predicate": {
+        "all": [
+          { "eq": ["org.structure_defined", true] },
+          { "count_gte": ["org.personnel", 1] }
+        ]
+      }
+    },
+    {
+      "id": "persons-identified",
+      "authority_ids": ["cfr:101.620(b)(2)"],
+      "requirement_id": "s1-07-it-ot-physical-security-operations-legal-communi",
+      "severity": "binding",
+      "section": 1,
+      "kind": "omission",
+      "message": "Every person exercising cybersecurity duties needs a name, a role, and stated duties.",
+      "predicate": {
+        "every": ["org.personnel", {
+          "all": [
+            { "answered": "name" },
+            { "answered": "role" },
+            { "answered": "duties" }
+          ]
+        }]
+      }
+    },
+    {
+      "id": "cyso-designated",
+      "authority_ids": ["cfr:101.620(b)(3)"],
+      "requirement_id": "s1-02-written-designation-of-the-cyso-and-alternate-cy",
+      "severity": "binding",
+      "section": 1,
+      "kind": "omission",
+      "message": "Designate the CySO in writing, by name and by title.",
+      "predicate": {
+        "all": [
+          { "eq": ["cyso.designation_in_writing", true] },
+          { "answered": "cyso.name" },
+          { "answered": "cyso.title" }
+        ]
+      }
+    },
+    {
+      "id": "cyso-24-7",
+      "authority_ids": ["cfr:101.620(b)(3)"],
+      "requirement_id": "s1-03-24-7-cyso-contact-method",
+      "severity": "binding",
+      "section": 1,
+      "kind": "omission",
+      "message": "The CySO must be accessible to the Coast Guard 24/7, and the Plan must say how to reach them at any time. Business hours with after-hours message relay does not satisfy this.",
+      "predicate": {
+        "all": [
+          { "eq": ["cyso.accessible_24_7", true] },
+          { "any": [
+            { "answered": "cyso.contact.mobile_phone" },
+            { "answered": "cyso.contact.oncall_protocol" }
+          ]}
+        ]
+      }
+    },
+    {
+      "id": "personnel-notification",
+      "authority_ids": ["cfr:101.645(a)"],
+      "requirement_id": "s5-02-notification-of-changing-cybersecurity-condition",
+      "severity": "binding",
+      "section": 5,
+      "kind": "omission",
+      "message": "The CySO needs a means to notify all personnel of changes in cybersecurity conditions, not just IT staff.",
+      "predicate": {
+        "some": ["communications.channels", {
+          "all": [
+            { "eq": ["audience", "all_personnel"] },
+            { "includes": ["used_for", "cyber_condition_change"] }
+          ]
+        }]
+      }
+    },
+    {
+      "id": "authority-comms",
+      "authority_ids": ["cfr:101.645(b)"],
+      "requirement_id": "s5-05-communications-with-the-cotp-and-national-respon",
+      "severity": "binding",
+      "section": 5,
+      "kind": "insufficient_detail",
+      "message": "List the actual authority contacts. Stating that a contact list is maintained elsewhere is not continuous communications.",
+      "predicate": {
+        "all": [
+          { "count_gte": ["communications.authority_contacts", 1] },
+          { "every": ["communications.authority_contacts", {
+            "all": [{ "answered": "organization" }, { "answered": "contact" }]
+          }]}
+        ]
+      }
+    },
+    {
+      "id": "vessel-comms",
+      "authority_ids": ["cfr:101.645(b)"],
+      "requirement_id": "s5-04-communications-with-interfacing-vessels",
+      "severity": "binding",
+      "section": 5,
+      "kind": "omission",
+      "message": "Communications must reach vessels interfacing with the facility.",
+      "applies_to": { "in": ["asset.type", ["facility", "ocs_facility"]] },
+      "predicate": { "count_gte": ["communications.vessel_channels", 1] }
+    },
+
+    {
+      "id": "kev-without-delay",
+      "authority_ids": ["cfr:101.650(e)(3)(i)", "cfr:101.625(d)(15)"],
+      "requirement_id": "s6-08-patches-kevs-without-delay-or-implements-compens",
+      "severity": "binding",
+      "section": 6,
+      "kind": "omission",
+      "requires_capability": "kev",
+      "message": "Every KEV on a critical IT or OT system must be patched or carry a documented compensating control. There is no grace period.",
+      "predicate": {
+        "for_each": {
+          "path": "devices",
+          "where": { "all": [
+            { "eq": ["is_critical_system", true] },
+            { "count_gte": ["open_kevs", 1] }
+          ]},
+          "must": { "any": [
+            { "count_eq": ["open_kevs", 0] },
+            { "answered": "compensating_control" }
+          ]}
+        }
+      }
+    },
+    {
+      "id": "ot-internet-justification",
+      "authority_ids": ["cfr:101.650(e)(3)(v)"],
+      "requirement_id": "s6-13-documents-justification-for-remotely-accessible",
+      "severity": "binding",
+      "section": 6,
+      "kind": "omission",
+      "message": "Any OT reachable from the public internet needs a documented justification.",
+      "predicate": {
+        "for_each": {
+          "path": "devices",
+          "where": { "all": [
+            { "eq": ["is_ot", true] },
+            { "eq": ["public_facing", true] }
+          ]},
+          "must": { "answered": "internet_justification" }
+        }
+      }
+    },
+    {
+      "id": "critical-systems-designated",
+      "authority_ids": ["cfr:101.650(b)"],
+      "requirement_id": "s6-05-designates-critical-it-and-ot-systems",
+      "severity": "binding",
+      "section": 6,
+      "kind": "omission",
+      "message": "Critical IT and OT systems must be designated as such in the inventory.",
+      "predicate": { "some": ["devices", { "eq": ["is_critical_system", true] }] }
+    },
+    {
+      "id": "plan-within-five-years",
+      "authority_ids": ["cfr:101.630(d)"],
+      "severity": "binding",
+      "section": 10,
+      "kind": "omission",
+      "message": "An approved Plan is valid for 5 years from the date of approval.",
+      "applies_to": { "answered": "plan.approval_date" },
+      "predicate": { "within_days": ["plan.approval_date", 1825] }
+    },
+    {
+      "id": "alternate-cyso-designated",
+      "authority_ids": ["cfr:101.615"],
+      "requirement_id": "s1-02-written-designation-of-the-cyso-and-alternate-cy",
+      "severity": "best_practice",
+      "section": 1,
+      "kind": "omission",
+      "message": "An alternate CySO is permitted, not required. Given the 24/7 accessibility duty, designating one is the practical way to sustain coverage.",
+      "predicate": { "answered": "cyso.alternate.name" }
+    },
+    {
+      "id": "out-of-band-comms",
+      "authority_ids": ["cfr:101.645(a)"],
+      "requirement_id": "s5-07-primary-alternate-and-out-of-band-communication",
+      "severity": "best_practice",
+      "section": 5,
+      "kind": "omission",
+      "message": "Notification channels that survive a compromise of email and VoIP are not mandated, but a plan without them cannot notify anyone during the incident it exists for.",
+      "predicate": { "count_gte": ["communications.out_of_band_channels", 1] }
+    }
+  ]
+}

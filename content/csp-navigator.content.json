@@ -1,0 +1,3427 @@
+{
+  "schema_version": "1.0.0",
+  "course_id": "csp-section-review",
+  "title": "Cybersecurity Plan Section Review",
+  "subtitle": "Study each draft CSP section against 33 CFR Part 101 Subpart F, identify what is missing, then reveal the strengthened draft to see how the plan is improved.",
+  "regulatory_basis": "33 CFR Part 101 Subpart F",
+  "facility": {
+    "name": "Maritime Enterprise Group",
+    "abbreviation": "MEG",
+    "site": "MEG Westport",
+    "cognizant_cotp": "USCG Sector Puget Sound",
+    "profile": {
+      "workstations": 47,
+      "laptops": 12,
+      "corporate_it_zone": "10.50.0.0/16",
+      "dmz": "192.168.1.0/24",
+      "guest_temp_network": "10.30.0.0/24",
+      "offshore_asset": "MEG-1 platform"
+    },
+    "personnel": [
+      {
+        "id": "morrison",
+        "name": "Jennifer Morrison",
+        "role": "CEO"
+      },
+      {
+        "id": "park",
+        "name": "David Park",
+        "role": "COO",
+        "reports_to": "morrison"
+      },
+      {
+        "id": "kim",
+        "name": "Jordan Kim",
+        "role": "Cybersecurity Officer (CySO)",
+        "reports_to": "park",
+        "contact": {
+          "email": "jordan.kim@meg-maritime.com",
+          "office": "555-0147 ext. 2841",
+          "mobile": "555-0190"
+        }
+      },
+      {
+        "id": "chen",
+        "name": "Sarah Chen",
+        "role": "IT Director",
+        "reports_to": "kim"
+      },
+      {
+        "id": "thompson",
+        "name": "James Thompson",
+        "role": "IT Security Manager, Alternate CySO",
+        "reports_to": "chen",
+        "contact": {
+          "office": "555-0121"
+        }
+      },
+      {
+        "id": "rivera",
+        "name": "Alex Rivera",
+        "role": "Network Administrator",
+        "reports_to": "chen"
+      },
+      {
+        "id": "nakamura",
+        "name": "Thomas Nakamura",
+        "role": "OT/ICS Engineer",
+        "reports_to": "chen"
+      },
+      {
+        "id": "wong",
+        "name": "Lisa Wong",
+        "role": "Help Desk Supervisor",
+        "reports_to": "chen"
+      },
+      {
+        "id": "williams",
+        "name": "Robert Williams",
+        "role": "Facility Security Officer (FSO)"
+      },
+      {
+        "id": "foster",
+        "name": "Amanda Foster",
+        "role": "Chief Legal Officer (CLO)"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "section-1",
+      "number": 1,
+      "title": "Cybersecurity Organization and Identity of the CySO",
+      "status": "complete",
+      "authoring_notes": [
+        "CITATION CORRECTIONS applied against 33 CFR Part 101 Subpart F (current as of 8/25/2026). The source draft miscited three provisions.",
+        "1. 24/7 CySO availability was attributed to 101.625(b). That paragraph is 'Serving as CySO for Multiple Vessels'. The requirement is 101.620(b)(3). Both regulatory gaps reassigned.",
+        "2. The alternate CySO was attributed to 101.625(d). That paragraph is the 15-item CySO Responsibilities list. The alternate provision is in the 101.615 definition of Cybersecurity Officer. Gap reassigned.",
+        "3. The strengthened draft's list of the 12 knowledge areas did not match 101.625(e)(1)-(12). Replaced with the actual list.",
+        "Checklist ground truth for the three 101.620(b) items is inferred: the reveal lists no regulatory gap against them.",
+        "CITATION CORRECTION: subsection 1.4 asserted 24-hour COTP notification for a CySO change and paired it with the 30-day rule. 101.630(e)(4) sets two 96-hour clocks, one to notify and one to submit the amended portion, and 101.630(e)(2)'s 30 days does not govern this case. Both corrected."
+      ],
+      "connected_authority_ids": [
+        "cfr:101.630(c)(1)",
+        "cfr:101.620(b)(2)",
+        "cfr:101.620(b)(3)",
+        "cfr:101.625(b)",
+        "cfr:101.625(e)",
+        "cfr:101.630(e)(4)"
+      ],
+      "free_response_prompt": "What's missing? What could be improved?",
+      "checklist": [
+        {
+          "id": "struct-defined",
+          "label": "Cybersecurity organizational structure defined",
+          "authority_ids": [
+            "cfr:101.620(b)(2)"
+          ],
+          "satisfied_by_original": true
+        },
+        {
+          "id": "persons-identified",
+          "label": "Each person exercising cybersecurity duties identified",
+          "authority_ids": [
+            "cfr:101.620(b)(2)"
+          ],
+          "satisfied_by_original": true,
+          "gap_ids": [
+            "no-fso-coordination"
+          ]
+        },
+        {
+          "id": "cyso-designated",
+          "label": "CySO designated in writing by name and title",
+          "authority_ids": [
+            "cfr:101.620(b)(3)"
+          ],
+          "satisfied_by_original": true
+        },
+        {
+          "id": "cyso-24-7",
+          "label": "24/7 CySO accessibility to Coast Guard",
+          "authority_ids": [
+            "cfr:101.620(b)(3)"
+          ],
+          "satisfied_by_original": false,
+          "gap_ids": [
+            "no-24-7-availability",
+            "no-mobile-contact"
+          ]
+        }
+      ],
+      "drafts": {
+        "original": {
+          "variant": "original",
+          "label": "Original Draft",
+          "subsections": [
+            {
+              "number": "1.1",
+              "heading": "Cybersecurity Officer Designation",
+              "blocks": [
+                {
+                  "type": "key_value",
+                  "entries": [
+                    {
+                      "key": "Designated CySO",
+                      "value": "Jordan Kim, Cybersecurity Officer"
+                    },
+                    {
+                      "key": "Reports to",
+                      "value": "COO David Park"
+                    },
+                    {
+                      "key": "Appointed",
+                      "value": "January 15, 2026"
+                    },
+                    {
+                      "key": "Contact",
+                      "value": "jordan.kim@meg-maritime.com, Office 555-0147 ext. 2841"
+                    }
+                  ]
+                },
+                {
+                  "type": "paragraph",
+                  "text": "Jordan Kim joined Maritime Enterprise Group in 2022 after eight years at Pacific Northwest Logistics, where he served as Senior IT Manager overseeing a 200-endpoint environment. Prior to that, Jordan spent three years at a managed security services provider (MSSP) supporting clients in the transportation and logistics sector. Jordan holds CISSP and GICSP certifications and has completed vendor-specific training from Palo Alto Networks, Splunk, and Siemens."
+                },
+                {
+                  "type": "paragraph",
+                  "text": "Jordan was selected for the CySO role based on a competitive internal hiring process that evaluated candidates across technical aptitude, leadership experience, and familiarity with MEG's operational environment. The selection committee included the COO, IT Director, and an external cybersecurity advisor."
+                }
+              ]
+            },
+            {
+              "number": "1.2",
+              "heading": "Cybersecurity Personnel",
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "text": "The IT Department supports cybersecurity operations under the direction of Sarah Chen, IT Director, who oversees the department budget, vendor relationships, and strategic technology initiatives. James Thompson serves as IT Security Manager and manages day-to-day security operations including SIEM monitoring, vulnerability scanning, and access control administration. Alex Rivera, Network Administrator, handles network operations, firewall rule management, and switch/router configuration. Lisa Wong, Help Desk Supervisor, manages endpoint provisioning, user access requests, and desktop support for the facility's 47 workstations and 12 laptops."
+                },
+                {
+                  "type": "paragraph",
+                  "text": "Personnel assignments are maintained in MEG's Human Resources Information System (HRIS) and updated within five business days of any personnel change. The IT Director conducts annual role reviews to ensure cybersecurity responsibilities are appropriately distributed across the team."
+                }
+              ]
+            },
+            {
+              "number": "1.3",
+              "heading": "Organizational Reporting Structure",
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "text": "The CySO reports to the COO. The IT Director handles technical execution. The CySO coordinates with other departments as needed for cybersecurity matters, including Operations, Facilities, and Legal."
+                },
+                {
+                  "type": "paragraph",
+                  "text": "The CySO can be reached during business hours at the office number listed above. After-hours, the facility operations center can relay urgent messages to the CySO or IT Security Manager. Response times vary based on the nature of the request and staff availability."
+                },
+                {
+                  "type": "paragraph",
+                  "text": "The organizational chart is reviewed annually by the COO and IT Director to ensure cybersecurity roles and responsibilities remain aligned with facility operations. Any changes to the reporting structure are documented in the CSP amendment log and communicated to affected personnel within 10 business days. The most recent organizational review was completed in February 2026 with no changes to the cybersecurity reporting chain."
+                }
+              ]
+            }
+          ]
+        },
+        "strengthened": {
+          "variant": "strengthened",
+          "label": "Strengthened",
+          "subsections": [
+            {
+              "number": "1.1",
+              "heading": "Cybersecurity Officer Designation",
+              "blocks": [
+                {
+                  "type": "key_value",
+                  "entries": [
+                    {
+                      "key": "Designated CySO",
+                      "value": "Jordan Kim, Cybersecurity Officer"
+                    },
+                    {
+                      "key": "Reports to",
+                      "value": "COO David Park, with dotted-line coordination to FSO Robert Williams"
+                    },
+                    {
+                      "key": "Appointed",
+                      "value": "January 15, 2026"
+                    },
+                    {
+                      "key": "Contact",
+                      "value": "jordan.kim@meg-maritime.com, Office 555-0147 ext. 2841, Mobile (24/7) 555-0190"
+                    },
+                    {
+                      "key": "24/7 Emergency",
+                      "value": "Facility main line 555-0100 with CySO on-call protocol"
+                    }
+                  ]
+                },
+                {
+                  "type": "paragraph",
+                  "text": "Jordan Kim was previously employed as IT Security Manager at MEG Westport for four years and brings domain knowledge of existing IT and OT systems, operational workflows, and facility-specific risk factors. Jordan holds CISSP and GICSP certifications."
+                },
+                {
+                  "type": "paragraph",
+                  "text": "CySO qualifications per 101.625(e): Jordan Kim demonstrates general knowledge across all 12 required areas. Facility operations and conditions: four years on site at MEG Westport. General cybersecurity guidance and best practices: CISSP. Cyber Incident Response Plan and Cybersecurity Plan: authored both, exercised annually. Cybersecurity equipment and systems: GICSP plus vendor training from Palo Alto Networks, Splunk, and Siemens. Audit, inspection, control, and monitoring methods: led the 2025 internal CSP audit. Relevant laws and regulations: MTSA and 33 CFR Subchapter H coursework. Instruction techniques: delivers the quarterly all-hands awareness briefing. SSI handling and security related communications: 49 CFR part 1520 training completed. Current threat patterns and KEVs: subscribes to the CISA KEV catalog and Siemens ProductCERT feeds. Behavioral threat recognition: insider threat module completed with the FSO. Drills and exercises: conducts and assesses the annual exercise required by 101.635."
+                }
+              ]
+            },
+            {
+              "number": "1.2",
+              "heading": "Alternate CySO",
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "text": "In the event the primary CySO is unavailable due to leave, incapacitation, or inability to perform duties, the following alternate is designated as permitted by the definition of Cybersecurity Officer at 101.615: James Thompson, IT Security Manager, 555-0121. Qualifications: CISSP, 12 years IT security experience, OT awareness training completed. Per 101.615, references to the CySO in this Plan apply to the alternate when acting."
+                }
+              ]
+            },
+            {
+              "number": "1.3",
+              "heading": "Cybersecurity Personnel",
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "text": "The following personnel exercise cybersecurity duties per 101.620(b)(2):"
+                },
+                {
+                  "type": "table",
+                  "columns": [
+                    "Name",
+                    "Role",
+                    "Cybersecurity duties"
+                  ],
+                  "rows": [
+                    [
+                      "Sarah Chen",
+                      "IT Director",
+                      "IT oversight, budget, strategy"
+                    ],
+                    [
+                      "James Thompson",
+                      "IT Security Manager",
+                      "Security operations, alternate CySO"
+                    ],
+                    [
+                      "Alex Rivera",
+                      "Network Administrator",
+                      "Network operations, firewall management"
+                    ],
+                    [
+                      "Thomas Nakamura",
+                      "OT/ICS Engineer",
+                      "SCADA/PLC systems, OT security"
+                    ],
+                    [
+                      "Robert Williams",
+                      "FSO",
+                      "FSP/CSP coordination"
+                    ],
+                    [
+                      "Lisa Wong",
+                      "Help Desk Supervisor",
+                      "Endpoint support, user access"
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "number": "1.4",
+              "heading": "Organizational Reporting Structure",
+              "blocks": [
+                {
+                  "type": "list",
+                  "items": [
+                    "CEO Jennifer Morrison to COO David Park to CySO Jordan Kim.",
+                    "CySO to IT Director Sarah Chen (technical execution).",
+                    "CySO coordinates with FSO Robert Williams (MTSA coordination, joint incident response).",
+                    "CySO to CLO Amanda Foster (legal/regulatory, SSI handling)."
+                  ]
+                },
+                {
+                  "type": "paragraph",
+                  "text": "The CySO is accessible 24 hours per day, 7 days per week, 365 days per year, and the means of contact at any time are identified above, as required by 101.620(b)(3). After-hours contact is maintained through the facility's 24/7 operations center, which has procedures to reach the on-call CySO within 15 minutes."
+                },
+                {
+                  "type": "paragraph",
+                  "text": "COTP notification procedures for CySO changes: per 101.630(e)(4), if the CySO changes, MEG will notify USCG Sector Puget Sound via the Sector Command Center as soon as reasonably practicable in light of the individual circumstances and in no case longer than 96 hours. The affected portion of this Plan will be amended and submitted to the Coast Guard for review and approval on the same standard, as soon as reasonably practicable and in no case longer than 96 hours. The 30-day advance submission at 101.630(e)(2) governs proposed amendments generally and does not apply to a change of CySO. MEG serves no other facility under this CySO designation; if that changes, each covered facility will be listed in this Plan per 101.625(b)."
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "gap_analysis": {
+        "intro": "The strengthened draft closes each of the gaps below that the original draft left open.",
+        "regulatory_gaps": [
+          {
+            "id": "no-24-7-availability",
+            "authority_ids": [
+              "cfr:101.620(b)(3)"
+            ],
+            "title": "No 24/7 availability",
+            "explanation": "101.620(b)(3) requires the owner or operator to designate a CySO who is accessible to the Coast Guard 24 hours a day, 7 days a week, and to identify how the CySO can be contacted at any time. The deficient draft limits availability to business hours with after-hours message relay, which does not meet the requirement.",
+            "kind": "omission",
+            "binding": true
+          },
+          {
+            "id": "no-mobile-contact",
+            "authority_ids": [
+              "cfr:101.620(b)(3)"
+            ],
+            "title": "No mobile or emergency contact",
+            "explanation": "101.620(b)(3) requires the plan to identify how the CySO can be contacted at any time. The deficient draft lists only an office number and an email address. The compliant draft adds a 24/7 mobile number and an emergency line with an on-call protocol.",
+            "kind": "omission",
+            "binding": true
+          }
+        ],
+        "best_practice_improvements": [
+          {
+            "id": "twelve-knowledge-areas",
+            "authority_ids": [
+              "cfr:101.625(e)"
+            ],
+            "title": "12 knowledge areas not demonstrated",
+            "explanation": "There is no requirement to reproduce the CySO's resume in the CSP. However, 101.625(e) requires the CySO to have general knowledge, through training, education, or equivalent job experience, across 12 specific areas: facility operations and conditions; general cybersecurity guidance and best practices; the Cyber Incident Response Plan; the Cybersecurity Plan; cybersecurity equipment and systems; methods of conducting cybersecurity audits, inspections, control, and monitoring; relevant laws and regulations; instruction techniques for cybersecurity training and education; handling of Sensitive Security Information and security related communications; current cybersecurity threat patterns and KEVs; recognizing characteristics and behavioral patterns of persons likely to threaten security; and conducting and assessing cybersecurity drills and exercises. The compliant draft maps each area to evidence of competency. The deficient draft cites vendor training and certifications without addressing the required areas, and never touches SSI handling, behavioral threat recognition, or drills and exercises.",
+            "kind": "unsupported_assertion",
+            "binding": false
+          },
+          {
+            "id": "no-fso-coordination",
+            "authority_ids": [
+              "cfr:101.620(b)(2)"
+            ],
+            "title": "No FSO coordination relationship documented",
+            "explanation": "While the regulation does not explicitly require listing the FSO in the CySO section, 101.620(b)(2) requires the owner or operator to define the cybersecurity organizational structure and identify each person exercising cybersecurity duties and responsibilities within that structure, with the support needed to fulfill those obligations. Documenting the CySO-FSO coordination relationship, joint incident response responsibilities, and CSP/FSP integration points is a best practice that strengthens the plan. The compliant draft names the FSO and defines the coordination relationship. The deficient draft does not mention the FSO at all.",
+            "kind": "omission",
+            "binding": false
+          },
+          {
+            "id": "no-alternate-cyso",
+            "authority_ids": [
+              "cfr:101.615"
+            ],
+            "title": "No alternate CySO designated",
+            "explanation": "An alternate CySO is not mandatory. The definition of Cybersecurity Officer at 101.615 provides that the owner or operator may designate an alternate CySO to assist with the duties and responsibilities of the CySO, including during periods when the CySO is on leave, unavailable, or unable to perform their duties, and that the term CySO thereafter refers to both. Given the 24/7 accessibility requirement at 101.620(b)(3), designating an alternate is a practical way to sustain coverage. The compliant draft designates one. The deficient draft omits this entirely.",
+            "kind": "omission",
+            "binding": false
+          }
+        ]
+      },
+      "visuals": [
+        {
+          "id": "org-structure",
+          "type": "org_chart",
+          "title": "Cybersecurity Organizational Structure",
+          "caption": "How the strengthened plan maps roles, reporting lines, and coordination, including the alternate CySO and the FSO/CLO coordination the original draft left out.",
+          "depicts": "strengthened",
+          "source_ref": "sections/section-1/drafts/strengthened/subsections/1.4"
+        }
+      ],
+      "requirements": [
+        {
+          "id": "s1-01-cybersecurity-organizational-structure",
+          "text": "Cybersecurity organizational structure",
+          "authority_ids": [
+            "cfr:101.620(b)(2)",
+            "cfr:101.620(b)(3)",
+            "cfr:101.625(e)",
+            "cfr:101.630(c)(1)"
+          ]
+        },
+        {
+          "id": "s1-02-written-designation-of-the-cyso-and-alternate-cy",
+          "text": "Written designation of the CySO and alternate CySO",
+          "authority_ids": [
+            "cfr:101.620(b)(2)",
+            "cfr:101.620(b)(3)",
+            "cfr:101.625(e)",
+            "cfr:101.630(c)(1)"
+          ]
+        },
+        {
+          "id": "s1-03-24-7-cyso-contact-method",
+          "text": "24/7 CySO contact method",
+          "authority_ids": [
+            "cfr:101.620(b)(2)",
+            "cfr:101.620(b)(3)",
+            "cfr:101.625(e)",
+            "cfr:101.630(c)(1)"
+          ]
+        },
+        {
+          "id": "s1-04-owner-operator-responsibilities",
+          "text": "Owner/operator responsibilities",
+          "authority_ids": [
+            "cfr:101.620(b)(2)",
+            "cfr:101.620(b)(3)",
+            "cfr:101.625(e)",
+            "cfr:101.630(c)(1)"
+          ]
+        },
+        {
+          "id": "s1-05-cyso-authorities-and-responsibilities",
+          "text": "CySO authorities and responsibilities",
+          "authority_ids": [
+            "cfr:101.620(b)(2)",
+            "cfr:101.620(b)(3)",
+            "cfr:101.625(e)",
+            "cfr:101.630(c)(1)"
+          ]
+        },
+        {
+          "id": "s1-06-fso-cyso-coordination",
+          "text": "FSO–CySO coordination",
+          "authority_ids": [
+            "cfr:101.620(b)(2)",
+            "cfr:101.620(b)(3)",
+            "cfr:101.625(e)",
+            "cfr:101.630(c)(1)"
+          ]
+        },
+        {
+          "id": "s1-07-it-ot-physical-security-operations-legal-communi",
+          "text": "IT, OT, physical security, operations, legal, communications, and executive-management responsibilities",
+          "authority_ids": [
+            "cfr:101.620(b)(2)",
+            "cfr:101.620(b)(3)",
+            "cfr:101.625(e)",
+            "cfr:101.630(c)(1)"
+          ]
+        },
+        {
+          "id": "s1-08-delegated-duties",
+          "text": "Delegated duties",
+          "authority_ids": [
+            "cfr:101.620(b)(2)",
+            "cfr:101.620(b)(3)",
+            "cfr:101.625(e)",
+            "cfr:101.630(c)(1)"
+          ]
+        },
+        {
+          "id": "s1-09-relationship-with-corporate-cybersecurity-person",
+          "text": "Relationship with corporate cybersecurity personnel and managed service providers",
+          "authority_ids": [
+            "cfr:101.620(b)(2)",
+            "cfr:101.620(b)(3)",
+            "cfr:101.625(e)",
+            "cfr:101.630(c)(1)"
+          ]
+        },
+        {
+          "id": "s1-10-cyso-qualifications",
+          "text": "CySO qualifications",
+          "authority_ids": [
+            "cfr:101.620(b)(2)",
+            "cfr:101.620(b)(3)",
+            "cfr:101.625(e)",
+            "cfr:101.630(c)(1)"
+          ]
+        },
+        {
+          "id": "s1-11-succession-and-continuity-procedures",
+          "text": "Succession and continuity procedures",
+          "authority_ids": [
+            "cfr:101.620(b)(2)",
+            "cfr:101.620(b)(3)",
+            "cfr:101.625(e)",
+            "cfr:101.630(c)(1)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-2",
+      "number": 2,
+      "title": "Personnel Training",
+      "status": "stub",
+      "authoring_notes": [
+        "Spine placeholder. Title and citations verified against 33 CFR 101.630(c) in reference/. No authored content yet.",
+        "Requirement bullets loaded verbatim from reference/MTSA Cybersecurity Plan Outline.docx. Next step is to turn each into a checklist item with authored ground truth."
+      ],
+      "connected_authority_ids": [
+        "cfr:101.630(c)(2)",
+        "cfr:101.650(d)",
+        "pl:cg-5pc-01-25",
+        "wi:mcp-wi-001"
+      ],
+      "requirements": [
+        {
+          "id": "s2-01-all-personnel-with-it-or-ot-access",
+          "text": "All personnel with IT or OT access",
+          "authority_ids": [
+            "cfr:101.630(c)(2)",
+            "cfr:101.650(d)",
+            "pl:cg-5pc-01-25",
+            "wi:mcp-wi-001"
+          ]
+        },
+        {
+          "id": "s2-02-key-personnel-with-it-or-remotely-accessible-ot",
+          "text": "Key personnel with IT or remotely accessible OT access",
+          "authority_ids": [
+            "cfr:101.630(c)(2)",
+            "cfr:101.650(d)",
+            "pl:cg-5pc-01-25",
+            "wi:mcp-wi-001"
+          ]
+        },
+        {
+          "id": "s2-03-personnel-who-operate-or-maintain-ot",
+          "text": "Personnel who operate or maintain OT",
+          "authority_ids": [
+            "cfr:101.630(c)(2)",
+            "cfr:101.650(d)",
+            "pl:cg-5pc-01-25",
+            "wi:mcp-wi-001"
+          ]
+        },
+        {
+          "id": "s2-04-contractors-vendors-temporary-personnel-and-part",
+          "text": "Contractors, vendors, temporary personnel, and part-time personnel",
+          "authority_ids": [
+            "cfr:101.630(c)(2)",
+            "cfr:101.650(d)",
+            "pl:cg-5pc-01-25",
+            "wi:mcp-wi-001"
+          ]
+        },
+        {
+          "id": "s2-05-personnel-with-specific-cyber-incident-response",
+          "text": "Personnel with specific Cyber Incident Response Plan responsibilities",
+          "authority_ids": [
+            "cfr:101.630(c)(2)",
+            "cfr:101.650(d)",
+            "pl:cg-5pc-01-25",
+            "wi:mcp-wi-001"
+          ]
+        },
+        {
+          "id": "s2-06-recognition-and-detection-of-threats-and-inciden",
+          "text": "Recognition and detection of threats and incidents",
+          "authority_ids": [
+            "cfr:101.630(c)(2)",
+            "cfr:101.650(d)",
+            "pl:cg-5pc-01-25",
+            "wi:mcp-wi-001"
+          ]
+        },
+        {
+          "id": "s2-07-techniques-used-to-circumvent-cybersecurity-meas",
+          "text": "Techniques used to circumvent cybersecurity measures",
+          "authority_ids": [
+            "cfr:101.630(c)(2)",
+            "cfr:101.650(d)",
+            "pl:cg-5pc-01-25",
+            "wi:mcp-wi-001"
+          ]
+        },
+        {
+          "id": "s2-08-internal-reporting-to-the-cyso",
+          "text": "Internal reporting to the CySO",
+          "authority_ids": [
+            "cfr:101.630(c)(2)",
+            "cfr:101.650(d)",
+            "pl:cg-5pc-01-25",
+            "wi:mcp-wi-001"
+          ]
+        },
+        {
+          "id": "s2-09-relevant-provisions-of-the-approved-plan",
+          "text": "Relevant provisions of the approved plan",
+          "authority_ids": [
+            "cfr:101.630(c)(2)",
+            "cfr:101.650(d)",
+            "pl:cg-5pc-01-25",
+            "wi:mcp-wi-001"
+          ]
+        },
+        {
+          "id": "s2-10-ot-specific-cybersecurity",
+          "text": "OT-specific cybersecurity",
+          "authority_ids": [
+            "cfr:101.630(c)(2)",
+            "cfr:101.650(d)",
+            "pl:cg-5pc-01-25",
+            "wi:mcp-wi-001"
+          ]
+        },
+        {
+          "id": "s2-11-incident-response-roles",
+          "text": "Incident-response roles",
+          "authority_ids": [
+            "cfr:101.630(c)(2)",
+            "cfr:101.650(d)",
+            "pl:cg-5pc-01-25",
+            "wi:mcp-wi-001"
+          ]
+        },
+        {
+          "id": "s2-12-evolving-threats-and-countermeasures",
+          "text": "Evolving threats and countermeasures",
+          "authority_ids": [
+            "cfr:101.630(c)(2)",
+            "cfr:101.650(d)",
+            "pl:cg-5pc-01-25",
+            "wi:mcp-wi-001"
+          ]
+        },
+        {
+          "id": "s2-13-initial-annual-new-hire-and-new-system-training",
+          "text": "Initial, annual, new hire, and new system training",
+          "authority_ids": [
+            "cfr:101.630(c)(2)",
+            "cfr:101.650(d)",
+            "pl:cg-5pc-01-25",
+            "wi:mcp-wi-001"
+          ]
+        },
+        {
+          "id": "s2-14-training-verification-and-records",
+          "text": "Training verification and records",
+          "authority_ids": [
+            "cfr:101.630(c)(2)",
+            "cfr:101.650(d)",
+            "pl:cg-5pc-01-25",
+            "wi:mcp-wi-001"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-3",
+      "number": 3,
+      "title": "Drills and Exercises",
+      "status": "stub",
+      "authoring_notes": [
+        "Spine placeholder. Title and citations verified against 33 CFR 101.630(c) in reference/. No authored content yet.",
+        "Requirement bullets loaded verbatim from reference/MTSA Cybersecurity Plan Outline.docx. Next step is to turn each into a checklist item with authored ground truth."
+      ],
+      "connected_authority_ids": [
+        "cfr:101.630(c)(3)",
+        "cfr:101.650(g)",
+        "cfr:101.635"
+      ],
+      "requirements": [
+        {
+          "id": "s3-01-at-least-two-cybersecurity-drills-per-calendar-y",
+          "text": "At least two cybersecurity drills per calendar year",
+          "authority_ids": [
+            "cfr:101.630(c)(3)",
+            "cfr:101.635",
+            "cfr:101.650(g)"
+          ]
+        },
+        {
+          "id": "s3-02-at-least-one-cybersecurity-exercise-per-calendar",
+          "text": "At least one cybersecurity exercise per calendar year",
+          "authority_ids": [
+            "cfr:101.630(c)(3)",
+            "cfr:101.635",
+            "cfr:101.650(g)"
+          ]
+        },
+        {
+          "id": "s3-03-no-more-than-18-months-between-exercises",
+          "text": "No more than 18 months between exercises",
+          "authority_ids": [
+            "cfr:101.630(c)(3)",
+            "cfr:101.635",
+            "cfr:101.650(g)"
+          ]
+        },
+        {
+          "id": "s3-04-drill-and-exercise-objectives",
+          "text": "Drill and exercise objectives",
+          "authority_ids": [
+            "cfr:101.630(c)(3)",
+            "cfr:101.635",
+            "cfr:101.650(g)"
+          ]
+        },
+        {
+          "id": "s3-05-scenario-development-requirements",
+          "text": "Scenario-development requirements",
+          "authority_ids": [
+            "cfr:101.630(c)(3)",
+            "cfr:101.635",
+            "cfr:101.650(g)"
+          ]
+        },
+        {
+          "id": "s3-06-cyso-participation",
+          "text": "CySO participation",
+          "authority_ids": [
+            "cfr:101.630(c)(3)",
+            "cfr:101.635",
+            "cfr:101.650(g)"
+          ]
+        },
+        {
+          "id": "s3-07-coordination-with-the-fso-and-facility-operation",
+          "text": "Coordination with the FSO and facility operations",
+          "authority_ids": [
+            "cfr:101.630(c)(3)",
+            "cfr:101.635",
+            "cfr:101.650(g)"
+          ]
+        },
+        {
+          "id": "s3-08-testing-of-communications-notifications-coordina",
+          "text": "Testing of communications, notifications, coordination, resources, and response",
+          "authority_ids": [
+            "cfr:101.630(c)(3)",
+            "cfr:101.635",
+            "cfr:101.650(g)"
+          ]
+        },
+        {
+          "id": "s3-09-documentation-and-corrective-action-requirements",
+          "text": "Documentation and corrective-action requirements",
+          "authority_ids": [
+            "cfr:101.630(c)(3)",
+            "cfr:101.635",
+            "cfr:101.650(g)"
+          ]
+        },
+        {
+          "id": "s3-10-procedures-for-crediting-an-actual-cyber-inciden",
+          "text": "Procedures for crediting an actual cyber incident when regulatory objectives are achieved and documented",
+          "authority_ids": [
+            "cfr:101.630(c)(3)",
+            "cfr:101.635",
+            "cfr:101.650(g)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-4",
+      "number": 4,
+      "title": "Records and Documentation",
+      "status": "stub",
+      "authoring_notes": [
+        "Spine placeholder. Title and citations verified against 33 CFR 101.630(c) in reference/. No authored content yet.",
+        "Requirement bullets loaded verbatim from reference/MTSA Cybersecurity Plan Outline.docx. Next step is to turn each into a checklist item with authored ground truth."
+      ],
+      "connected_authority_ids": [
+        "cfr:101.630(c)(4)",
+        "cfr:101.650(c)",
+        "cfr:101.650(d)",
+        "cfr:101.650(f)",
+        "cfr:101.640",
+        "cfr:105.225"
+      ],
+      "requirements": [
+        {
+          "id": "s4-01-training",
+          "text": "Training",
+          "authority_ids": [
+            "cfr:101.630(c)(4)",
+            "cfr:101.640",
+            "cfr:101.650(c)",
+            "cfr:101.650(d)",
+            "cfr:101.650(f)",
+            "cfr:105.225"
+          ]
+        },
+        {
+          "id": "s4-02-drills-and-exercises",
+          "text": "Drills and exercises",
+          "authority_ids": [
+            "cfr:101.630(c)(4)",
+            "cfr:101.640",
+            "cfr:101.650(c)",
+            "cfr:101.650(d)",
+            "cfr:101.650(f)",
+            "cfr:105.225"
+          ]
+        },
+        {
+          "id": "s4-03-cybersecurity-threats",
+          "text": "Cybersecurity threats",
+          "authority_ids": [
+            "cfr:101.630(c)(4)",
+            "cfr:101.640",
+            "cfr:101.650(c)",
+            "cfr:101.650(d)",
+            "cfr:101.650(f)",
+            "cfr:105.225"
+          ]
+        },
+        {
+          "id": "s4-04-reportable-cyber-incidents",
+          "text": "Reportable cyber incidents",
+          "authority_ids": [
+            "cfr:101.630(c)(4)",
+            "cfr:101.640",
+            "cfr:101.650(c)",
+            "cfr:101.650(d)",
+            "cfr:101.650(f)",
+            "cfr:105.225"
+          ]
+        },
+        {
+          "id": "s4-05-cybersecurity-plan-audits",
+          "text": "Cybersecurity Plan audits",
+          "authority_ids": [
+            "cfr:101.630(c)(4)",
+            "cfr:101.640",
+            "cfr:101.650(c)",
+            "cfr:101.650(d)",
+            "cfr:101.650(f)",
+            "cfr:105.225"
+          ]
+        },
+        {
+          "id": "s4-06-system-logs",
+          "text": "System logs",
+          "authority_ids": [
+            "cfr:101.630(c)(4)",
+            "cfr:101.640",
+            "cfr:101.650(c)",
+            "cfr:101.650(d)",
+            "cfr:101.650(f)",
+            "cfr:105.225"
+          ]
+        },
+        {
+          "id": "s4-07-encryption-measures",
+          "text": "Encryption measures",
+          "authority_ids": [
+            "cfr:101.630(c)(4)",
+            "cfr:101.640",
+            "cfr:101.650(c)",
+            "cfr:101.650(d)",
+            "cfr:101.650(f)",
+            "cfr:105.225"
+          ]
+        },
+        {
+          "id": "s4-08-vendor-and-supply-chain-controls",
+          "text": "Vendor and supply chain controls",
+          "authority_ids": [
+            "cfr:101.630(c)(4)",
+            "cfr:101.640",
+            "cfr:101.650(c)",
+            "cfr:101.650(d)",
+            "cfr:101.650(f)",
+            "cfr:105.225"
+          ]
+        },
+        {
+          "id": "s4-09-remote-third-party-connections",
+          "text": "Remote third-party connections",
+          "authority_ids": [
+            "cfr:101.630(c)(4)",
+            "cfr:101.640",
+            "cfr:101.650(c)",
+            "cfr:101.650(d)",
+            "cfr:101.650(f)",
+            "cfr:105.225"
+          ]
+        },
+        {
+          "id": "s4-10-corrective-actions",
+          "text": "Corrective actions",
+          "authority_ids": [
+            "cfr:101.630(c)(4)",
+            "cfr:101.640",
+            "cfr:101.650(c)",
+            "cfr:101.650(d)",
+            "cfr:101.650(f)",
+            "cfr:105.225"
+          ]
+        },
+        {
+          "id": "s4-11-risk-acceptance-decisions",
+          "text": "Risk acceptance decisions",
+          "authority_ids": [
+            "cfr:101.630(c)(4)",
+            "cfr:101.640",
+            "cfr:101.650(c)",
+            "cfr:101.650(d)",
+            "cfr:101.650(f)",
+            "cfr:105.225"
+          ]
+        },
+        {
+          "id": "s4-12-cybersecurity-assessments",
+          "text": "Cybersecurity Assessments",
+          "authority_ids": [
+            "cfr:101.630(c)(4)",
+            "cfr:101.640",
+            "cfr:101.650(c)",
+            "cfr:101.650(d)",
+            "cfr:101.650(f)",
+            "cfr:105.225"
+          ]
+        },
+        {
+          "id": "s4-13-penetration-test-certification",
+          "text": "Penetration-test certification",
+          "authority_ids": [
+            "cfr:101.630(c)(4)",
+            "cfr:101.640",
+            "cfr:101.650(c)",
+            "cfr:101.650(d)",
+            "cfr:101.650(f)",
+            "cfr:105.225"
+          ]
+        },
+        {
+          "id": "s4-14-coast-guard-correspondence-and-approvals",
+          "text": "Coast Guard correspondence and approvals",
+          "authority_ids": [
+            "cfr:101.630(c)(4)",
+            "cfr:101.640",
+            "cfr:101.650(c)",
+            "cfr:101.650(d)",
+            "cfr:101.650(f)",
+            "cfr:105.225"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-5",
+      "number": 5,
+      "title": "Communications",
+      "status": "complete",
+      "authoring_notes": [
+        "CITATION CORRECTION: the source attributed incident reporting timelines to 101.650(g) generally. 101.650(g) is Resilience; the reporting duty is (g)(1), report reportable cyber incidents to the NRC without delay, and it is documented in Sections 3 and 9, not Section 5.",
+        "The misplaced-content gap is now anchored to 101.650(g)(4), which places backup of critical IT and OT systems in Sections 3 and 9.",
+        "Ground truth for vessel-comms is inferred: the original draft describes only email, PBX, and PA systems, with no vessel-facing channel. Lesson 3 lists vessel-to-facility and inter-facility communication procedures as a Section 5 expectation."
+      ],
+      "connected_authority_ids": [
+        "cfr:101.630(c)(5)",
+        "cfr:101.645(a)",
+        "cfr:101.645(b)"
+      ],
+      "free_response_prompt": "What's missing? What could be improved?",
+      "checklist": [
+        {
+          "id": "personnel-notification",
+          "label": "Personnel notification of cybersecurity condition changes",
+          "authority_ids": [
+            "cfr:101.645(a)"
+          ],
+          "satisfied_by_original": false,
+          "gap_ids": [
+            "no-personnel-notification"
+          ]
+        },
+        {
+          "id": "authority-comms",
+          "label": "Continuous communications with the COTP and national and local authorities",
+          "authority_ids": [
+            "cfr:101.645(b)"
+          ],
+          "satisfied_by_original": false,
+          "gap_ids": [
+            "no-authority-contacts"
+          ]
+        },
+        {
+          "id": "vessel-comms",
+          "label": "Continuous communications with facility security personnel and interfacing vessels",
+          "authority_ids": [
+            "cfr:101.645(b)"
+          ],
+          "satisfied_by_original": false
+        }
+      ],
+      "drafts": {
+        "original": {
+          "variant": "original",
+          "label": "Original Draft",
+          "subsections": [
+            {
+              "number": "5.1",
+              "heading": "Communication Channels",
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "text": "MEG uses Microsoft 365 (Exchange Online, SharePoint, Teams) to communicate cybersecurity information to personnel. The CySO sends email updates to IT staff distribution lists when cybersecurity conditions change. Phone calls are used for urgent matters via the facility PBX system. The facility has a PA announcement system in Building 1, Building 3, and the Operations Control Center for building-wide notifications."
+                },
+                {
+                  "type": "paragraph",
+                  "text": "MEG's Microsoft 365 E3 licensing provides enterprise-grade email security, including Microsoft Defender for Office 365 with anti-phishing, safe attachments, and safe links. Email retention policies are configured for 7-year retention in compliance with records management requirements."
+                }
+              ]
+            },
+            {
+              "number": "5.2",
+              "heading": "Escalation Matrix",
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "text": "Cybersecurity incidents are reported to the CySO, who determines the appropriate response based on the nature and scope of the event. For serious incidents, the CySO notifies the COO. The IT Director is consulted on technical matters as needed. All escalation decisions are documented in the incident tracking system for post-incident review."
+                }
+              ]
+            },
+            {
+              "number": "5.3",
+              "heading": "Backup Communication and Data Recovery",
+              "misplaced_content": true,
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "text": "MEG maintains backup communication capabilities through the facility's Veeam backup infrastructure. Critical communication systems including Exchange Online and SharePoint are backed up daily with incremental snapshots. Full backups are performed weekly and stored on the Dell PowerEdge R740 backup server. In the event of a communication system failure, IT can restore email services within 4 hours using the most recent backup. Backup integrity is verified through automated checksum validation."
+                }
+              ]
+            },
+            {
+              "number": "5.4",
+              "heading": "Authority Coordination",
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "text": "MEG will contact the Coast Guard and other authorities as required in the event of a significant cybersecurity incident. Contact information for relevant agencies is maintained by the CySO in a secure document stored on the facility SharePoint site. The CySO updates this contact list annually during the CSP review cycle to ensure accuracy."
+                }
+              ]
+            }
+          ]
+        },
+        "strengthened": {
+          "variant": "strengthened",
+          "label": "Strengthened",
+          "subsections": [
+            {
+              "number": "5.1",
+              "heading": "Communication Channels",
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "text": "Per 101.645(a), the CySO maintains the following means to notify owners, operators, and all personnel of changes in cybersecurity conditions:"
+                },
+                {
+                  "type": "list",
+                  "items": [
+                    "Email via Microsoft 365 distribution lists (all-hands, IT staff, OT operators, management).",
+                    "Telephone: Facility main number 555-0100, CySO direct 555-0190, Operations Center 555-0110.",
+                    "VHF Marine Radio: Channel 16 (emergency) and Channel 13 (vessel-to-shore operations).",
+                    "In-person briefings at Operations Control Center (Building 3) for shift-change security updates.",
+                    "SMS/text alert system via facility emergency notification system for time-critical alerts.",
+                    "Satellite phone for communication with MEG-1 platform (555-0161) and vessels at sea."
+                  ]
+                }
+              ]
+            },
+            {
+              "number": "5.2",
+              "heading": "Escalation Matrix",
+              "blocks": [
+                {
+                  "type": "table",
+                  "caption": "Severity-tiered notification chain",
+                  "columns": [
+                    "Severity",
+                    "Primary chain",
+                    "Secondary notifications"
+                  ],
+                  "rows": [
+                    [
+                      "CRITICAL",
+                      "CySO to COO to CEO to COTP (within 4 hours)",
+                      "CLO, FSO, IR team, NRC"
+                    ],
+                    [
+                      "HIGH",
+                      "CySO to IT Director to COO",
+                      "FSO, IR team"
+                    ],
+                    [
+                      "MEDIUM",
+                      "CySO to IT Director",
+                      "Affected department head"
+                    ],
+                    [
+                      "LOW",
+                      "IT Security Manager to CySO",
+                      "Logged for review"
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "number": "5.3",
+              "heading": "Out-of-Band Communications",
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "text": "If primary communication systems (email, VoIP) are compromised, MEG maintains the following alternative channels:"
+                },
+                {
+                  "type": "list",
+                  "items": [
+                    "Personal mobile phones (contact list maintained in printed format in Operations Center and CySO office).",
+                    "VHF radio for vessel and port operations.",
+                    "Satellite phone for offshore and remote vessel communications.",
+                    "Physical runner protocol for intra-facility notification if all electronic systems are unavailable."
+                  ]
+                }
+              ]
+            },
+            {
+              "number": "5.4",
+              "heading": "COTP and Authority Coordination",
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "text": "Per 101.645(b), communication systems allow effective and continuous communications with the Captain of the Port (COTP), USCG Sector Puget Sound, and other national and local authorities. The CySO maintains current contact information for:"
+                },
+                {
+                  "type": "list",
+                  "items": [
+                    "USCG Sector Puget Sound Sector Command",
+                    "USCG Marine Safety Unit (Duty Officer)",
+                    "CISA Region 10 (Regional Coordinator)",
+                    "FBI Seattle (Cyber Division)",
+                    "National Response Center (NRC): 1-800-424-8802"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "gap_analysis": {
+        "intro": "The strengthened draft closes each of the gaps below that the original draft left open.",
+        "regulatory_gaps": [
+          {
+            "id": "no-authority-contacts",
+            "authority_ids": [
+              "cfr:101.645(b)"
+            ],
+            "title": "No specific authority contact information",
+            "explanation": "The regulation requires effective and continuous communications with COTP and other authorities. The deficient draft vaguely states that contact information is maintained without listing specific agencies or numbers (NRC, CISA, FBI).",
+            "kind": "insufficient_detail",
+            "binding": true
+          },
+          {
+            "id": "no-personnel-notification",
+            "authority_ids": [
+              "cfr:101.645(a)"
+            ],
+            "title": "No personnel notification for cybersecurity condition changes",
+            "explanation": "101.645(a) explicitly requires means to notify all personnel of changes in cybersecurity conditions. The compliant draft specifies multiple channels for notifying all personnel (email lists, SMS alerts, in-person briefings, shift-change updates). The deficient draft only mentions IT staff email updates.",
+            "kind": "omission",
+            "binding": true
+          }
+        ],
+        "best_practice_improvements": [
+          {
+            "id": "no-out-of-band",
+            "authority_ids": [
+              "cfr:101.645(a)"
+            ],
+            "title": "No out-of-band communication plan",
+            "explanation": "The regulation requires means to notify personnel but does not specifically mandate backup channels for when primary systems are compromised. However, establishing out-of-band communication (VHF, satellite, physical runner) is a best practice that ensures the facility can maintain notification capability during a cyber incident affecting email and VoIP.",
+            "kind": "omission",
+            "binding": false
+          },
+          {
+            "id": "no-severity-tiers",
+            "authority_ids": [
+              "cfr:101.645(a)",
+              "cfr:101.650(g)"
+            ],
+            "title": "No severity-based escalation with timelines",
+            "explanation": "101.645(a) requires a means to notify personnel of changes in cybersecurity conditions but does not mandate a tiered severity matrix. Defining severity levels with specific notification chains and internal timelines is a best practice that produces consistent response. Note that the regulation's own reporting obligation is not a tiered timeline at all: 101.650(g)(1) requires reportable cyber incidents to be reported to the NRC without delay, and that obligation is documented in Sections 3 and 9. A facility-defined internal escalation clock must never be read as extending the regulatory one.",
+            "kind": "insufficient_detail",
+            "binding": false
+          },
+          {
+            "id": "backup-content-misfiled",
+            "authority_ids": [
+              "cfr:101.630(c)(5)",
+              "cfr:101.630(c)(9)",
+              "cfr:101.650(g)(4)"
+            ],
+            "title": "Backup and recovery content does not belong in Section 5",
+            "explanation": "Section 5.3 of the original draft discusses Veeam backup infrastructure, restore times, and backup integrity. Backup of critical IT and OT systems is required by 101.650(g)(4), and the lead-in to 101.650(g) places it in Sections 3 and 9 of the Plan. Section 9 is cybersecurity measures for monitoring under 101.630(c)(9). Including it under Communications is a red herring: it looks thorough but does not address the Section 5 requirement for notification means that survive a compromise of the primary systems. Restoring email from backup four hours later is not out-of-band communication capability.",
+            "kind": "misplaced_content",
+            "binding": false
+          }
+        ]
+      },
+      "visuals": [
+        {
+          "id": "escalation-matrix",
+          "type": "matrix",
+          "title": "Incident Escalation Matrix",
+          "caption": "The strengthened plan defines a severity-tiered escalation chain with timelines, replacing the original draft's single undifferentiated notification path.",
+          "depicts": "strengthened",
+          "source_ref": "sections/section-5/drafts/strengthened/subsections/5.2"
+        }
+      ],
+      "requirements": [
+        {
+          "id": "s5-01-internal-escalation-procedures",
+          "text": "Internal escalation procedures",
+          "authority_ids": [
+            "cfr:101.630(c)(5)",
+            "cfr:101.645(a)",
+            "cfr:101.645(b)"
+          ]
+        },
+        {
+          "id": "s5-02-notification-of-changing-cybersecurity-condition",
+          "text": "Notification of changing cybersecurity conditions",
+          "authority_ids": [
+            "cfr:101.630(c)(5)",
+            "cfr:101.645(a)",
+            "cfr:101.645(b)"
+          ]
+        },
+        {
+          "id": "s5-03-communications-with-the-owner-operator-cyso-fso",
+          "text": "Communications with the owner/operator, CySO, FSO, facility management, and affected personnel",
+          "authority_ids": [
+            "cfr:101.630(c)(5)",
+            "cfr:101.645(a)",
+            "cfr:101.645(b)"
+          ]
+        },
+        {
+          "id": "s5-04-communications-with-interfacing-vessels",
+          "text": "Communications with interfacing vessels",
+          "authority_ids": [
+            "cfr:101.630(c)(5)",
+            "cfr:101.645(a)",
+            "cfr:101.645(b)"
+          ]
+        },
+        {
+          "id": "s5-05-communications-with-the-cotp-and-national-respon",
+          "text": "Communications with the COTP and National Response Center",
+          "authority_ids": [
+            "cfr:101.630(c)(5)",
+            "cfr:101.645(a)",
+            "cfr:101.645(b)"
+          ]
+        },
+        {
+          "id": "s5-06-coordination-with-law-enforcement-cisa-the-fbi-v",
+          "text": "Coordination with law enforcement, CISA, the FBI, vendors, insurers, and other authorities",
+          "authority_ids": [
+            "cfr:101.630(c)(5)",
+            "cfr:101.645(a)",
+            "cfr:101.645(b)"
+          ]
+        },
+        {
+          "id": "s5-07-primary-alternate-and-out-of-band-communication",
+          "text": "Primary, alternate, and out-of-band communication methods",
+          "authority_ids": [
+            "cfr:101.630(c)(5)",
+            "cfr:101.645(a)",
+            "cfr:101.645(b)"
+          ]
+        },
+        {
+          "id": "s5-08-loss-of-network-and-loss-of-voice-contingencies",
+          "text": "Loss-of-network and loss-of-voice contingencies",
+          "authority_ids": [
+            "cfr:101.630(c)(5)",
+            "cfr:101.645(a)",
+            "cfr:101.645(b)"
+          ]
+        },
+        {
+          "id": "s5-09-protection-of-ssi-and-sensitive-incident-informa",
+          "text": "Protection of SSI and sensitive incident information",
+          "authority_ids": [
+            "cfr:101.630(c)(5)",
+            "cfr:101.645(a)",
+            "cfr:101.645(b)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-6",
+      "number": 6,
+      "title": "Cybersecurity Systems and Equipment, with Associated Maintenance",
+      "status": "stub",
+      "authoring_notes": [
+        "Spine placeholder. Title and citations verified against 33 CFR 101.630(c) in reference/. No authored content yet.",
+        "Requirement bullets loaded verbatim from reference/MTSA Cybersecurity Plan Outline.docx. Next step is to turn each into a checklist item with authored ground truth."
+      ],
+      "connected_authority_ids": [
+        "cfr:101.630(c)(6)",
+        "cfr:101.650(b)",
+        "cfr:101.650(e)(3)"
+      ],
+      "requirements": [
+        {
+          "id": "s6-01-maintains-approved-hardware-firmware-and-softwar",
+          "text": "Maintains approved hardware, firmware, and software list",
+          "authority_ids": [
+            "cfr:101.630(c)(6)",
+            "cfr:101.650(b)",
+            "cfr:101.650(e)(3)"
+          ]
+        },
+        {
+          "id": "s6-02-prevents-unauthorized-installations",
+          "text": "Prevents unauthorized installations",
+          "authority_ids": [
+            "cfr:101.630(c)(6)",
+            "cfr:101.650(b)",
+            "cfr:101.650(e)(3)"
+          ]
+        },
+        {
+          "id": "s6-03-disables-executable-code-by-default-on-critical",
+          "text": "Disables executable code by default on critical systems",
+          "authority_ids": [
+            "cfr:101.630(c)(6)",
+            "cfr:101.650(b)",
+            "cfr:101.650(e)(3)"
+          ]
+        },
+        {
+          "id": "s6-04-maintains-an-inventory-of-network-connected-syst",
+          "text": "Maintains an inventory of network-connected systems",
+          "authority_ids": [
+            "cfr:101.630(c)(6)",
+            "cfr:101.650(b)",
+            "cfr:101.650(e)(3)"
+          ]
+        },
+        {
+          "id": "s6-05-designates-critical-it-and-ot-systems",
+          "text": "Designates critical IT and OT systems",
+          "authority_ids": [
+            "cfr:101.630(c)(6)",
+            "cfr:101.650(b)",
+            "cfr:101.650(e)(3)"
+          ]
+        },
+        {
+          "id": "s6-06-maintains-network-maps-and-ot-configuration-info",
+          "text": "Maintains network maps and OT configuration information",
+          "authority_ids": [
+            "cfr:101.630(c)(6)",
+            "cfr:101.650(b)",
+            "cfr:101.650(e)(3)"
+          ]
+        },
+        {
+          "id": "s6-07-monitors-known-exploited-vulnerabilities",
+          "text": "Monitors Known Exploited Vulnerabilities",
+          "authority_ids": [
+            "cfr:101.630(c)(6)",
+            "cfr:101.650(b)",
+            "cfr:101.650(e)(3)"
+          ]
+        },
+        {
+          "id": "s6-08-patches-kevs-without-delay-or-implements-compens",
+          "text": "Patches KEVs without delay or implements compensating controls",
+          "authority_ids": [
+            "cfr:101.630(c)(6)",
+            "cfr:101.650(b)",
+            "cfr:101.650(e)(3)"
+          ]
+        },
+        {
+          "id": "s6-09-receives-and-acts-on-vulnerability-reports",
+          "text": "Receives and acts on vulnerability reports",
+          "authority_ids": [
+            "cfr:101.630(c)(6)",
+            "cfr:101.650(b)",
+            "cfr:101.650(e)(3)"
+          ]
+        },
+        {
+          "id": "s6-10-shares-threat-and-vulnerability-information",
+          "text": "Shares threat and vulnerability information",
+          "authority_ids": [
+            "cfr:101.630(c)(6)",
+            "cfr:101.650(b)",
+            "cfr:101.650(e)(3)"
+          ]
+        },
+        {
+          "id": "s6-11-identifies-internet-exposed-channels",
+          "text": "Identifies internet-exposed channels",
+          "authority_ids": [
+            "cfr:101.630(c)(6)",
+            "cfr:101.650(b)",
+            "cfr:101.650(e)(3)"
+          ]
+        },
+        {
+          "id": "s6-12-controls-publicly-accessible-ot-connections",
+          "text": "Controls publicly accessible OT connections",
+          "authority_ids": [
+            "cfr:101.630(c)(6)",
+            "cfr:101.650(b)",
+            "cfr:101.650(e)(3)"
+          ]
+        },
+        {
+          "id": "s6-13-documents-justification-for-remotely-accessible",
+          "text": "Documents justification for remotely accessible OT",
+          "authority_ids": [
+            "cfr:101.630(c)(6)",
+            "cfr:101.650(b)",
+            "cfr:101.650(e)(3)"
+          ]
+        },
+        {
+          "id": "s6-14-conducts-vulnerability-scans",
+          "text": "Conducts vulnerability scans",
+          "authority_ids": [
+            "cfr:101.630(c)(6)",
+            "cfr:101.650(b)",
+            "cfr:101.650(e)(3)"
+          ]
+        },
+        {
+          "id": "s6-15-maintains-equipment-and-configuration-records",
+          "text": "Maintains equipment and configuration records",
+          "authority_ids": [
+            "cfr:101.630(c)(6)",
+            "cfr:101.650(b)",
+            "cfr:101.650(e)(3)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-7",
+      "number": 7,
+      "title": "Cybersecurity Measures for Access Control",
+      "status": "stub",
+      "authoring_notes": [
+        "Spine placeholder. Title and citations verified against 33 CFR 101.630(c) in reference/. No authored content yet.",
+        "Requirement bullets loaded verbatim from reference/MTSA Cybersecurity Plan Outline.docx. Next step is to turn each into a checklist item with authored ground truth."
+      ],
+      "connected_authority_ids": [
+        "cfr:101.630(c)(7)",
+        "cfr:101.650(a)",
+        "cfr:101.650(h)",
+        "cfr:101.650(i)"
+      ],
+      "requirements": [
+        {
+          "id": "s7-01-automatic-account-lockout",
+          "text": "Automatic account lockout",
+          "authority_ids": [
+            "cfr:101.630(c)(7)",
+            "cfr:101.650(a)",
+            "cfr:101.650(h)",
+            "cfr:101.650(i)"
+          ]
+        },
+        {
+          "id": "s7-02-default-password-changes",
+          "text": "Default password changes",
+          "authority_ids": [
+            "cfr:101.630(c)(7)",
+            "cfr:101.650(a)",
+            "cfr:101.650(h)",
+            "cfr:101.650(i)"
+          ]
+        },
+        {
+          "id": "s7-03-password-strength-requirements",
+          "text": "Password-strength requirements",
+          "authority_ids": [
+            "cfr:101.630(c)(7)",
+            "cfr:101.650(a)",
+            "cfr:101.650(h)",
+            "cfr:101.650(i)"
+          ]
+        },
+        {
+          "id": "s7-04-multifactor-authentication",
+          "text": "Multifactor authentication",
+          "authority_ids": [
+            "cfr:101.630(c)(7)",
+            "cfr:101.650(a)",
+            "cfr:101.650(h)",
+            "cfr:101.650(i)"
+          ]
+        },
+        {
+          "id": "s7-05-compensating-controls-where-mfa-or-password-chan",
+          "text": "Compensating controls where MFA or password changes are infeasible",
+          "authority_ids": [
+            "cfr:101.630(c)(7)",
+            "cfr:101.650(a)",
+            "cfr:101.650(h)",
+            "cfr:101.650(i)"
+          ]
+        },
+        {
+          "id": "s7-06-least-privilege",
+          "text": "Least privilege",
+          "authority_ids": [
+            "cfr:101.630(c)(7)",
+            "cfr:101.650(a)",
+            "cfr:101.650(h)",
+            "cfr:101.650(i)"
+          ]
+        },
+        {
+          "id": "s7-07-separate-it-and-ot-credentials",
+          "text": "Separate IT and OT credentials",
+          "authority_ids": [
+            "cfr:101.630(c)(7)",
+            "cfr:101.650(a)",
+            "cfr:101.650(h)",
+            "cfr:101.650(i)"
+          ]
+        },
+        {
+          "id": "s7-08-account-termination-and-credential-revocation",
+          "text": "Account termination and credential revocation",
+          "authority_ids": [
+            "cfr:101.630(c)(7)",
+            "cfr:101.650(a)",
+            "cfr:101.650(h)",
+            "cfr:101.650(i)"
+          ]
+        },
+        {
+          "id": "s7-09-privileged-access-management",
+          "text": "Privileged-access management",
+          "authority_ids": [
+            "cfr:101.630(c)(7)",
+            "cfr:101.650(a)",
+            "cfr:101.650(h)",
+            "cfr:101.650(i)"
+          ]
+        },
+        {
+          "id": "s7-10-remote-access",
+          "text": "Remote access",
+          "authority_ids": [
+            "cfr:101.630(c)(7)",
+            "cfr:101.650(a)",
+            "cfr:101.650(h)",
+            "cfr:101.650(i)"
+          ]
+        },
+        {
+          "id": "s7-11-vendor-access",
+          "text": "Vendor access",
+          "authority_ids": [
+            "cfr:101.630(c)(7)",
+            "cfr:101.650(a)",
+            "cfr:101.650(h)",
+            "cfr:101.650(i)"
+          ]
+        },
+        {
+          "id": "s7-12-physical-and-logical-access-to-computer-it-and-o",
+          "text": "Physical and logical access to computer, IT, and OT areas",
+          "authority_ids": [
+            "cfr:101.630(c)(7)",
+            "cfr:101.650(a)",
+            "cfr:101.650(h)",
+            "cfr:101.650(i)"
+          ]
+        },
+        {
+          "id": "s7-13-it-ot-segmentation",
+          "text": "IT/OT segmentation",
+          "authority_ids": [
+            "cfr:101.630(c)(7)",
+            "cfr:101.650(a)",
+            "cfr:101.650(h)",
+            "cfr:101.650(i)"
+          ]
+        },
+        {
+          "id": "s7-14-portable-media-and-external-hardware",
+          "text": "Portable media and external hardware",
+          "authority_ids": [
+            "cfr:101.630(c)(7)",
+            "cfr:101.650(a)",
+            "cfr:101.650(h)",
+            "cfr:101.650(i)"
+          ]
+        },
+        {
+          "id": "s7-15-exception-approval-and-documentation",
+          "text": "Exception approval and documentation",
+          "authority_ids": [
+            "cfr:101.630(c)(7)",
+            "cfr:101.650(a)",
+            "cfr:101.650(h)",
+            "cfr:101.650(i)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-8",
+      "number": 8,
+      "title": "Physical Security Controls for IT and OT Systems",
+      "status": "stub",
+      "authoring_notes": [
+        "Spine placeholder. Title and citations verified against 33 CFR 101.630(c) in reference/. No authored content yet.",
+        "Requirement bullets loaded verbatim from reference/MTSA Cybersecurity Plan Outline.docx. Next step is to turn each into a checklist item with authored ground truth."
+      ],
+      "connected_authority_ids": [
+        "cfr:101.630(c)(8)",
+        "cfr:101.650(h)",
+        "cfr:101.650(i)"
+      ],
+      "requirements": [
+        {
+          "id": "s8-01-identification-of-it-and-ot-equipment-areas",
+          "text": "Identification of IT and OT equipment areas",
+          "authority_ids": [
+            "cfr:101.630(c)(8)",
+            "cfr:101.650(h)",
+            "cfr:101.650(i)"
+          ]
+        },
+        {
+          "id": "s8-02-authorized-personnel-requirements",
+          "text": "Authorized-personnel requirements",
+          "authority_ids": [
+            "cfr:101.630(c)(8)",
+            "cfr:101.650(h)",
+            "cfr:101.650(i)"
+          ]
+        },
+        {
+          "id": "s8-03-protection-of-hmis-servers-switches-controllers",
+          "text": "Protection of HMIs, servers, switches, controllers, communications equipment, and network cabinets",
+          "authority_ids": [
+            "cfr:101.630(c)(8)",
+            "cfr:101.650(h)",
+            "cfr:101.650(i)"
+          ]
+        },
+        {
+          "id": "s8-04-physical-access-monitoring-and-logging",
+          "text": "Physical access monitoring and logging",
+          "authority_ids": [
+            "cfr:101.630(c)(8)",
+            "cfr:101.650(h)",
+            "cfr:101.650(i)"
+          ]
+        },
+        {
+          "id": "s8-05-it-ot-network-segmentation",
+          "text": "IT/OT network segmentation",
+          "authority_ids": [
+            "cfr:101.630(c)(8)",
+            "cfr:101.650(h)",
+            "cfr:101.650(i)"
+          ]
+        },
+        {
+          "id": "s8-06-logging-and-monitoring-of-connections-between-it",
+          "text": "Logging and monitoring of connections between IT and OT",
+          "authority_ids": [
+            "cfr:101.630(c)(8)",
+            "cfr:101.650(h)",
+            "cfr:101.650(i)"
+          ]
+        },
+        {
+          "id": "s8-07-usb-and-removable-media-restrictions",
+          "text": "USB and removable-media restrictions",
+          "authority_ids": [
+            "cfr:101.630(c)(8)",
+            "cfr:101.650(h)",
+            "cfr:101.650(i)"
+          ]
+        },
+        {
+          "id": "s8-08-blocking-or-disabling-unused-ports",
+          "text": "Blocking or disabling unused ports",
+          "authority_ids": [
+            "cfr:101.630(c)(8)",
+            "cfr:101.650(h)",
+            "cfr:101.650(i)"
+          ]
+        },
+        {
+          "id": "s8-09-by-exception-procedures",
+          "text": "By-exception procedures",
+          "authority_ids": [
+            "cfr:101.630(c)(8)",
+            "cfr:101.650(h)",
+            "cfr:101.650(i)"
+          ]
+        },
+        {
+          "id": "s8-10-visitor-and-vendor-escort-requirements",
+          "text": "Visitor and vendor escort requirements",
+          "authority_ids": [
+            "cfr:101.630(c)(8)",
+            "cfr:101.650(h)",
+            "cfr:101.650(i)"
+          ]
+        },
+        {
+          "id": "s8-11-environmental-and-utility-protections-affecting",
+          "text": "Environmental and utility protections affecting critical systems",
+          "authority_ids": [
+            "cfr:101.630(c)(8)",
+            "cfr:101.650(h)",
+            "cfr:101.650(i)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-9",
+      "number": 9,
+      "title": "Cybersecurity Measures for Monitoring",
+      "status": "stub",
+      "authoring_notes": [
+        "Spine placeholder. Title and citations verified against 33 CFR 101.630(c) in reference/. No authored content yet.",
+        "Requirement bullets loaded verbatim from reference/MTSA Cybersecurity Plan Outline.docx. Next step is to turn each into a checklist item with authored ground truth."
+      ],
+      "connected_authority_ids": [
+        "cfr:101.630(c)(9)",
+        "cfr:101.650(g)",
+        "cfr:101.650(h)"
+      ],
+      "requirements": [
+        {
+          "id": "s9-01-monitoring-of-it-ot-connections",
+          "text": "Monitoring of IT/OT connections",
+          "authority_ids": [
+            "cfr:101.630(c)(9)",
+            "cfr:101.650(g)",
+            "cfr:101.650(h)"
+          ]
+        },
+        {
+          "id": "s9-02-security-event-review-and-escalation",
+          "text": "Security-event review and escalation",
+          "authority_ids": [
+            "cfr:101.630(c)(9)",
+            "cfr:101.650(g)",
+            "cfr:101.650(h)"
+          ]
+        },
+        {
+          "id": "s9-03-detection-of-unauthorized-access",
+          "text": "Detection of unauthorized access",
+          "authority_ids": [
+            "cfr:101.630(c)(9)",
+            "cfr:101.650(g)",
+            "cfr:101.650(h)"
+          ]
+        },
+        {
+          "id": "s9-04-monitoring-for-breaches-cyber-incidents-and-pote",
+          "text": "Monitoring for breaches, cyber incidents, and potential TSIs",
+          "authority_ids": [
+            "cfr:101.630(c)(9)",
+            "cfr:101.650(g)",
+            "cfr:101.650(h)"
+          ]
+        },
+        {
+          "id": "s9-05-third-party-remote-session-monitoring",
+          "text": "Third-party remote-session monitoring",
+          "authority_ids": [
+            "cfr:101.630(c)(9)",
+            "cfr:101.650(g)",
+            "cfr:101.650(h)"
+          ]
+        },
+        {
+          "id": "s9-06-backup-frequency",
+          "text": "Backup frequency",
+          "authority_ids": [
+            "cfr:101.630(c)(9)",
+            "cfr:101.650(g)",
+            "cfr:101.650(h)"
+          ]
+        },
+        {
+          "id": "s9-07-backup-protection-and-separation",
+          "text": "Backup protection and separation",
+          "authority_ids": [
+            "cfr:101.630(c)(9)",
+            "cfr:101.650(g)",
+            "cfr:101.650(h)"
+          ]
+        },
+        {
+          "id": "s9-08-restoration-testing",
+          "text": "Restoration testing",
+          "authority_ids": [
+            "cfr:101.630(c)(9)",
+            "cfr:101.650(g)",
+            "cfr:101.650(h)"
+          ]
+        },
+        {
+          "id": "s9-09-operational-continuity-and-manual-workarounds",
+          "text": "Operational continuity and manual workarounds",
+          "authority_ids": [
+            "cfr:101.630(c)(9)",
+            "cfr:101.650(g)",
+            "cfr:101.650(h)"
+          ]
+        },
+        {
+          "id": "s9-10-periodic-validation-of-the-plan",
+          "text": "Periodic validation of the plan",
+          "authority_ids": [
+            "cfr:101.630(c)(9)",
+            "cfr:101.650(g)",
+            "cfr:101.650(h)"
+          ]
+        },
+        {
+          "id": "s9-11-annual-incident-response-case-reviews",
+          "text": "Annual incident-response case reviews",
+          "authority_ids": [
+            "cfr:101.630(c)(9)",
+            "cfr:101.650(g)",
+            "cfr:101.650(h)"
+          ]
+        },
+        {
+          "id": "s9-12-post-incident-reviews",
+          "text": "Post-incident reviews",
+          "authority_ids": [
+            "cfr:101.630(c)(9)",
+            "cfr:101.650(g)",
+            "cfr:101.650(h)"
+          ]
+        },
+        {
+          "id": "s9-13-cyber-incident-response-plan-activation",
+          "text": "Cyber Incident Response Plan activation",
+          "authority_ids": [
+            "cfr:101.630(c)(9)",
+            "cfr:101.650(g)",
+            "cfr:101.650(h)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-10",
+      "number": 10,
+      "title": "Audits and Amendments to the Cybersecurity Plan",
+      "status": "stub",
+      "authoring_notes": [
+        "Spine placeholder. Title and citations verified against 33 CFR 101.630(c) in reference/. No authored content yet.",
+        "Requirement bullets loaded verbatim from reference/MTSA Cybersecurity Plan Outline.docx. Next step is to turn each into a checklist item with authored ground truth."
+      ],
+      "connected_authority_ids": [
+        "cfr:101.630(c)(10)",
+        "cfr:101.630(e)(2)",
+        "cfr:101.630(e)(4)",
+        "cfr:101.630(f)",
+        "wi:mcp-wi-002",
+        "cfr:105"
+      ],
+      "requirements": [
+        {
+          "id": "s10-01-annual-audit-procedures",
+          "text": "Annual audit procedures",
+          "authority_ids": [
+            "cfr:101.630(c)(10)",
+            "cfr:101.630(e)(2)",
+            "cfr:101.630(e)(4)",
+            "cfr:101.630(f)",
+            "wi:mcp-wi-002",
+            "cfr:105"
+          ]
+        },
+        {
+          "id": "s10-02-audit-following-ownership-changes",
+          "text": "Audit following ownership changes",
+          "authority_ids": [
+            "cfr:101.630(c)(10)",
+            "cfr:101.630(e)(2)",
+            "cfr:101.630(e)(4)",
+            "cfr:101.630(f)",
+            "wi:mcp-wi-002",
+            "cfr:105"
+          ]
+        },
+        {
+          "id": "s10-03-audit-following-material-cybersecurity-modificat",
+          "text": "Audit following material cybersecurity modifications",
+          "authority_ids": [
+            "cfr:101.630(c)(10)",
+            "cfr:101.630(e)(2)",
+            "cfr:101.630(e)(4)",
+            "cfr:101.630(f)",
+            "wi:mcp-wi-002",
+            "cfr:105"
+          ]
+        },
+        {
+          "id": "s10-04-auditor-qualifications-and-independence",
+          "text": "Auditor qualifications and independence",
+          "authority_ids": [
+            "cfr:101.630(c)(10)",
+            "cfr:101.630(e)(2)",
+            "cfr:101.630(e)(4)",
+            "cfr:101.630(f)",
+            "wi:mcp-wi-002",
+            "cfr:105"
+          ]
+        },
+        {
+          "id": "s10-05-corrective-action-tracking",
+          "text": "Corrective-action tracking",
+          "authority_ids": [
+            "cfr:101.630(c)(10)",
+            "cfr:101.630(e)(2)",
+            "cfr:101.630(e)(4)",
+            "cfr:101.630(f)",
+            "wi:mcp-wi-002",
+            "cfr:105"
+          ]
+        },
+        {
+          "id": "s10-06-cyso-certification",
+          "text": "CySO certification",
+          "authority_ids": [
+            "cfr:101.630(c)(10)",
+            "cfr:101.630(e)(2)",
+            "cfr:101.630(e)(4)",
+            "cfr:101.630(f)",
+            "wi:mcp-wi-002",
+            "cfr:105"
+          ]
+        },
+        {
+          "id": "s10-07-coast-guard-amendment-submissions",
+          "text": "Coast Guard amendment submissions",
+          "authority_ids": [
+            "cfr:101.630(c)(10)",
+            "cfr:101.630(e)(2)",
+            "cfr:101.630(e)(4)",
+            "cfr:101.630(f)",
+            "wi:mcp-wi-002",
+            "cfr:105"
+          ]
+        },
+        {
+          "id": "s10-08-thirty-day-advance-submission-requirement",
+          "text": "Thirty-day advance submission requirement",
+          "authority_ids": [
+            "cfr:101.630(c)(10)",
+            "cfr:101.630(e)(2)",
+            "cfr:101.630(e)(4)",
+            "cfr:101.630(f)",
+            "wi:mcp-wi-002",
+            "cfr:105"
+          ]
+        },
+        {
+          "id": "s10-09-ninety-six-hour-owner-operator-or-cyso-change-pr",
+          "text": "Ninety-six-hour owner/operator or CySO change procedures",
+          "authority_ids": [
+            "cfr:101.630(c)(10)",
+            "cfr:101.630(e)(2)",
+            "cfr:101.630(e)(4)",
+            "cfr:101.630(f)",
+            "wi:mcp-wi-002",
+            "cfr:105"
+          ]
+        },
+        {
+          "id": "s10-10-exigent-cybersecurity-measures",
+          "text": "Exigent cybersecurity measures",
+          "authority_ids": [
+            "cfr:101.630(c)(10)",
+            "cfr:101.630(e)(2)",
+            "cfr:101.630(e)(4)",
+            "cfr:101.630(f)",
+            "wi:mcp-wi-002",
+            "cfr:105"
+          ]
+        },
+        {
+          "id": "s10-11-temporary-deviations",
+          "text": "Temporary deviations",
+          "authority_ids": [
+            "cfr:101.630(c)(10)",
+            "cfr:101.630(e)(2)",
+            "cfr:101.630(e)(4)",
+            "cfr:101.630(f)",
+            "wi:mcp-wi-002",
+            "cfr:105"
+          ]
+        },
+        {
+          "id": "s10-12-waivers-and-equivalencies",
+          "text": "Waivers and equivalencies",
+          "authority_ids": [
+            "cfr:101.630(c)(10)",
+            "cfr:101.630(e)(2)",
+            "cfr:101.630(e)(4)",
+            "cfr:101.630(f)",
+            "wi:mcp-wi-002",
+            "cfr:105"
+          ]
+        },
+        {
+          "id": "s10-13-five-year-renewal-process",
+          "text": "Five-year renewal process",
+          "authority_ids": [
+            "cfr:101.630(c)(10)",
+            "cfr:101.630(e)(2)",
+            "cfr:101.630(e)(4)",
+            "cfr:101.630(f)",
+            "wi:mcp-wi-002",
+            "cfr:105"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-11",
+      "number": 11,
+      "title": "Reports of Cybersecurity Audits and Inspections",
+      "status": "stub",
+      "authoring_notes": [
+        "Spine placeholder. Title and citations verified against 33 CFR 101.630(c) in reference/. No authored content yet.",
+        "Requirement bullets loaded verbatim from reference/MTSA Cybersecurity Plan Outline.docx. Next step is to turn each into a checklist item with authored ground truth."
+      ],
+      "connected_authority_ids": [
+        "cfr:101.630(c)(11)",
+        "cfr:101.650(e)"
+      ],
+      "requirements": [
+        {
+          "id": "s11-01-annual-audit-reports",
+          "text": "Annual audit reports",
+          "authority_ids": [
+            "cfr:101.630(c)(11)",
+            "cfr:101.650(e)"
+          ]
+        },
+        {
+          "id": "s11-02-coast-guard-inspection-results",
+          "text": "Coast Guard inspection results",
+          "authority_ids": [
+            "cfr:101.630(c)(11)",
+            "cfr:101.650(e)"
+          ]
+        },
+        {
+          "id": "s11-03-internal-inspection-reports",
+          "text": "Internal inspection reports",
+          "authority_ids": [
+            "cfr:101.630(c)(11)",
+            "cfr:101.650(e)"
+          ]
+        },
+        {
+          "id": "s11-04-findings",
+          "text": "Findings",
+          "authority_ids": [
+            "cfr:101.630(c)(11)",
+            "cfr:101.650(e)"
+          ]
+        },
+        {
+          "id": "s11-05-root-cause-analysis",
+          "text": "Root-cause analysis",
+          "authority_ids": [
+            "cfr:101.630(c)(11)",
+            "cfr:101.650(e)"
+          ]
+        },
+        {
+          "id": "s11-06-corrective-actions",
+          "text": "Corrective actions",
+          "authority_ids": [
+            "cfr:101.630(c)(11)",
+            "cfr:101.650(e)"
+          ]
+        },
+        {
+          "id": "s11-07-responsible-parties",
+          "text": "Responsible parties",
+          "authority_ids": [
+            "cfr:101.630(c)(11)",
+            "cfr:101.650(e)"
+          ]
+        },
+        {
+          "id": "s11-08-target-completion-dates",
+          "text": "Target completion dates",
+          "authority_ids": [
+            "cfr:101.630(c)(11)",
+            "cfr:101.650(e)"
+          ]
+        },
+        {
+          "id": "s11-09-verification-of-closure",
+          "text": "Verification of closure",
+          "authority_ids": [
+            "cfr:101.630(c)(11)",
+            "cfr:101.650(e)"
+          ]
+        },
+        {
+          "id": "s11-10-residual-risk",
+          "text": "Residual risk",
+          "authority_ids": [
+            "cfr:101.630(c)(11)",
+            "cfr:101.650(e)"
+          ]
+        },
+        {
+          "id": "s11-11-supporting-evidence",
+          "text": "Supporting evidence",
+          "authority_ids": [
+            "cfr:101.630(c)(11)",
+            "cfr:101.650(e)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-12",
+      "number": 12,
+      "title": "Documentation of Unresolved Vulnerabilities",
+      "status": "draft_incomplete",
+      "authoring_notes": [
+        "SOURCE STILL TRUNCATED. Subsection 12.2 cuts off mid-sentence at 'Patches for Windows systems are deployed through Microsoft SCCM'. The strengthened draft and the visual are still missing and are not recoverable from the seven project files, which contain the regulation and the lessons but not the authored exercise text.",
+        "Gap analysis below was authored from 33 CFR Part 101 Subpart F and lesson 3 slide 'Section 12: Unresolved Vulnerabilities and Risk Acceptance' plus lesson 4 'Remediation timelines'. Review before publishing.",
+        "Checklist ground truth set to false rather than null. Basis: the visible 12.1 contains no risk acceptance process, and its cadence (quarterly IT scans, monthly OT advisory review, weekly remediation meetings) is structurally incompatible with the 'without delay' KEV standard. Confidence is lower than for Sections 1 and 5 because the tail of 12.2 is unread.",
+        "Lesson 3 miscites KEV patching as 101.650(e)(3)(iv). The correct citation is 101.650(e)(3)(i); (iv) is the exploitable-channels requirement. Corrected here.",
+        "Note the Section 11 / Section 12 boundary: 101.630(c)(11) holds audit and inspection reports with resolved or mitigated findings; 101.630(c)(12) holds what remains unresolved. Consider a misplaced_content gap on that boundary once the full draft is available.",
+        "Consider adding checklist items for 101.650(e)(1)(i) network analysis and 101.650(e)(3)(v) OT internet justification once the strengthened draft exists."
+      ],
+      "connected_authority_ids": [
+        "cfr:101.630(c)(12)",
+        "cfr:101.650(e)(3)(i)",
+        "cfr:101.650(e)(1)(i)",
+        "cfr:101.650(e)(3)(iv)",
+        "cfr:101.650(e)(3)(v)"
+      ],
+      "free_response_prompt": "What's missing? What could be improved?",
+      "checklist": [
+        {
+          "id": "risk-acceptance",
+          "label": "Formal risk acceptance with documented justification",
+          "authority_ids": [
+            "cfr:101.630(c)(12)"
+          ],
+          "satisfied_by_original": false,
+          "gap_ids": [
+            "no-risk-acceptance-process"
+          ]
+        },
+        {
+          "id": "kev-patching",
+          "label": "KEV patching or compensating controls without delay",
+          "authority_ids": [
+            "cfr:101.650(e)(3)(i)",
+            "cfr:101.625(d)(15)"
+          ],
+          "satisfied_by_original": false,
+          "gap_ids": [
+            "kev-cadence-not-without-delay",
+            "no-kev-identification"
+          ]
+        }
+      ],
+      "drafts": {
+        "original": {
+          "variant": "original",
+          "label": "Original Draft",
+          "subsections": [
+            {
+              "number": "12.1",
+              "heading": "Vulnerability Management Program",
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "text": "MEG tracks known vulnerabilities through a comprehensive scanning program. The IT Security Manager conducts quarterly vulnerability scans using Tenable Nessus Professional (v10.6) across all IT network segments. Nessus is configured with the following scan profiles: a full network scan covering the Corporate IT zone (10.50.0.0/16), DMZ (192.168.1.0/24), and Guest/Temp network (10.30.0.0/24); a credentialed Windows scan for all domain-joined systems using a dedicated scan service account; and a web application scan for internal-facing services."
+                },
+                {
+                  "type": "paragraph",
+                  "text": "Scan results are exported to CSV format and reviewed by the IT Security Manager within 5 business days of scan completion. Vulnerabilities are categorized by Nessus severity (Critical, High, Medium, Low, Informational) and tracked in a shared Excel spreadsheet on the facility SharePoint site. The spreadsheet includes columns for vulnerability name, affected host, severity, date discovered, assigned owner, and status."
+                },
+                {
+                  "type": "paragraph",
+                  "text": "For OT systems, MEG relies on vendor notifications from Siemens ProductCERT and Inductive Automation for vulnerability information, as active scanning of OT networks is not performed due to the risk of disrupting real-time control processes. Thomas Nakamura reviews vendor advisories monthly and coordinates with the IT Security Manager on any patches or firmware updates affecting OT equipment."
+                }
+              ]
+            },
+            {
+              "number": "12.2",
+              "heading": "Vulnerability Resolution",
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "text": "When vulnerabilities are identified, the IT team develops remediation plans during the weekly IT staff meeting. Patches for Windows systems are deployed through Microsoft SCCM [SOURCE TRUNCATED]"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "gap_analysis": {
+        "intro": "The strengthened draft closes each of the gaps below that the original draft left open.",
+        "regulatory_gaps": [
+          {
+            "id": "no-risk-acceptance-process",
+            "authority_ids": [
+              "cfr:101.630(c)(12)"
+            ],
+            "title": "No documentation of unresolved vulnerabilities or accepted risk",
+            "explanation": "101.630(c)(12) requires the Plan to document all identified, unresolved vulnerabilities, including those that are intentionally unresolved due to owner or operator risk acceptance. The deficient draft describes how vulnerabilities are found and tracked but never establishes what happens to one that will not be fixed. There is no acceptance authority, no written justification, no compensating control, and no review date. A status column in a SharePoint spreadsheet is a tracker, not the risk acceptance record the regulation requires.",
+            "kind": "omission",
+            "binding": true
+          },
+          {
+            "id": "kev-cadence-not-without-delay",
+            "authority_ids": [
+              "cfr:101.650(e)(3)(i)",
+              "cfr:101.625(d)(15)"
+            ],
+            "title": "Remediation cadence cannot meet the without-delay KEV standard",
+            "explanation": "101.650(e)(3)(i) requires patching or documented compensating controls for all KEVs in critical IT or OT systems without delay, and 101.625(d)(15) places the same duty on the CySO directly. No day count is specified; the obligation is immediate. The deficient draft routes every finding through quarterly IT scans, monthly OT vendor advisory review, and a weekly IT staff meeting. That cadence can leave a KEV in a critical OT system unaddressed for months and does not satisfy the standard, however well the tracking is documented.",
+            "kind": "insufficient_detail",
+            "binding": true
+          },
+          {
+            "id": "no-kev-identification",
+            "authority_ids": [
+              "cfr:101.650(e)(3)(i)"
+            ],
+            "title": "No KEV identification source or critical system scoping",
+            "explanation": "The without-delay obligation applies specifically to KEVs in critical IT or OT systems, so the Plan must show how KEVs are identified and which systems are in scope. The deficient draft categorizes findings by Nessus severity only. Nessus severity is not the KEV catalog: a medium-severity finding can be a KEV, and a critical-severity finding often is not. Without a KEV feed and a designation of critical systems, the facility cannot demonstrate compliance.",
+            "kind": "omission",
+            "binding": true
+          },
+          {
+            "id": "ot-networks-unanalyzed",
+            "authority_ids": [
+              "cfr:101.650(e)(1)(i)"
+            ],
+            "title": "OT networks are not analyzed, only monitored by vendor advisory",
+            "explanation": "101.650(e)(1)(i) requires analysis of all networks to identify vulnerabilities to critical IT and OT systems and the risk posed by each digital asset. The deficient draft declines to scan OT and substitutes monthly review of Siemens ProductCERT and Inductive Automation advisories. Declining to actively scan a live control network is a defensible engineering decision, but it does not discharge the analysis obligation. Passive discovery, configuration review, or an asset inventory with per-asset risk determination is needed, and the reliance on vendor advisories alone leaves any asset outside those two vendors' catalogs unanalyzed.",
+            "kind": "insufficient_detail",
+            "binding": true
+          }
+        ],
+        "best_practice_improvements": [
+          {
+            "id": "no-ot-internet-justification",
+            "authority_ids": [
+              "cfr:101.650(e)(3)(v)",
+              "cfr:101.650(e)(3)(iv)"
+            ],
+            "title": "No statement on OT internet exposure or exploitable channels",
+            "explanation": "101.650(e)(3)(v) requires that no OT be connected to the publicly accessible internet unless explicitly required for operation, with documented justification for any remotely accessible OT system, and 101.650(e)(3)(iv) requires no exploitable channels directly exposed to internet-accessible systems. These are Section 6 obligations under routine system maintenance, so their absence from Section 12 is not itself a Section 12 defect. However, any remote OT access that is knowingly retained is an accepted risk and belongs in the Section 12 register with its justification. The deficient draft is silent on both.",
+            "kind": "omission",
+            "binding": false
+          }
+        ]
+      },
+      "requirements": [
+        {
+          "id": "s12-01-vulnerability-description",
+          "text": "Vulnerability description",
+          "authority_ids": [
+            "cfr:101.630(c)(12)"
+          ]
+        },
+        {
+          "id": "s12-02-affected-system-or-process",
+          "text": "Affected system or process",
+          "authority_ids": [
+            "cfr:101.630(c)(12)"
+          ]
+        },
+        {
+          "id": "s12-03-critical-it-ot-designation",
+          "text": "Critical IT/OT designation",
+          "authority_ids": [
+            "cfr:101.630(c)(12)"
+          ]
+        },
+        {
+          "id": "s12-04-threat-and-operational-consequences",
+          "text": "Threat and operational consequences",
+          "authority_ids": [
+            "cfr:101.630(c)(12)"
+          ]
+        },
+        {
+          "id": "s12-05-initial-and-residual-risk",
+          "text": "Initial and residual risk",
+          "authority_ids": [
+            "cfr:101.630(c)(12)"
+          ]
+        },
+        {
+          "id": "s12-06-reason-remediation-is-deferred-or-infeasible",
+          "text": "Reason remediation is deferred or infeasible",
+          "authority_ids": [
+            "cfr:101.630(c)(12)"
+          ]
+        },
+        {
+          "id": "s12-07-compensating-controls",
+          "text": "Compensating controls",
+          "authority_ids": [
+            "cfr:101.630(c)(12)"
+          ]
+        },
+        {
+          "id": "s12-08-risk-owner",
+          "text": "Risk owner",
+          "authority_ids": [
+            "cfr:101.630(c)(12)"
+          ]
+        },
+        {
+          "id": "s12-09-owner-operator-acceptance",
+          "text": "Owner/operator acceptance",
+          "authority_ids": [
+            "cfr:101.630(c)(12)"
+          ]
+        },
+        {
+          "id": "s12-10-expiration-or-reconsideration-date",
+          "text": "Expiration or reconsideration date",
+          "authority_ids": [
+            "cfr:101.630(c)(12)"
+          ]
+        },
+        {
+          "id": "s12-11-monitoring-requirements",
+          "text": "Monitoring requirements",
+          "authority_ids": [
+            "cfr:101.630(c)(12)"
+          ]
+        },
+        {
+          "id": "s12-12-planned-resolution",
+          "text": "Planned resolution",
+          "authority_ids": [
+            "cfr:101.630(c)(12)"
+          ]
+        },
+        {
+          "id": "s12-13-coast-guard-amendment-implications",
+          "text": "Coast Guard amendment implications",
+          "authority_ids": [
+            "cfr:101.630(c)(12)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-13",
+      "number": 13,
+      "title": "Cyber Incident Reporting Procedures",
+      "status": "stub",
+      "authoring_notes": [
+        "Spine placeholder. Title and citations verified against 33 CFR 101.630(c) in reference/. No authored content yet.",
+        "Requirement bullets loaded verbatim from reference/MTSA Cybersecurity Plan Outline.docx. Next step is to turn each into a checklist item with authored ground truth."
+      ],
+      "connected_authority_ids": [
+        "cfr:101.630(c)(13)",
+        "cfr:101.620(b)(7)",
+        "cfr:101.650(g)",
+        "nvic:02-24-ch1"
+      ],
+      "requirements": [
+        {
+          "id": "s13-01-definition-of-a-cyber-incident",
+          "text": "Definition of a cyber incident",
+          "authority_ids": [
+            "cfr:101.620(b)(7)",
+            "cfr:101.630(c)(13)",
+            "cfr:101.650(g)",
+            "nvic:02-24-ch1"
+          ]
+        },
+        {
+          "id": "s13-02-definition-and-thresholds-for-a-reportable-cyber",
+          "text": "Definition and thresholds for a reportable cyber incident",
+          "authority_ids": [
+            "cfr:101.620(b)(7)",
+            "cfr:101.630(c)(13)",
+            "cfr:101.650(g)",
+            "nvic:02-24-ch1"
+          ]
+        },
+        {
+          "id": "s13-03-internal-reporting-to-the-cyso",
+          "text": "Internal reporting to the CySO",
+          "authority_ids": [
+            "cfr:101.620(b)(7)",
+            "cfr:101.630(c)(13)",
+            "cfr:101.650(g)",
+            "nvic:02-24-ch1"
+          ]
+        },
+        {
+          "id": "s13-04-nrc-reporting-without-delay",
+          "text": "NRC reporting without delay",
+          "authority_ids": [
+            "cfr:101.620(b)(7)",
+            "cfr:101.630(c)(13)",
+            "cfr:101.650(g)",
+            "nvic:02-24-ch1"
+          ]
+        },
+        {
+          "id": "s13-05-relationship-between-33-cfr-6-16-1-and-part-101",
+          "text": "Relationship between 33 CFR 6.16-1 and Part 101 reporting",
+          "authority_ids": [
+            "cfr:101.620(b)(7)",
+            "cfr:101.630(c)(13)",
+            "cfr:101.650(g)",
+            "nvic:02-24-ch1"
+          ]
+        },
+        {
+          "id": "s13-06-information-required-for-the-initial-report",
+          "text": "Information required for the initial report",
+          "authority_ids": [
+            "cfr:101.620(b)(7)",
+            "cfr:101.630(c)(13)",
+            "cfr:101.650(g)",
+            "nvic:02-24-ch1"
+          ]
+        },
+        {
+          "id": "s13-07-follow-up-and-supplemental-reporting",
+          "text": "Follow-up and supplemental reporting",
+          "authority_ids": [
+            "cfr:101.620(b)(7)",
+            "cfr:101.630(c)(13)",
+            "cfr:101.650(g)",
+            "nvic:02-24-ch1"
+          ]
+        },
+        {
+          "id": "s13-08-preservation-of-logs-and-evidence",
+          "text": "Preservation of logs and evidence",
+          "authority_ids": [
+            "cfr:101.620(b)(7)",
+            "cfr:101.630(c)(13)",
+            "cfr:101.650(g)",
+            "nvic:02-24-ch1"
+          ]
+        },
+        {
+          "id": "s13-09-coordination-with-cisa-and-the-fbi",
+          "text": "Coordination with CISA and the FBI",
+          "authority_ids": [
+            "cfr:101.620(b)(7)",
+            "cfr:101.630(c)(13)",
+            "cfr:101.650(g)",
+            "nvic:02-24-ch1"
+          ]
+        },
+        {
+          "id": "s13-10-notification-of-the-cotp",
+          "text": "Notification of the COTP",
+          "authority_ids": [
+            "cfr:101.620(b)(7)",
+            "cfr:101.630(c)(13)",
+            "cfr:101.650(g)",
+            "nvic:02-24-ch1"
+          ]
+        },
+        {
+          "id": "s13-11-reporting-decision-documentation",
+          "text": "Reporting decision documentation",
+          "authority_ids": [
+            "cfr:101.620(b)(7)",
+            "cfr:101.630(c)(13)",
+            "cfr:101.650(g)",
+            "nvic:02-24-ch1"
+          ]
+        },
+        {
+          "id": "s13-12-procedures-for-uncertain-or-still-developing-inc",
+          "text": "Procedures for uncertain or still-developing incidents",
+          "authority_ids": [
+            "cfr:101.620(b)(7)",
+            "cfr:101.630(c)(13)",
+            "cfr:101.650(g)",
+            "nvic:02-24-ch1"
+          ]
+        },
+        {
+          "id": "s13-13-cyber-incident-response-plan-activation-criteria",
+          "text": "Cyber Incident Response Plan activation criteria",
+          "authority_ids": [
+            "cfr:101.620(b)(7)",
+            "cfr:101.630(c)(13)",
+            "cfr:101.650(g)",
+            "nvic:02-24-ch1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-14",
+      "number": 14,
+      "title": "Cybersecurity Assessment",
+      "status": "stub",
+      "authoring_notes": [
+        "Spine placeholder. Title and citations verified against 33 CFR 101.630(c) in reference/. No authored content yet.",
+        "Requirement bullets loaded verbatim from reference/MTSA Cybersecurity Plan Outline.docx. Next step is to turn each into a checklist item with authored ground truth."
+      ],
+      "connected_authority_ids": [
+        "cfr:101.630(c)(14)",
+        "cfr:101.650(e)",
+        "pl:cg-5pc-01-26"
+      ],
+      "requirements": [
+        {
+          "id": "s14-01-establishes-assessment-scope-and-risk-tolerance",
+          "text": "Establishes assessment scope and risk tolerance.",
+          "authority_ids": [
+            "cfr:101.630(c)(14)",
+            "cfr:101.650(e)",
+            "pl:cg-5pc-01-26"
+          ]
+        },
+        {
+          "id": "s14-02-identifies-necessary-operational-and-business-fu",
+          "text": "Identifies necessary operational and business functions.",
+          "authority_ids": [
+            "cfr:101.630(c)(14)",
+            "cfr:101.650(e)",
+            "pl:cg-5pc-01-26"
+          ]
+        },
+        {
+          "id": "s14-03-inventories-all-systems-dependencies-and-interfa",
+          "text": "Inventories all systems, dependencies, and interfaces.",
+          "authority_ids": [
+            "cfr:101.630(c)(14)",
+            "cfr:101.650(e)",
+            "pl:cg-5pc-01-26"
+          ]
+        },
+        {
+          "id": "s14-04-categorizes-assets-as-internal-systems-external",
+          "text": "Categorizes assets as internal systems, external dependencies, or interfaces.",
+          "authority_ids": [
+            "cfr:101.630(c)(14)",
+            "cfr:101.650(e)",
+            "pl:cg-5pc-01-26"
+          ]
+        },
+        {
+          "id": "s14-05-identifies-threats-and-vulnerabilities",
+          "text": "Identifies threats and vulnerabilities.",
+          "authority_ids": [
+            "cfr:101.630(c)(14)",
+            "cfr:101.650(e)",
+            "pl:cg-5pc-01-26"
+          ]
+        },
+        {
+          "id": "s14-06-determines-likelihood-impact-and-risk",
+          "text": "Determines likelihood, impact, and risk.",
+          "authority_ids": [
+            "cfr:101.630(c)(14)",
+            "cfr:101.650(e)",
+            "pl:cg-5pc-01-26"
+          ]
+        },
+        {
+          "id": "s14-07-identifies-priority-assets",
+          "text": "Identifies priority assets.",
+          "authority_ids": [
+            "cfr:101.630(c)(14)",
+            "cfr:101.650(e)",
+            "pl:cg-5pc-01-26"
+          ]
+        },
+        {
+          "id": "s14-08-classifies-critical-it-and-ot-systems",
+          "text": "Classifies critical IT and OT systems.",
+          "authority_ids": [
+            "cfr:101.630(c)(14)",
+            "cfr:101.650(e)",
+            "pl:cg-5pc-01-26"
+          ]
+        },
+        {
+          "id": "s14-09-documents-recommendations-resolutions-compensati",
+          "text": "Documents recommendations, resolutions, compensating controls, and accepted risks.",
+          "authority_ids": [
+            "cfr:101.630(c)(14)",
+            "cfr:101.650(e)",
+            "pl:cg-5pc-01-26"
+          ]
+        },
+        {
+          "id": "s14-10-validates-the-cybersecurity-plan",
+          "text": "Validates the Cybersecurity Plan.",
+          "authority_ids": [
+            "cfr:101.630(c)(14)",
+            "cfr:101.650(e)",
+            "pl:cg-5pc-01-26"
+          ]
+        }
+      ]
+    }
+  ],
+  "authorities": {
+    "cfr:101.630(c)(1)": {
+      "cite": "§101.630(c)(1)",
+      "title": "Cybersecurity Organization and Identity of the CySO",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Section 1 of the CSP is the cybersecurity organization and identity of the CySO.",
+      "text": "Cybersecurity organization and identity of the CySO."
+    },
+    "cfr:101.620(b)(2)": {
+      "cite": "§101.620(b)(2)",
+      "title": "Cybersecurity Organizational Structure",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Defines the cybersecurity organizational structure and personnel roles documented in Section 1 of the CSP.",
+      "text": "Define in Section 1 of the Cybersecurity Plan the cybersecurity organizational structure and identify each person exercising cybersecurity duties and responsibilities within that structure, with the support needed to fulfill those obligations;"
+    },
+    "cfr:101.620(b)(3)": {
+      "cite": "§101.620(b)(3)",
+      "title": "CySO Designation and Accessibility",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "CySO designation by name and title with 24/7 Coast Guard accessibility documented in Section 1 of the CSP.",
+      "text": "Designate, in writing, by name and by title, a Cybersecurity Officer (CySO) who is accessible to the Coast Guard 24 hours a day, 7 days a week, and identify how the CySO can be contacted at any time;"
+    },
+    "cfr:101.625(b)": {
+      "cite": "§101.625(b)",
+      "title": "Serving as CySO for Multiple Vessels, Facilities, or OCS Facilities",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Does NOT concern CySO availability. The 24/7 accessibility requirement is at 101.620(b)(3).",
+      "text": "Serving as CySO for Multiple Vessels, Facilities, or OCS Facilities. The same person may serve as the CySO for more than one U.S.-flagged vessel, facility, or OCS facility. If a person serves as the CySO for more than one U.S.-flagged vessel, facility, or OCS facility, the name of each U.S.-flagged vessel, facility, or OCS facility for which that person is the CySO must be listed in the Cybersecurity Plan of each U.S.-flagged vessel, facility, or OCS facility for which that person is the CySO."
+    },
+    "cfr:101.625(d)": {
+      "cite": "§101.625(d)",
+      "title": "CySO Responsibilities",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Does NOT create the alternate CySO. The alternate provision is in the 101.615 definition of Cybersecurity Officer.",
+      "text": "Responsibilities. For each U.S.-flagged vessel, facility, or OCS facility for which they are designated, the CySO must ensure the Cybersecurity Assessment is conducted; ensure the cybersecurity measures in the Cybersecurity Plan are developed, implemented, and operating as intended; ensure an annual audit is conducted and the Plan updated if necessary; ensure the Cyber Incident Response Plan is executed and exercised; ensure the Plan is exercised per 101.635(c); arrange for cybersecurity inspections; ensure prompt correction of problems identified by exercises, audits, or inspections; enhance cybersecurity awareness and vigilance of personnel; ensure adequate cybersecurity training; ensure all reportable cyber incidents are recorded and reported to the owner or operator; ensure records are maintained per 101.640; ensure required reports are prepared and submitted; ensure the Plan and proposed amendments are submitted for approval per 101.630; ensure relevant security and management personnel are briefed regarding changes in cybersecurity conditions; and ensure identification and mitigation of all KEVs in critical IT or OT systems, without delay. [Paragraphs (d)(1) through (15), condensed. Individual subparagraphs quoted verbatim where cited.]"
+    },
+    "cfr:101.625(e)": {
+      "cite": "§101.625(e)",
+      "title": "CySO Qualifications",
+      "authority_type": "regulation",
+      "binding": true,
+      "text": "Qualifications. The CySO must have general knowledge, through training, education, or equivalent job experience, in the following: (1) General vessel, facility, or OCS facility operations and conditions; (2) General cybersecurity guidance and best practices; (3) The vessel, facility, or OCS facility's Cyber Incident Response Plan; (4) The vessel, facility, or OCS facility's Cybersecurity Plan; (5) Cybersecurity equipment and systems; (6) Methods of conducting cybersecurity audits, inspections, control, and monitoring techniques; (7) Relevant laws and regulations pertaining to cybersecurity; (8) Instruction techniques for cybersecurity training and education; (9) Handling of Sensitive Security Information and security related communications; (10) Current cybersecurity threat patterns and KEVs; (11) Recognizing characteristics and behavioral patterns of persons who are likely to threaten security; and (12) Conducting and assessing cybersecurity drills and exercises."
+    },
+    "cfr:101.630(c)(5)": {
+      "cite": "§101.630(c)(5)",
+      "title": "Communications",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Section 5 of the CSP is the communications section.",
+      "text": "Communications."
+    },
+    "cfr:101.630(c)(9)": {
+      "cite": "§101.630(c)(9)",
+      "title": "Cybersecurity measures for monitoring",
+      "authority_type": "regulation",
+      "binding": true,
+      "text": "Cybersecurity measures for monitoring;"
+    },
+    "cfr:101.645(a)": {
+      "cite": "§101.645(a)",
+      "title": "Notification of cybersecurity condition changes",
+      "authority_type": "regulation",
+      "binding": true,
+      "text": "The CySO must have a means to effectively notify owners or operators and personnel of a U.S.-flagged vessel, facility, or OCS facility of changes in cybersecurity conditions at the U.S.-flagged vessel, facility, and OCS facility and document these means in Section 5 of the Cybersecurity Plan."
+    },
+    "cfr:101.645(b)": {
+      "cite": "§101.645(b)",
+      "title": "Continuous communications with authorities",
+      "authority_type": "regulation",
+      "binding": true,
+      "text": "Communication systems and procedures must allow effective and continuous communications between U.S.-flagged vessel, facility, and OCS facility security personnel, vessels interfacing with a facility or an OCS facility, the cognizant COTP, and national and local authorities with security responsibilities."
+    },
+    "cfr:101.650(g)": {
+      "cite": "§101.650(g)",
+      "title": "Resilience",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Resilience, not incident reporting timelines. Note that (g) is documented in Sections 3 and 9, not Section 5.",
+      "text": "Resilience. Each owner or operator or designated CySO of a U.S.-flagged vessel, facility, or OCS facility must ensure the following measures for resilience are in place and documented in Sections 3 and 9 of the Cybersecurity Plan: (1) For entities that have not reported to the Coast Guard pursuant to, or not subject to, 33 CFR 6.16-1, report reportable cyber incidents to the NRC without delay; (2) In addition to other plans mentioned in this subpart, develop, implement, maintain, and exercise the Cyber Incident Response Plan; (3) Periodically validate the effectiveness of the Cybersecurity Plan through annual exercises, annual reviews of incident response cases, or post-cyber incident review, as determined by the owner or operator; and (4) Perform backup of critical IT and OT systems, with those backups being sufficiently protected and tested frequently."
+    },
+    "cfr:101.630(c)(12)": {
+      "cite": "§101.630(c)(12)",
+      "title": "Documentation of Unresolved Vulnerabilities",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Section 12 documents all identified, unresolved vulnerabilities, including any intentionally accepted risk.",
+      "text": "Documentation of all identified, unresolved vulnerabilities, to include those that are intentionally unresolved due to owner or operator risk acceptance."
+    },
+    "cfr:101.650(e)(3)(i)": {
+      "cite": "§101.650(e)(3)(i)",
+      "title": "KEV patching without delay",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Sits under 101.650(e)(3) Routine system maintenance, which is documented in Section 6 of the Cybersecurity Plan. The parallel CySO duty is 101.625(d)(15).",
+      "text": "Ensure patching or implementation of documented compensating controls for all KEVs in critical IT or OT systems, without delay;"
+    },
+    "cfr:101.625(d)(15)": {
+      "cite": "§101.625(d)(15)",
+      "title": "CySO duty to mitigate KEVs without delay",
+      "authority_type": "regulation",
+      "binding": true,
+      "text": "Ensure identification and mitigation of all KEVs in critical IT or OT systems, without delay."
+    },
+    "cfr:101.615": {
+      "cite": "§101.615",
+      "title": "Definition: Cybersecurity Officer (CySO)",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "This definition, not 101.625(d), is the source of the alternate CySO provision.",
+      "text": "Cybersecurity Officer, or CySO, means the person designated as responsible for the development, implementation, and maintenance of the cybersecurity portions of the Vessel Security Plan (VSP), Facility Security Plan (FSP), or Outer Continental Shelf (OCS) FSP, and for liaison with the Captain of the Port (COTP) and Company, Vessel, and Facility Security Officers. The owner or operator may designate an alternate CySO(s) to assist with the duties and responsibilities of the CySO, including during periods when the CySO is on leave, unavailable, or unable to perform their duties. Hereafter, “CySO” will refer to both the CySO and the alternate CySO(s), as applicable."
+    },
+    "cfr:101.630(c)(11)": {
+      "cite": "§101.630(c)(11)",
+      "title": "Reports of audits and inspections",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Section 11 holds resolved findings. Section 12 holds what remains unresolved.",
+      "text": "Reports of all cybersecurity audits and inspections, to include documentation of resolution or mitigation of all identified vulnerabilities;"
+    },
+    "cfr:101.650(g)(4)": {
+      "cite": "§101.650(g)(4)",
+      "title": "Backup of critical IT and OT systems",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Documented in Sections 3 and 9 of the Cybersecurity Plan, per the lead-in to 101.650(g).",
+      "text": "Perform backup of critical IT and OT systems, with those backups being sufficiently protected and tested frequently."
+    },
+    "cfr:101.650(e)(1)(i)": {
+      "cite": "§101.650(e)(1)(i)",
+      "title": "Analyze all networks for vulnerabilities",
+      "authority_type": "regulation",
+      "binding": true,
+      "text": "Analyze all networks to identify vulnerabilities to critical IT and OT systems and the risk posed by each digital asset;"
+    },
+    "cfr:101.650(e)(3)(iv)": {
+      "cite": "§101.650(e)(3)(iv)",
+      "title": "No exploitable channels exposed to internet",
+      "authority_type": "regulation",
+      "binding": true,
+      "text": "Ensure there are no exploitable channels directly exposed to internet-accessible systems;"
+    },
+    "cfr:101.650(e)(3)(v)": {
+      "cite": "§101.650(e)(3)(v)",
+      "title": "OT internet exposure requires documented justification",
+      "authority_type": "regulation",
+      "binding": true,
+      "text": "Ensure no OT is connected to the publicly accessible internet unless explicitly required for operation, and verify that, for any remotely accessible OT system, there is a documented justification; and"
+    },
+    "cfr:101.650(e)(3)(vi)": {
+      "cite": "§101.650(e)(3)(vi)",
+      "title": "Vulnerability scans as specified in the Plan",
+      "authority_type": "regulation",
+      "binding": true,
+      "text": "Conduct vulnerability scans as specified in the Cybersecurity Plan."
+    },
+    "cfr:101.630(e)(2)": {
+      "cite": "§101.630(e)(2)",
+      "title": "Amendments: 30-day advance submission",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "The general amendment rule. It does NOT govern a change of CySO, which is 101.630(e)(4).",
+      "text": "Proposed amendments to the Cybersecurity Plan must be sent to the Coast Guard at least 30 days before the proposed amendment's effective date. The Coast Guard will approve or disapprove the proposed amendment in accordance with this part."
+    },
+    "cfr:101.630(e)(4)": {
+      "cite": "§101.630(e)(4)",
+      "title": "CySO change: 96 hours to notify and 96 hours to submit",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Two separate 96-hour clocks, notification and submission of the amended portion. The 30-day rule at 101.630(e)(2) does not apply to this case.",
+      "text": "If the CySO has changed, the Coast Guard must be notified as soon as reasonably practicable in light of the individual circumstances, but, in any case, not longer than 96 hours, and the affected portion of the Cybersecurity Plan must be amended and submitted to the Coast Guard for review and approval in accordance with this part as soon as reasonably practicable in light of the individual circumstances, but, in any case, not longer than 96 hours."
+    },
+    "cfr:101.630(c)(2)": {
+      "cite": "§101.630(c)(2)",
+      "title": "Personnel Training",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Section 2 of the CSP per the 101.630(c) format list.",
+      "text": "Personnel training;"
+    },
+    "cfr:101.630(c)(3)": {
+      "cite": "§101.630(c)(3)",
+      "title": "Drills and Exercises",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Section 3 of the CSP per the 101.630(c) format list.",
+      "text": "Drills and exercises;"
+    },
+    "cfr:101.630(c)(4)": {
+      "cite": "§101.630(c)(4)",
+      "title": "Records and Documentation",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Section 4 of the CSP per the 101.630(c) format list.",
+      "text": "Records and documentation;"
+    },
+    "cfr:101.630(c)(6)": {
+      "cite": "§101.630(c)(6)",
+      "title": "Cybersecurity Systems and Equipment, with Associated Maintenance",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Section 6 of the CSP per the 101.630(c) format list.",
+      "text": "Cybersecurity systems and equipment, with associated maintenance;"
+    },
+    "cfr:101.630(c)(7)": {
+      "cite": "§101.630(c)(7)",
+      "title": "Cybersecurity Measures for Access Control",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Section 7 of the CSP per the 101.630(c) format list.",
+      "text": "Cybersecurity measures for access control, including the computer, IT, and OT access areas;"
+    },
+    "cfr:101.630(c)(8)": {
+      "cite": "§101.630(c)(8)",
+      "title": "Physical Security Controls for IT and OT Systems",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Section 8 of the CSP per the 101.630(c) format list.",
+      "text": "Physical security controls for IT and OT systems;"
+    },
+    "cfr:101.630(c)(10)": {
+      "cite": "§101.630(c)(10)",
+      "title": "Audits and Amendments to the Cybersecurity Plan",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Section 10 of the CSP per the 101.630(c) format list.",
+      "text": "Audits and amendments to the Cybersecurity Plan;"
+    },
+    "cfr:101.630(c)(13)": {
+      "cite": "§101.630(c)(13)",
+      "title": "Cyber Incident Reporting Procedures",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Section 13 of the CSP per the 101.630(c) format list.",
+      "text": "Cyber incident reporting procedures in accordance with part 101 of this subchapter; and"
+    },
+    "cfr:101.630(c)(14)": {
+      "cite": "§101.630(c)(14)",
+      "title": "Cybersecurity Assessment",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Section 14 of the CSP per the 101.630(c) format list.",
+      "text": "Cybersecurity Assessment."
+    },
+    "cfr:101.650(a)": {
+      "cite": "§101.650(a)",
+      "title": "Account security measures (Section 7)",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Lead-in only. The subparagraph obligations are cited individually.",
+      "text": "Account security measures. Each owner or operator of a U.S.-flagged vessel, facility, or OCS facility must ensure, at a minimum, the following account security measures are in place and documented in Section 7 of the Cybersecurity Plan:"
+    },
+    "cfr:101.650(b)": {
+      "cite": "§101.650(b)",
+      "title": "Device security measures (Section 6)",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Lead-in only. The subparagraph obligations are cited individually.",
+      "text": "Device security measures. Each owner or operator or designated CySO of a U.S.-flagged vessel, facility, or OCS facility must ensure the following device security measures are in place, addressed in Section 6 of the Cybersecurity Plan, and made available to the Coast Guard upon request:"
+    },
+    "cfr:101.650(c)": {
+      "cite": "§101.650(c)",
+      "title": "Data security measures (Section 4)",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Lead-in only. The subparagraph obligations are cited individually.",
+      "text": "Data security measures. Each owner or operator or designated CySO of a U.S.-flagged vessel, facility, or OCS facility must ensure the following data security measures are in place and documented in Section 4 of the Cybersecurity Plan:"
+    },
+    "cfr:101.650(d)": {
+      "cite": "§101.650(d)",
+      "title": "Cybersecurity training for personnel (Sections 2 and 4)",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Lead-in only. The subparagraph obligations are cited individually.",
+      "text": "Cybersecurity training for personnel. The training program to address requirements under this paragraph must be documented in Sections 2 and 4 of the Cybersecurity Plan."
+    },
+    "cfr:101.650(e)": {
+      "cite": "§101.650(e)",
+      "title": "Risk management (Sections 11 and 12)",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Lead-in only. The subparagraph obligations are cited individually.",
+      "text": "Risk management. Each owner or operator or designated CySO of a U.S.-flagged vessel, facility, or OCS facility must ensure the following measures for risk management are in place and documented in Sections 11 and 12 of the Cybersecurity Plan:"
+    },
+    "cfr:101.650(e)(3)": {
+      "cite": "§101.650(e)(3)",
+      "title": "Routine system maintenance (Section 6)",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Lead-in only. The subparagraph obligations are cited individually.",
+      "text": "Routine system maintenance. Each owner or operator or a designated CySO of a U.S.-flagged vessel, facility, or OCS facility must ensure the following measures for routine system maintenance are in place and documented in Section 6 of the Cybersecurity Plan:"
+    },
+    "cfr:101.650(f)": {
+      "cite": "§101.650(f)",
+      "title": "Supply chain (Section 4)",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Lead-in only. The subparagraph obligations are cited individually.",
+      "text": "Supply chain. Each owner or operator or designated CySO of a U.S.-flagged vessel, facility, or OCS facility must ensure the following supply-chain measures are in place and documented in Section 4 of the Cybersecurity Plan:"
+    },
+    "cfr:101.650(h)": {
+      "cite": "§101.650(h)",
+      "title": "Network segmentation (Sections 7 and 8)",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Lead-in only. The subparagraph obligations are cited individually.",
+      "text": "Network segmentation. Each owner or operator or designated CySO of a U.S.-flagged vessel, facility, or OCS facility must ensure the following measures for network segmentation are in place and documented in Sections 7 and 8 of the Cybersecurity Plan:"
+    },
+    "cfr:101.650(i)": {
+      "cite": "§101.650(i)",
+      "title": "Physical security (Sections 7 and 8)",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Lead-in only. The subparagraph obligations are cited individually.",
+      "text": "Physical security. Each owner, operator, or designated CySO of a U.S.-flagged vessel, facility, or OCS facility must ensure the following measures for physical security are in place and documented in Sections 7 and 8 of the Cybersecurity Plan:"
+    },
+    "cfr:101.620(b)(7)": {
+      "cite": "§101.620(b)(7)",
+      "title": "Owner or operator duty to report to the NRC",
+      "authority_type": "regulation",
+      "binding": true,
+      "text": "For entities that have not reported to the Coast Guard pursuant to, or are not subject to, 33 CFR 6.16-1, ensure all reportable cyber incidents are reported to the National Response Center (NRC)."
+    },
+    "cfr:101.635": {
+      "cite": "§101.635",
+      "title": "Drills and exercises",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Section 3 of the Plan. The 2 drills, 1 exercise, and 18-month ceiling are (b)(1) and (c)(1).",
+      "text": "Drills and exercises must be used to test the proficiency of the U.S.-flagged vessel, facility, and OCS facility personnel in assigned cybersecurity duties and the effective implementation of the VSP, FSP, OCS FSP, and Cybersecurity Plan. Drills must be conducted at least twice each calendar year. Exercises must be conducted at least once each calendar year, with no more than 18 months between exercises. Each exercise must test communication and notification procedures and elements of coordination, resource availability, and response, and must include the substantial and active participation of the CySO(s). [101.635(a) through (c), condensed. Individual paragraphs quoted verbatim where cited.]"
+    },
+    "cfr:101.640": {
+      "cite": "§101.640",
+      "title": "Records and documentation",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Defines no retention period of its own. It defers to 104.235, 105.225, and 106.230, all outside Subpart F.",
+      "text": "All records, reports, and other documents mentioned in this subpart must be created and maintained in accordance with 33 CFR 104.235 for U.S.-flagged vessels, 105.225 for facilities, and 106.230 for OCS facilities. At a minimum, the records must be created for the following activities: training, drills, exercises, cybersecurity threats, reportable cyber incidents, and audits of the Cybersecurity Plan."
+    },
+    "cfr:101.630(f)": {
+      "cite": "§101.630(f)",
+      "title": "Audits",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Auditor independence is (f)(4). The 30-day post-audit amendment clock is (f)(5).",
+      "text": "The CySO must ensure that an audit of the Cybersecurity Plan and its implementation is performed annually, beginning no later than 1 year from the initial date of approval, and must attach a report to the Plan certifying that the Plan meets the applicable requirements of this subpart. An additional audit is required if there is a change in the owner or operator or if there have been modifications to the cybersecurity measures. Personnel conducting internal audits must have knowledge of audit methods, must not have regularly assigned cybersecurity duties for the entity being audited, and must be independent of any cybersecurity measures being audited. If an audit requires amending the Plan, the amendments must be submitted no later than 30 days after completion of the audit. [101.630(f)(1) through (5), condensed.]"
+    },
+    "cfr:101.630(d)": {
+      "cite": "§101.630(d)",
+      "title": "Submission and approval",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Multi-facility plans are (d)(2). The 5-year validity is (d)(3).",
+      "text": "Each owner or operator must submit one copy of their Cybersecurity Plan for review and approval to the cognizant COTP or the OCMI for a facility or OCS facility, or to the MSC for a U.S.-flagged vessel. Owners or operators submitting one Cybersecurity Plan to cover two or more U.S.-flagged vessels, facilities, or OCS facilities of similar operations must ensure the Plan addresses the specific cybersecurity risks for each. A Plan that is approved by the COTP, OCMI, or MSC is valid for 5 years from the date of its approval. [101.630(d)(1) through (3), condensed.]"
+    },
+    "cfr:105": {
+      "cite": "§105",
+      "title": "33 CFR Part 105, Maritime Security: Facilities",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Cited as a whole part by the outline. Outside Subpart F. 105.225 carries the facility record requirements that 101.640 defers to.",
+      "text": "Requirements governing the Facility Security Assessment, Facility Security Plan, records, amendments, audits, alternative security arrangements, and temporary deviations for MTSA-regulated facilities."
+    },
+    "cfr:105.225": {
+      "cite": "§105.225",
+      "title": "Facility recordkeeping requirements",
+      "authority_type": "regulation",
+      "binding": true,
+      "description": "Outside Subpart F. 101.640 defers retention to this section for facilities.",
+      "text": "Facility recordkeeping requirements referenced by 33 CFR 101.640 for the creation and maintenance of records required by Subpart F."
+    },
+    "fr:90-6298": {
+      "cite": "90 FR 6298",
+      "title": "Cybersecurity in the Marine Transportation System, Final Rule",
+      "authority_type": "federal_register",
+      "binding": false,
+      "description": "Preamble and rulemaking record. Interpretive context only. The codified text at 33 CFR Part 101 Subpart F is the binding form of anything discussed here.",
+      "text": "Cybersecurity in the Marine Transportation System Final Rule, 90 FR 6298, January 17, 2025."
+    },
+    "pl:cg-5pc-01-25": {
+      "cite": "CG-5PC Policy Letter 01-25",
+      "title": "Cybersecurity Training",
+      "authority_type": "policy_letter",
+      "binding": false,
+      "description": "Guidance. Informs Section 2 but does not itself mandate. The binding training duty is 101.650(d).",
+      "text": "CG-5PC Policy Letter 01-25, Cybersecurity Training."
+    },
+    "pl:cg-5pc-01-26": {
+      "cite": "CG-5PC Policy Letter 01-26",
+      "title": "Cybersecurity Assessment Initial Scoping and Process",
+      "authority_type": "policy_letter",
+      "binding": false,
+      "description": "Guidance. Supplies the Section 14 assessment framework. The binding assessment duty is 101.650(e)(1).",
+      "text": "CG-5PC Policy Letter 01-26, Cybersecurity Assessment Initial Scoping and Process, issued June 2, 2026."
+    },
+    "nvic:02-24-ch1": {
+      "cite": "NVIC 02-24, Change 1",
+      "title": "Cyber Incident Reporting",
+      "authority_type": "nvic",
+      "binding": false,
+      "description": "Guidance. Informs Section 13. The binding reporting duties are 101.620(b)(7) and 101.650(g)(1).",
+      "text": "Navigation and Vessel Inspection Circular 02-24, Change 1, Cyber Incident Reporting."
+    },
+    "nvic:01-20": {
+      "cite": "NVIC 01-20",
+      "title": "Guidelines for Addressing Cyber Risks at MTSA-Regulated Facilities",
+      "authority_type": "nvic",
+      "binding": false,
+      "description": "Guidance. Predates Subpart F.",
+      "text": "Navigation and Vessel Inspection Circular 01-20, Guidelines for Addressing Cyber Risks at MTSA-Regulated Facilities."
+    },
+    "wi:mcp-wi-001": {
+      "cite": "MCP-WI-001",
+      "title": "Cybersecurity Training Verification Job Aid",
+      "authority_type": "work_instruction",
+      "binding": false,
+      "description": "Marine Compliance Program work instruction. Internal Coast Guard guidance, not a rule.",
+      "text": "MCP-WI-001 - Cybersecurity Training Verification Job Aid."
+    },
+    "wi:mcp-wi-002": {
+      "cite": "MCP-WI-002",
+      "title": "Waivers and Equivalency Guidance",
+      "authority_type": "work_instruction",
+      "binding": false,
+      "description": "Marine Compliance Program work instruction. Internal Coast Guard guidance, not a rule.",
+      "text": "MCP-WI-002 - Waivers and Equivalency Guidance."
+    },
+    "wi:mcp-wi-003": {
+      "cite": "MCP-WI-003",
+      "title": "DoD SAFE submission instructions",
+      "authority_type": "work_instruction",
+      "binding": false,
+      "description": "Marine Compliance Program work instruction. Internal Coast Guard guidance, not a rule.",
+      "text": "MCP-WI-003 - DoD SAFE submission instructions."
+    },
+    "guide:final-rule-faq": {
+      "cite": "Final Rule Frequently Asked Questions",
+      "title": "Final Rule Frequently Asked Questions, updated January 9, 2026",
+      "authority_type": "guide",
+      "binding": false,
+      "description": "Coast Guard guidance publication. Not binding.",
+      "text": "Final Rule Frequently Asked Questions, updated January 9, 2026."
+    },
+    "guide:small-entity-facilities": {
+      "cite": "Cyber Small Entity Guide - Facilities",
+      "title": "Cyber Small Entity Guide - Facilities",
+      "authority_type": "guide",
+      "binding": false,
+      "description": "Coast Guard guidance publication. Not binding.",
+      "text": "Cyber Small Entity Guide - Facilities."
+    },
+    "guide:mcaag": {
+      "cite": "Coast Guard Maritime Cybersecurity Assessment and Annex Guide",
+      "title": "Coast Guard Maritime Cybersecurity Assessment and Annex Guide",
+      "authority_type": "guide",
+      "binding": false,
+      "description": "Coast Guard guidance publication. Not binding.",
+      "text": "Coast Guard Maritime Cybersecurity Assessment and Annex Guide."
+    },
+    "guide:facility-inspector-job-aid": {
+      "cite": "Facility Inspector - Cyber Job Aid",
+      "title": "Facility Inspector - Cyber Job Aid, Version 2",
+      "authority_type": "guide",
+      "binding": false,
+      "description": "Coast Guard guidance publication. Not binding.",
+      "text": "Facility Inspector - Cyber Job Aid, Version 2."
+    }
+  },
+  "appendices": [
+    {
+      "id": "appendix-a",
+      "designation": "A",
+      "title": "Regulatory compliance crosswalk",
+      "status": "stub",
+      "kind": "authored_prose",
+      "controlled_attachment": false
+    },
+    {
+      "id": "appendix-b",
+      "designation": "B",
+      "title": "Cybersecurity organizational chart",
+      "status": "stub",
+      "kind": "authored_prose",
+      "controlled_attachment": false,
+      "authority_ids": [
+        "cfr:101.620(b)(2)",
+        "cfr:101.630(c)(1)"
+      ]
+    },
+    {
+      "id": "appendix-c",
+      "designation": "C",
+      "title": "CySO designation letter",
+      "status": "stub",
+      "kind": "authored_prose",
+      "controlled_attachment": false,
+      "authority_ids": [
+        "cfr:101.620(b)(3)",
+        "cfr:101.615"
+      ]
+    },
+    {
+      "id": "appendix-d",
+      "designation": "D",
+      "title": "Cybersecurity training matrix",
+      "status": "stub",
+      "kind": "authored_prose",
+      "controlled_attachment": false,
+      "authority_ids": [
+        "cfr:101.650(d)",
+        "pl:cg-5pc-01-25",
+        "wi:mcp-wi-001"
+      ]
+    },
+    {
+      "id": "appendix-e",
+      "designation": "E",
+      "title": "Drill and exercise schedule",
+      "status": "stub",
+      "kind": "authored_prose",
+      "controlled_attachment": false,
+      "authority_ids": [
+        "cfr:101.635",
+        "cfr:101.630(c)(3)"
+      ]
+    },
+    {
+      "id": "appendix-f",
+      "designation": "F",
+      "title": "Cyber Incident Response Plan",
+      "status": "stub",
+      "kind": "authored_prose",
+      "controlled_attachment": false,
+      "authority_ids": [
+        "cfr:101.650(g)"
+      ]
+    },
+    {
+      "id": "appendix-g",
+      "designation": "G",
+      "title": "Cyber incident reporting decision guide",
+      "status": "stub",
+      "kind": "authored_prose",
+      "controlled_attachment": false,
+      "authority_ids": [
+        "cfr:101.620(b)(7)",
+        "nvic:02-24-ch1"
+      ]
+    },
+    {
+      "id": "appendix-h",
+      "designation": "H",
+      "title": "Internal and external notification matrix",
+      "status": "stub",
+      "kind": "authored_prose",
+      "controlled_attachment": false,
+      "authority_ids": [
+        "cfr:101.645(a)",
+        "cfr:101.645(b)"
+      ]
+    },
+    {
+      "id": "appendix-i",
+      "designation": "I",
+      "title": "Critical IT/OT system register",
+      "status": "stub",
+      "kind": "register_view",
+      "register": "critical_it_ot",
+      "controlled_attachment": true,
+      "authority_ids": [
+        "cfr:101.650(b)",
+        "cfr:101.630(c)(6)"
+      ]
+    },
+    {
+      "id": "appendix-j",
+      "designation": "J",
+      "title": "Network and data-flow diagrams",
+      "status": "stub",
+      "kind": "authored_prose",
+      "controlled_attachment": true,
+      "authority_ids": [
+        "cfr:101.650(b)",
+        "cfr:101.630(c)(6)"
+      ]
+    },
+    {
+      "id": "appendix-k",
+      "designation": "K",
+      "title": "Approved hardware, firmware, and software register",
+      "status": "stub",
+      "kind": "register_view",
+      "register": "hardware_software",
+      "controlled_attachment": true,
+      "authority_ids": [
+        "cfr:101.650(b)"
+      ]
+    },
+    {
+      "id": "appendix-l",
+      "designation": "L",
+      "title": "Remote-access register",
+      "status": "stub",
+      "kind": "register_view",
+      "register": "remote_access",
+      "controlled_attachment": true,
+      "authority_ids": [
+        "cfr:101.650(e)(3)(v)",
+        "cfr:101.650(f)"
+      ]
+    },
+    {
+      "id": "appendix-m",
+      "designation": "M",
+      "title": "Vulnerability and KEV register",
+      "status": "stub",
+      "kind": "register_view",
+      "register": "kev",
+      "controlled_attachment": true,
+      "authority_ids": [
+        "cfr:101.650(e)(3)(i)",
+        "cfr:101.625(d)(15)"
+      ]
+    },
+    {
+      "id": "appendix-n",
+      "designation": "N",
+      "title": "Compensating-control register",
+      "status": "stub",
+      "kind": "register_view",
+      "register": "compensating_control",
+      "controlled_attachment": true,
+      "authority_ids": [
+        "cfr:101.650(e)(3)(i)",
+        "cfr:101.630(c)(12)"
+      ]
+    },
+    {
+      "id": "appendix-o",
+      "designation": "O",
+      "title": "Risk acceptance register",
+      "status": "stub",
+      "kind": "register_view",
+      "register": "risk_acceptance",
+      "controlled_attachment": true,
+      "authority_ids": [
+        "cfr:101.630(c)(12)"
+      ]
+    },
+    {
+      "id": "appendix-p",
+      "designation": "P",
+      "title": "Backup and restoration register",
+      "status": "stub",
+      "kind": "register_view",
+      "register": "backup",
+      "controlled_attachment": true,
+      "authority_ids": [
+        "cfr:101.650(g)(4)"
+      ]
+    },
+    {
+      "id": "appendix-q",
+      "designation": "Q",
+      "title": "Vendor and supply chain cybersecurity requirements",
+      "status": "stub",
+      "kind": "authored_prose",
+      "controlled_attachment": false,
+      "authority_ids": [
+        "cfr:101.650(f)"
+      ]
+    },
+    {
+      "id": "appendix-r",
+      "designation": "R",
+      "title": "Audit and corrective action forms",
+      "status": "stub",
+      "kind": "authored_prose",
+      "controlled_attachment": false,
+      "authority_ids": [
+        "cfr:101.630(f)",
+        "cfr:101.630(c)(11)"
+      ]
+    },
+    {
+      "id": "appendix-s",
+      "designation": "S",
+      "title": "Cybersecurity Assessment methodology and report",
+      "status": "stub",
+      "kind": "authored_prose",
+      "controlled_attachment": false,
+      "authority_ids": [
+        "cfr:101.650(e)",
+        "cfr:101.630(c)(14)",
+        "pl:cg-5pc-01-26",
+        "guide:mcaag"
+      ]
+    },
+    {
+      "id": "appendix-t",
+      "designation": "T",
+      "title": "Penetration test certification",
+      "status": "stub",
+      "kind": "authored_prose",
+      "controlled_attachment": true,
+      "authority_ids": [
+        "cfr:101.650(e)"
+      ]
+    },
+    {
+      "id": "appendix-u",
+      "designation": "U",
+      "title": "Coast Guard approval and amendment correspondence",
+      "status": "stub",
+      "kind": "authored_prose",
+      "controlled_attachment": true,
+      "authority_ids": [
+        "cfr:101.630(d)",
+        "cfr:101.630(e)(2)",
+        "cfr:101.630(e)(4)"
+      ]
+    },
+    {
+      "id": "appendix-v",
+      "designation": "V",
+      "title": "Recordkeeping forms",
+      "status": "stub",
+      "kind": "authored_prose",
+      "controlled_attachment": false,
+      "authority_ids": [
+        "cfr:101.640",
+        "cfr:105.225"
+      ]
+    }
+  ]
+}

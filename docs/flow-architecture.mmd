@@ -1,0 +1,125 @@
+flowchart TB
+
+subgraph OURS["OUR SIDE - we hold the logic, never the SSI"]
+  PDF["reference/ 33 CFR Subpart F PDF<br/>+ 104.235 / 105.225 / 106.230<br/>authoritative, read-only"]
+  CONTENT["content/<br/>schema + instance + authorities<br/>14 sections, 22 appendices"]
+  AUTH["authoring<br/>requirement bullet to checklist item<br/>rules, clauses, finding templates"]
+  VAL["validate.py<br/>schema + invariants + lint<br/>bindingness cap, 7 fixtures"]
+  SEAL["sealed release<br/>ruleset + question module<br/>+ clause library + templates<br/>signed, per-install key, expiry"]
+  PDF --> CONTENT --> AUTH --> VAL --> SEAL
+  FR["Federal Register watch<br/>+ Subpart F era job aid successor"] --> AUTH
+end
+
+subgraph AGENT["CUSTOMER INSTALL - agent inside the SSI boundary"]
+  LIC["license check<br/>N-of-M machine fingerprint<br/>online or offline challenge-response"]
+  VERIFY["signature verify<br/>unsigned ruleset never loads"]
+  SEAL -.ship.-> LIC --> VERIFY
+
+  subgraph COLLECT["COLLECTION - already built, RMF-shaped today"]
+    SARA["SARA v1.3.0 - host collection<br/>state backup, local users, services, open ports,<br/>installed software, certs, password policy<br/>preps Nessus + Evaluate-STIG, then reverts"]
+    NESS["Nessus scan<br/>per-host result, joined per asset"]
+    SAM["SAM assessment tree<br/>locations, device_data, checklist_data, photos<br/>is_critical_system, public_facing, software[]<br/>vessel-shaped: ship, hull, compartments"]
+    CFDD["CFDD questionnaire<br/>exposure + integrity, weighted<br/>lives in SAM today"]
+    SARA --> NESS --> SAM
+    SARA --> SAM
+    CFDD --- SAM
+  end
+
+  PROF{"compliance profile<br/>SAM report-profile mechanism<br/>widened, not forked"}
+  SAM --> PROF
+  PROF -->|RMF - today| RMFOUT["RMF package<br/>CFDD, HW/SW list, scanning package, STIG<br/>marked CUI<br/>MUST stay byte-identical - golden-output harness"]
+  PROF -->|MTSA - new| MTSAOUT["MTSA register export<br/>field sets, taxonomy, asset type discriminator<br/>vessel / facility / OCS facility<br/>marked SSI, 49 CFR 1520"]
+
+  subgraph INTAKE["intake"]
+    WS["criticality workshop<br/>multi-participant, facilitated<br/>ops + security + cyber + IT"]
+    S1["stage 1 SCOPE<br/>critical? TSI consequence?<br/>most of inventory falls out"]
+    S2["stage 2 RANK<br/>CFDD extended, ordered by consequence<br/>sets KEV tracking priority"]
+    WS --> S1 --> S2
+    Q["interview<br/>typed answers only<br/>enum / bool / num / date / entity ref<br/>tri-state yes-no-NA"]
+    ENT["entity store<br/>assets, remote access, backups<br/>training / drill / exercise / incident<br/>/ threat / audit records"]
+    Q -->|"101.640 records<br/>in neither tool today"| ENT
+    S2 --> ENT
+  end
+
+  MTSAOUT -->|raw inventory| WS
+  MTSAOUT -->|"assets, software, remote access"| ENT
+  CFDD -.extended by.-> S2
+  S1 -.->|"writes is_critical_system<br/>string Yes/No today, needs tri-state"| SAM
+
+  STORE[("answer store<br/>behind an interface<br/>engine never reaches around it")]
+  INTAKE --> STORE
+
+  ENGINE["engine.py<br/>pure library, stdlib only<br/>no clock, no network, no ambient state<br/>inputs: ruleset + answers + as_of"]
+  VERIFY --> ENGINE
+  STORE --> ENGINE
+
+  VERD["verdicts<br/>status + severity + evidence paths<br/>all/any do not short-circuit"]
+  ENGINE --> VERD
+
+  GAP["gap report<br/>binding fail BLOCKS export<br/>best practice WARNS"]
+  VERD --> GAP
+
+  KEV["KEV / CVE feed<br/>catalog half is new<br/>scan half is Nessus, already collected"] --> XW
+  NESS -.scan results.-> KEV
+  XW["mitigation CROSSWALK<br/>asset x vulnerability x disposition<br/>view over appendices I, M, N, O<br/>NOT an eighth register"]
+  ENT --> XW
+  XW --> DISP{"disposition"}
+  DISP -->|mitigated| S11["Section 11<br/>what was resolved"]
+  DISP -->|planned: owner, date, cost| S11
+  DISP -->|accepted: owner, justification,<br/>compensating control, review date| S12["Section 12 + Appendix O"]
+end
+
+subgraph OUT["FREEZE AND OUTPUT"]
+  PV["plan_version - immutable<br/>freezes answer set<br/>pins ruleset, question module,<br/>clause library, plan<br/>attachments pinned by reference"]
+  DOC["deterministic render<br/>clause library slots + narrative<br/>no generative model, ever"]
+  REG["register views<br/>7 rendered tables I K L M N O P"]
+  ATT["controlled attachments<br/>registers + J, T, U<br/>version apart from the body"]
+  ESIGN["owner/operator e-sign<br/>binds to plan_version content hash"]
+  SUB["submission<br/>COTP/OCMI - facility & OCS<br/>MSC - US-flagged vessel<br/>valid 5 years"]
+  GAP --> PV
+  S11 --> PV
+  S12 --> PV
+  ENT --> REG --> ATT
+  PV --> DOC --> ESIGN --> SUB
+  ATT -.pinned by ref.-> PV
+end
+
+subgraph AUDIT["AUDIT MODE - in the field, inside the agent"]
+  SCOPE["section-scoped run<br/>scope stated on the report"]
+  FIND["findings keyed by authority_id<br/>deficiency = failed binding req<br/>recommendation = no failure behind it"]
+  CERT["certification output<br/>states plan-as-written vs<br/>what was physically verified and when"]
+  PV --> SCOPE --> FIND --> CERT
+end
+
+subgraph SURV["SURVEILLANCE - three triggers"]
+  T1["ruleset change"]
+  T2["new KEV matches old scan"]
+  T3["new vuln on a planned asset<br/>= criticality question, not patching"]
+  RERUN["local re-eval against<br/>frozen answers, pinned as_of<br/>~0.2 ms per plan"]
+  DIFF["diff shape ONLY<br/>rule id, old/new status,<br/>old/new severity<br/>no answers, no asset or facility names"]
+  LOCAL["local finding in the agent<br/>asset-level detail stays here"]
+  T1 --> RERUN
+  T2 --> RERUN
+  T3 --> RERUN
+  PV --> RERUN
+  SEAL -.new ruleset.-> T1
+  RERUN --> DIFF
+  RERUN --> LOCAL
+  DIFF --> PORTAL["our portal<br/>alert copy names rules, not assets"]
+  LOCAL -.custody tier only.-> PORTAL
+end
+
+subgraph TIERS["TIERS - determine what must stay separable"]
+  A["one-off<br/>plan + first audit bundled<br/>ruleset current at delivery"]
+  B["maintained<br/>ruleset subscription + surveillance"]
+  C["CySO as a service<br/>FULL CUSTODY<br/>data to SOC, IR through us<br/>only tier that can name an asset"]
+end
+
+classDef ours fill:#1f3a5f,stroke:#7fb2e5,color:#eaf2fb
+classDef agent fill:#3a2a12,stroke:#d6a24a,color:#fbf3e6
+classDef hard fill:#4a1f22,stroke:#e07b7b,color:#fdeaea
+class PDF,CONTENT,AUTH,VAL,SEAL,FR ours
+class ENGINE,STORE,VERD,XW hard
+class LIC,VERIFY,DIFF,LOCAL hard
+class SARA,NESS,SAM,CFDD agent
+class RMFOUT hard

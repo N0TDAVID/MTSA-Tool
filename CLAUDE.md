@@ -12,6 +12,7 @@ reference/      regulation and source materials, read-only, never edited
 fixtures/       answer sets for regression-testing the engine, not product content
 engine.py       the deterministic rule engine, tier 0, stdlib only
 kev.py          CISA KEV capability module, tier 1, entitlement-gated
+ingest.py       tier 1: inventory CSV and scanner import; exact match, human confirmation
 store.py        tier 1: the answer store interface, JSON file and in-memory backends
 criticality.py  tier 1: two-stage narrowing as a facilitated workshop session
 records.py      tier 1: 101.640 record categories, retention read per category

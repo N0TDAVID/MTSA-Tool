@@ -230,7 +230,7 @@ if os.path.exists(KEV_SNAPSHOT):
 #     A capability module that imported engine could not be dropped from a build,
 #     which is exactly what the entitlement gate has to be able to do.
 TIER_1 = ("kev.py", "store.py", "criticality.py", "records.py", "plan_version.py",
-          "render.py", "license.py", "audit.py")
+          "render.py", "license.py", "audit.py", "ingest.py")
 LAYERS = {"engine.py": set()}
 LAYERS.update({name: set() for name in TIER_1})
 # The GUI imports the facade and nothing else. That is what keeps a module
@@ -396,10 +396,34 @@ if os.path.exists(QUESTIONS) and ruleset is not None:
                 check_typed(qid, sub, f["type"])
                 q_paths.add(sub)
 
+    # The guided steps. Every listed question must exist and appear in one step
+    # only; a computed step names no questions. The special kinds are closed.
+    STEP_KINDS = {"questions", "inventory", "sort", "followups", "review"}
+    placed = set()
+    for st in questions.get("steps", []):
+        sid = st.get("id", "(unnamed)")
+        for key in ("id", "title", "kind"):
+            if key not in st:
+                fail("step-shape", "step %s has no %s" % (sid, key))
+        if st.get("kind") not in STEP_KINDS:
+            fail("step-shape", "step %s has kind %r" % (sid, st.get("kind")))
+        if st.get("kind") == "questions" and not st.get("questions"):
+            fail("step-shape", "step %s is a questions step with no questions" % sid)
+        if st.get("kind") != "questions" and st.get("questions"):
+            fail("step-shape", "step %s is a %s step but lists questions" % (sid, st.get("kind")))
+        for qid in st.get("questions", []):
+            if qid not in seen_q:
+                fail("step-question", "step %s lists unknown question %r" % (sid, qid))
+            if qid in placed:
+                fail("step-question", "question %r appears in more than one step" % qid)
+            placed.add(qid)
+
 # 7e. GUI hygiene. The plan is SSI under 49 CFR 1520: the GUI binds 127.0.0.1
 #     only, and loads nothing from anywhere else.
-GUI_FILES = ["serve.py"] + [os.path.join("gui", f) for f in
-                            (os.listdir("gui") if os.path.isdir("gui") else [])]
+GUI_FILES = ["serve.py"]
+for folder, _, names in os.walk("gui"):
+    GUI_FILES += [os.path.join(folder, n) for n in names
+                  if n.rsplit(".", 1)[-1] in ("html", "css", "js", "json", "svg", "txt", "csv", "nessus")]
 OUTBOUND = ("https://", "http://", "@import", "fonts.googleapis", "cdn.", "//unpkg", "0.0.0.0")
 for path in GUI_FILES:
     if not os.path.isfile(path):

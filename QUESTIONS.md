@@ -153,6 +153,47 @@ This is the same gap CLAUDE.md records under KEV "Known gap": the fix is an
 observation entity keyed (asset, cve) plus a compensating-control and
 risk-acceptance entity, which is build step 04. No entity was invented here.
 
+## 15. The workshop sort now writes is_critical_system
+
+CLAUDE.md says SAM supplies `is_critical_system` and the criticality module
+does not touch it. The guided flow has no SAM in the loop and the request was
+that later steps change as assets are sorted, so `Session.apply_sort` writes
+the stage 1 outcome onto each decided device (in scope true, out of scope
+false, pending untouched) and records `criticality_source` = the session id.
+It runs automatically after every recorded workshop answer.
+
+Question: when SAM has supplied a value and the workshop disagrees, which
+wins? Today the workshop wins as soon as both questions are agreed, and the
+source field is the only trace of the SAM value having been overwritten.
+
+## 16. Bundled fonts
+
+The training portal uses Inter, Aleo and Montserrat. All three are under the
+SIL Open Font License and are bundled as woff2 under `gui/fonts/`, fetched
+once at build time from Google Fonts and served locally. Nothing loads
+externally at runtime and `validate.py` still scans the GUI for outbound
+markers. Question: keep the bundled copies, or point at fonts the client
+workstation already has and accept the fallbacks?
+
+## 17. Client uploads and the trust boundary
+
+Inventory spreadsheets and scanner exports are read in the browser with
+FileReader and posted as text to 127.0.0.1. They never leave the machine.
+A Nessus export is large (the example in reference/ carries 2459 CVEs on one
+host) and is held in memory for the preview only; what is applied is the
+confirmed host-to-asset assignment plus CVE ids. Question: should the raw
+upload be retained as a controlled attachment (evidence for an audit), or is
+the derived observation list enough?
+
+## 18. Percent complete counts items, not sections
+
+Overall percent is answered applicable items over applicable items, summed
+across steps, with the asset follow-ups counted under Section 6. It does not
+weight sections, and sections with no questions authored yet (2 through 4, 7
+through 14 apart from the backup question) show as "not in this walk-through
+yet" rather than as 0%. Question: should the review page show a section
+percent based on rule coverage instead, once rules exist for those sections?
+
 ## 14. Appendix M scope
 
 The KEV register (Appendix M) here lists every device carrying an open KEV,

@@ -19,11 +19,29 @@ python serve.py           # GUI on http://127.0.0.1:8765/
 Python 3 standard library only. `jsonschema` is used by `validate.py` alone and
 is never imported by shipped code; `validate.py` fails the build if it is.
 
+## The two areas of the GUI
+
+**Plan builder** is the client walk-through: a few questions at a time, answers
+saved as they are changed, percent complete and "what is missing" per step and
+per section, no regulation text. It collects the asset inventory (by hand, by
+CSV upload, or by importing a Nessus export or scanner CSV), runs the two-question
+criticality sort as a group activity, and then asks only the per-asset follow-up
+questions the sorted inventory needs. Later steps, the registers, the crosswalk,
+and the gap report all change as assets are sorted.
+
+**Consultant tools** are the working screens with citations and evidence:
+facilities and plans, the full interview, the workshop, the seven registers, the
+crosswalk, the gap report, licensing, surveillance, audit mode, and records.
+
+The theme follows the ABS MTSA training portal. Its three fonts are bundled
+locally under `gui/fonts/` under the SIL Open Font License.
+
 ## Layout
 
 ```
 engine.py         tier 0   deterministic rule engine
 kev.py            tier 1   CISA KEV capability module (the worked example)
+ingest.py         tier 1   inventory CSV and scanner import: parse, exact match, propose
 store.py          tier 1   answer store interface, JSON file and in-memory backends
 criticality.py    tier 1   two-stage narrowing, facilitated workshop session
 records.py        tier 1   101.640 record categories with per-category retention

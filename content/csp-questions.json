@@ -2,6 +2,20 @@
   "question_module_version": "2026.09.08",
   "notes": "Interview question nodes. Every path a rule reads is a constrained type: enum, enum_multi, boolean, number, date, tri_state, or entity_ref. identifier and short_text are single-line text that a predicate may only presence-check with `answered`; validate.py enforces that no other operator reads them. narrative is free text that feeds the clause library and is never read by a predicate. applies_to is an engine predicate over the answer set, evaluated by the facade; it is linted by validate.py. authority_ids name entries in the content registry and are the only source of citations shown in the UI.",
   "types": ["enum", "enum_multi", "boolean", "number", "date", "tri_state", "entity_ref", "identifier", "short_text", "narrative", "entity_list"],
+  "steps_note": "The guided walk-through. A step of kind `questions` shows the listed question ids, a few at a time. `inventory`, `sort`, `followups` and `review` are computed steps the facade renders from the answer set: inventory collects devices by hand or by CSV and scanner import, sort runs criticality stage 1 over them, followups asks the per-asset questions the rules need for in-scope assets, review shows percent complete and what is missing per section. Percent complete is answered applicable items over applicable items; nothing is estimated.",
+  "steps": [
+    { "id": "facility", "title": "Your facility", "blurb": "What kind of asset this Plan covers and who oversees it.", "kind": "questions", "questions": ["q-asset-type", "q-asset-name", "q-cognizant-cotp", "q-plan-approval-date"] },
+    { "id": "organization", "title": "Your cybersecurity organization", "blurb": "Who has cybersecurity duties and how the structure is written down.", "kind": "questions", "questions": ["q-org-structure-defined", "q-org-personnel"] },
+    { "id": "cyso", "title": "Your Cybersecurity Officer", "blurb": "The person designated as CySO.", "kind": "questions", "questions": ["q-cyso-name", "q-cyso-title", "q-cyso-designation-in-writing", "q-cyso-appointed-date"] },
+    { "id": "reach", "title": "Reaching the CySO", "blurb": "How the Coast Guard reaches the CySO at any hour.", "kind": "questions", "questions": ["q-cyso-accessible-24-7", "q-cyso-mobile-phone", "q-cyso-oncall-protocol", "q-cyso-alternate-name"] },
+    { "id": "communications", "title": "Communications", "blurb": "How you notify people and stay in touch with authorities.", "kind": "questions", "questions": ["q-comms-channels", "q-authority-contacts"] },
+    { "id": "channels", "title": "Vessels and backup channels", "blurb": "Reaching interfacing vessels, and reaching anyone when email and phones are down.", "kind": "questions", "questions": ["q-vessel-channels", "q-out-of-band-channels"] },
+    { "id": "inventory", "title": "Asset inventory", "blurb": "Collect the IT and OT systems this Plan covers: add them by hand, upload a spreadsheet, or import scanner output.", "kind": "inventory" },
+    { "id": "sort", "title": "Sort your assets", "blurb": "Two questions per asset decide which ones the Plan must cover. Answer them as a group.", "kind": "sort" },
+    { "id": "followups", "title": "Critical asset follow-ups", "blurb": "Questions that only apply to the assets you sorted in.", "kind": "followups" },
+    { "id": "backups", "title": "Backups", "blurb": "Whether backups of critical systems are tested.", "kind": "questions", "questions": ["q-backup-tested"] },
+    { "id": "review", "title": "Review and save", "blurb": "What is complete, what is missing, and saving a version.", "kind": "review" }
+  ],
   "questions": [
     {
       "id": "q-asset-type",
@@ -32,6 +46,7 @@
     },
     {
       "id": "q-plan-approval-date",
+      "optional": true,
       "section": 10,
       "path": "plan.approval_date",
       "type": "date",
@@ -121,6 +136,7 @@
     },
     {
       "id": "q-cyso-alternate-name",
+      "optional": true,
       "section": 1,
       "path": "cyso.alternate.name",
       "type": "identifier",
@@ -189,16 +205,21 @@
       "help": "Supplied by SAM from an assessment. Editable here so the gap report can be exercised. observed_cves comes from scanner output for IT or vendor advisory mapping for OT; the KEV join is computed from it, never typed in.",
       "fields": [
         { "key": "nickname", "type": "identifier", "prompt": "Asset" },
+        { "key": "ip", "type": "identifier", "format": "^[0-9A-Fa-f:.]+$", "prompt": "IP address" },
         { "key": "component_type", "type": "enum", "options": ["HMI", "PLC", "RTU", "Server", "Workstation", "Switch", "Firewall", "Other"], "prompt": "Component type" },
         { "key": "system_function", "type": "enum", "options": ["Automation", "Safety", "Navigation", "Cargo", "Business", "Uncategorized"], "prompt": "System function" },
         { "key": "is_ot", "type": "boolean", "prompt": "OT" },
         { "key": "is_critical_system", "type": "boolean", "prompt": "Critical system" },
         { "key": "public_facing", "type": "boolean", "prompt": "Reachable from the public internet" },
+        { "key": "operating_system", "type": "short_text", "prompt": "Operating system" },
+        { "key": "vendor", "type": "short_text", "prompt": "Vendor" },
+        { "key": "model", "type": "short_text", "prompt": "Model" },
         { "key": "internet_justification", "type": "short_text", "prompt": "Justification for internet exposure" },
         { "key": "observed_cves", "type": "identifier_list", "format": "^CVE-\\d{4}-\\d{4,}$", "prompt": "Observed CVEs" },
         { "key": "compensating_control", "type": "short_text", "prompt": "Compensating control" },
         { "key": "remediation_plan", "type": "short_text", "prompt": "Remediation plan" },
-        { "key": "risk_acceptance", "type": "short_text", "prompt": "Risk acceptance reference" }
+        { "key": "risk_acceptance", "type": "short_text", "prompt": "Risk acceptance reference" },
+        { "key": "cve_source_note", "type": "short_text", "prompt": "How vulnerabilities are identified if the asset cannot be scanned" }
       ],
       "authority_ids": ["cfr:101.650(b)", "cfr:101.650(e)(3)(i)"]
     },
@@ -214,6 +235,7 @@
     },
     {
       "id": "q-narrative-s1-intro",
+      "optional": true,
       "section": 1,
       "path": "narrative.section_1.intro",
       "type": "narrative",

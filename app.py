@@ -27,6 +27,7 @@ from datetime import date
 import audit
 import criticality
 import engine
+import ingest
 import kev
 import license as licensing
 import plan_version
@@ -596,7 +597,39 @@ class Session:
         session = criticality.record_answer(session, asset_id, question_id, value, participant_id,
                                             recorded_at, on_behalf_of=on_behalf_of, note=note)
         self.store.put("sessions", session["id"], session)
+        # The sort takes effect as soon as an asset is decided, so the steps that
+        # depend on it (follow-ups, registers, crosswalk, gap report) move with it.
+        self.apply_sort(plan_id)
         return self.criticality(plan_id)
+
+    def apply_sort(self, plan_id):
+        """Write the stage 1 outcome onto each decided device as is_critical_system.
+
+        In scope becomes true, out of scope becomes false, pending is left as
+        whatever SAM or the inventory supplied. The source is recorded on the
+        device so a SAM value and a workshop value are distinguishable.
+        """
+        session = self._criticality_session(plan_id, create=False)
+        answers = self.answers(plan_id)
+        if session is None:
+            return {"applied": 0, "pending": len(answers.get("devices", []))}
+        scoped = criticality.scope(session, answers.get("devices", []))
+        outcome = {}
+        for row in scoped["in_scope"]:
+            outcome[row["asset_id"]] = True
+        for row in scoped["out_of_scope"]:
+            outcome[row["asset_id"]] = False
+        applied = 0
+        for d in answers.get("devices", []):
+            name = d.get("nickname")
+            if name in outcome:
+                if d.get("is_critical_system") != outcome[name] or d.get("criticality_source") != session["id"]:
+                    applied += 1
+                d["is_critical_system"] = outcome[name]
+                d["criticality_source"] = session["id"]
+        self.save_answers(plan_id, answers)
+        return {"applied": applied, "in_scope": len(scoped["in_scope"]),
+                "out_of_scope": len(scoped["out_of_scope"]), "pending": len(scoped["pending"])}
 
     # ------------------------------------------------------------ records
 
@@ -712,6 +745,283 @@ class Session:
                 b["placeholder"] = placeholder(b["reason"])
         return out
 
+    # ------------------------------------------------------------- wizard
+    #
+    # The guided walk-through. Steps come from the question module. Percent
+    # complete is answered applicable items over applicable items, and "what is
+    # missing" is unanswered prompts plus the authored message of every failed
+    # rule. Nothing here is estimated or generated.
+
+    def _question_map(self, plan_id):
+        return {q["id"]: q for q in self.questions_for(plan_id)["questions"]}
+
+    def device_fields(self):
+        q = next(q for q in self.questions["questions"] if q["path"] == "devices")
+        return q["fields"]
+
+    def wizard(self, plan_id):
+        plan = self.plan(plan_id)
+        qmap = self._question_map(plan_id)
+        answers = self.answers(plan_id)
+        devices = answers.get("devices", [])
+        steps, done_all, total_all = [], 0, 0
+        for i, st in enumerate(self.questions["steps"]):
+            kind = st["kind"]
+            note = None
+            if kind == "questions":
+                applicable = [qmap[q] for q in st["questions"]
+                              if qmap[q]["applicable"] and not qmap[q].get("optional")]
+                total = len(applicable)
+                done = sum(1 for q in applicable if _has_value(q["value"]))
+            elif kind == "inventory":
+                total, done = 1, (1 if devices else 0)
+                note = "%d assets" % len(devices)
+            elif kind == "sort":
+                scoped = self._scope(plan_id, devices)
+                total = len(devices)
+                done = len(scoped["in_scope"]) + len(scoped["out_of_scope"])
+                note = None if devices else "add assets first"
+            elif kind == "followups":
+                f = self.followups(plan_id)
+                total, done = f["total"], f["total"] - f["outstanding"]
+                note = None if total else "nothing to ask until assets are sorted in"
+            else:
+                total, done = 0, 0
+            percent = int(round(100.0 * done / total)) if total else 0
+            steps.append({
+                "index": i + 1, "id": st["id"], "title": st["title"], "blurb": st.get("blurb", ""),
+                "kind": kind, "total": total, "done": done, "percent": percent, "note": note,
+                "status": ("complete" if total and done == total else "in_progress" if done else "not_started"),
+            })
+            if kind != "review":
+                done_all += done
+                total_all += total
+        overall = int(round(100.0 * done_all / total_all)) if total_all else 0
+        for s in steps:
+            if s["kind"] == "review":
+                s["percent"] = overall
+                s["status"] = "complete" if overall == 100 else "in_progress" if overall else "not_started"
+        return {"plan": {k: v for k, v in plan.items() if k != "answers"},
+                "steps": steps, "overall": {"done": done_all, "total": total_all, "percent": overall},
+                "as_of": self.as_of}
+
+    def step(self, plan_id, step_id):
+        st = next((s for s in self.questions["steps"] if s["id"] == step_id), None)
+        if st is None:
+            raise ValueError("no step %r" % step_id)
+        wiz = self.wizard(plan_id)
+        me = next(s for s in wiz["steps"] if s["id"] == step_id)
+        idx = wiz["steps"].index(me)
+        out = dict(me)
+        out["previous"] = wiz["steps"][idx - 1]["id"] if idx > 0 else None
+        out["next"] = wiz["steps"][idx + 1]["id"] if idx + 1 < len(wiz["steps"]) else None
+        out["count"] = len(wiz["steps"])
+        out["overall"] = wiz["overall"]
+        kind = st["kind"]
+        if kind == "questions":
+            qmap = self._question_map(plan_id)
+            out["questions"] = [qmap[q] for q in st["questions"]]
+        elif kind == "inventory":
+            out["inventory"] = self.inventory(plan_id)
+        elif kind == "sort":
+            out["sort"] = self.criticality(plan_id)
+            out["sort"]["applied"] = self.apply_sort(plan_id)
+        elif kind == "followups":
+            out["followups"] = self.followups(plan_id)
+        else:
+            out["progress"] = self.progress(plan_id)
+            out["versions"] = self.plan_versions(plan_id)
+        return out
+
+    def _scope(self, plan_id, devices):
+        session = self._criticality_session(plan_id, create=False)
+        if session is None:
+            return {"in_scope": [], "out_of_scope": [],
+                    "pending": [{"asset_id": d.get("nickname")} for d in devices]}
+        return criticality.scope(session, devices)
+
+    def inventory(self, plan_id):
+        answers = self.answers(plan_id)
+        devices = answers.get("devices", [])
+        scoped = self._scope(plan_id, devices)
+        outcome = {}
+        for bucket in ("in_scope", "out_of_scope", "pending"):
+            for row in scoped[bucket]:
+                outcome[row["asset_id"]] = bucket
+        rows = []
+        for d in devices:
+            rows.append(dict(d, sort=outcome.get(d.get("nickname"), "pending"),
+                             observed_cve_count=len(d.get("observed_cves") or d.get("open_kevs") or [])))
+        return {
+            "devices": rows,
+            "fields": self.device_fields(),
+            "imports": answers.get("scan_imports", []),
+            "template_url": "/gui/samples/inventory-template.csv",
+            "example_scan_url": "/gui/samples/example-scan.nessus",
+            "formats": {
+                "inventory": "CSV with a header row. Recognised columns: " + ", ".join(
+                    "%s (%s)" % (k, "/".join(v[:3])) for k, v in ingest.INVENTORY_COLUMNS.items()),
+                "scan": "Nessus .nessus export, or any CSV with a host column and a CVE column",
+            },
+        }
+
+    def add_device(self, plan_id, device):
+        if not device.get("nickname"):
+            raise ValueError("an asset needs a name")
+        allowed = {f["key"] for f in self.device_fields()}
+        clean = {k: v for k, v in device.items() if k in allowed and v not in (None, "")}
+        answers, report = ingest.apply_inventory(self.answers(plan_id), [clean])
+        self.save_answers(plan_id, answers)
+        return dict(report, inventory=self.inventory(plan_id))
+
+    def remove_device(self, plan_id, nickname):
+        answers = self.answers(plan_id)
+        before = len(answers.get("devices", []))
+        answers["devices"] = [d for d in answers.get("devices", [])
+                              if (d.get("nickname") or "").lower() != nickname.lower()]
+        if len(answers["devices"]) == before:
+            raise ValueError("no asset named %r" % nickname)
+        self.save_answers(plan_id, answers)
+        return self.inventory(plan_id)
+
+    def set_device_field(self, plan_id, nickname, field, value):
+        allowed = {f["key"] for f in self.device_fields()}
+        if field not in allowed:
+            raise ValueError("field %r is not an asset field" % field)
+        answers = self.answers(plan_id)
+        dev = next((d for d in answers.get("devices", [])
+                    if (d.get("nickname") or "").lower() == nickname.lower()), None)
+        if dev is None:
+            raise ValueError("no asset named %r" % nickname)
+        dev[field] = value
+        self.save_answers(plan_id, answers)
+        return dev
+
+    def import_inventory_preview(self, plan_id, text):
+        parsed = ingest.parse_inventory_csv(text)
+        existing = {(d.get("nickname") or "").lower() for d in self.answers(plan_id).get("devices", [])}
+        for d in parsed["devices"]:
+            d["_action"] = "update" if d["nickname"].lower() in existing else "add"
+        return parsed
+
+    def import_inventory_apply(self, plan_id, devices):
+        clean = [{k: v for k, v in d.items() if not k.startswith("_")} for d in devices]
+        answers, report = ingest.apply_inventory(self.answers(plan_id), clean)
+        self.save_answers(plan_id, answers)
+        return dict(report, inventory=self.inventory(plan_id))
+
+    def import_scan_preview(self, plan_id, text, filename=""):
+        parsed = ingest.parse_scan(text, filename)
+        match = ingest.match_hosts(parsed["hosts"], self.answers(plan_id).get("devices", []))
+        catalog = self.kev_snapshot["kevs"] if "kev" in self.entitlements else None
+        for row in match["matched"] + match["unmatched"]:
+            row["kev_count"] = (len([c for c in row["cves"] if c in catalog])
+                                if catalog is not None else None)
+        return {"format": parsed["format"], "filename": filename, "hosts": len(parsed["hosts"]),
+                "matched": match["matched"], "unmatched": match["unmatched"],
+                "devices": [d.get("nickname") for d in self.answers(plan_id).get("devices", [])],
+                "kev_licensed": catalog is not None}
+
+    def import_scan_apply(self, plan_id, assignments, source):
+        answers, report = ingest.apply_scan(self.answers(plan_id), assignments, source or "scan")
+        self.save_answers(plan_id, answers)
+        return dict(report, inventory=self.inventory(plan_id))
+
+    def followups(self, plan_id):
+        """Per-asset questions the rules need, derived from the sorted inventory."""
+        answers = self.answers(plan_id)
+        enriched, applied = self.enrich(plan_id, answers)
+        items = []
+        for d in enriched.get("devices", []):
+            name = d.get("nickname")
+            if d.get("is_ot") and d.get("public_facing"):
+                items.append({
+                    "id": "%s:internet_justification" % name, "device": name, "kind": "field",
+                    "field": "internet_justification", "type": "short_text",
+                    "prompt": "%s is an OT system reachable from the public internet. Why is that necessary?" % name,
+                    "value": d.get("internet_justification"),
+                    "done": bool(d.get("internet_justification")),
+                })
+            if not d.get("is_critical_system"):
+                continue
+            if "kev" in applied:
+                kevs = d.get("open_kevs", [])
+                if kevs:
+                    values = {f: d.get(f) for f in ("compensating_control", "remediation_plan", "risk_acceptance")}
+                    items.append({
+                        "id": "%s:kev_disposition" % name, "device": name, "kind": "kev_disposition",
+                        "prompt": "%s has %d known exploited vulnerabilit%s: %s. What has been done about %s?"
+                                  % (name, len(kevs), "y" if len(kevs) == 1 else "ies", ", ".join(kevs),
+                                     "it" if len(kevs) == 1 else "them"),
+                        "fields": [
+                            {"key": "compensating_control", "prompt": "A compensating control is in place (describe it)"},
+                            {"key": "remediation_plan", "prompt": "Remediation is planned (owner, date, cost)"},
+                            {"key": "risk_acceptance", "prompt": "The risk is accepted (reference and reason)"},
+                        ],
+                        "values": values, "cves": kevs,
+                        "done": any(values.values()),
+                    })
+                elif not (d.get("observed_cves") or d.get("open_kevs")):
+                    items.append({
+                        "id": "%s:cve_source_note" % name, "device": name, "kind": "field",
+                        "field": "cve_source_note", "type": "short_text",
+                        "prompt": "%s is a critical system but no scan or advisory data has been imported for it. "
+                                  "Import scanner output on the inventory step, or describe how its vulnerabilities are identified." % name,
+                        "value": d.get("cve_source_note"),
+                        "done": bool(d.get("cve_source_note")),
+                    })
+        out = {"items": items, "total": len(items), "outstanding": sum(1 for i in items if not i["done"]),
+               "kev_licensed": "kev" in self.entitlements}
+        if "kev" not in self.entitlements:
+            out["placeholder"] = placeholder("the kev capability is not licensed, so known exploited "
+                                             "vulnerabilities on critical assets cannot be identified here")
+        return out
+
+    def progress(self, plan_id):
+        """Percent complete and what is missing, per section, with no citations."""
+        run = self.evaluate(plan_id)
+        qs = self.questions_for(plan_id)["questions"]
+        follow = self.followups(plan_id)
+        sections, done_all, total_all = [], 0, 0
+        for s in self.content["sections"]:
+            n = s["number"]
+            mine = [q for q in qs if q["section"] == n and q["applicable"] and not q.get("optional")]
+            answered = [q for q in mine if _has_value(q["value"])]
+            missing = [{"kind": "question", "text": q["prompt"]} for q in mine if not _has_value(q["value"])]
+            total, done = len(mine), len(answered)
+            if n == 6:
+                total += follow["total"]
+                done += follow["total"] - follow["outstanding"]
+                missing += [{"kind": "asset", "text": i["prompt"]} for i in follow["items"] if not i["done"]]
+            for v in run["verdicts"]:
+                if v.get("section") != n:
+                    continue
+                if v["status"] == "fail":
+                    missing.append({"kind": "required" if v["severity"] == "binding" else "recommended",
+                                    "text": v.get("message") or v["rule_id"]})
+                elif v["status"] == "unavailable":
+                    missing.append({"kind": "unavailable", "text": v.get("message")})
+            sections.append({
+                "number": n, "title": s["title"], "total": total, "done": done,
+                "percent": (int(round(100.0 * done / total)) if total else None),
+                "in_interview": total > 0 or any(v.get("section") == n for v in run["verdicts"]),
+                "missing": missing,
+            })
+            done_all += done
+            total_all += total
+        summary = run["summary"]
+        # One denominator everywhere: the overall figure is the walk-through's,
+        # which also counts the inventory and sort steps. The per-section rows
+        # above count questions and follow-ups only.
+        return {
+            "sections": sections,
+            "overall": self.wizard(plan_id)["overall"],
+            "questions": {"done": done_all, "total": total_all},
+            "export": {"allowed": summary["export_allowed"], "blocking": summary["blocking"],
+                       "warnings": summary["warnings"], "unavailable": summary["unavailable"]},
+            "as_of": self.as_of,
+        }
+
     # ------------------------------------------------------------ content
 
     def spine(self):
@@ -730,6 +1040,10 @@ class Session:
 # --------------------------------------------------------------------------
 # helpers
 # --------------------------------------------------------------------------
+
+def _has_value(v):
+    return v not in (None, "", [], {})
+
 
 def _view(columns, rows, not_captured=None, unavailable=None):
     return {

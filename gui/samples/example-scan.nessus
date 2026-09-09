@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<NessusClientData_v2>
+<Policy><policyName>Example policy</policyName></Policy>
+<Report name="Example scan">
+<ReportHost name="10.50.1.21">
+<HostProperties>
+<tag name="HOST_START">Tue Sep  8 09:00:00 2026</tag>
+<tag name="host-ip">10.50.1.21</tag>
+<tag name="netbios-name">OCC-HMI-01</tag>
+<tag name="operating-system">Microsoft Windows 10 Enterprise LTSC 2021</tag>
+</HostProperties>
+<ReportItem port="445" svc_name="cifs" protocol="tcp" severity="4" pluginID="1" pluginName="Example finding A" pluginFamily="Windows">
+<cve>CVE-2024-38112</cve>
+<cve>CVE-2016-2183</cve>
+</ReportItem>
+<ReportItem port="3389" svc_name="msrdp" protocol="tcp" severity="4" pluginID="2" pluginName="Example finding B" pluginFamily="Windows">
+<cve>CVE-2019-0708</cve>
+</ReportItem>
+</ReportHost>
+<ReportHost name="10.50.0.5">
+<HostProperties>
+<tag name="HOST_START">Tue Sep  8 09:05:00 2026</tag>
+<tag name="host-ip">10.50.0.5</tag>
+<tag name="netbios-name">CORP-FS-01</tag>
+<tag name="operating-system">Microsoft Windows Server 2019</tag>
+</HostProperties>
+<ReportItem port="0" svc_name="general" protocol="tcp" severity="3" pluginID="3" pluginName="Example finding C" pluginFamily="Windows">
+<cve>CVE-2021-44228</cve>
+</ReportItem>
+</ReportHost>
+<ReportHost name="10.50.9.9">
+<HostProperties>
+<tag name="HOST_START">Tue Sep  8 09:10:00 2026</tag>
+<tag name="host-ip">10.50.9.9</tag>
+<tag name="netbios-name">UNKNOWN-BOX</tag>
+</HostProperties>
+<ReportItem port="80" svc_name="www" protocol="tcp" severity="2" pluginID="4" pluginName="Example finding D" pluginFamily="Web">
+<cve>CVE-2022-40684</cve>
+</ReportItem>
+</ReportHost>
+</Report>
+</NessusClientData_v2>

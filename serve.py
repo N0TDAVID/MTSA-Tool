@@ -155,6 +155,54 @@ def r_transfer(s, g, q, b):
     return s.transfer_facility(g[0], b["to_tenant_id"], b.get("reason") or "")
 
 
+def r_wizard(s, g, q, b):
+    return s.wizard(g[0])
+
+
+def r_step(s, g, q, b):
+    return s.step(g[0], g[1])
+
+
+def r_progress(s, g, q, b):
+    return s.progress(g[0])
+
+
+def r_followups(s, g, q, b):
+    return s.followups(g[0])
+
+
+def r_device_add(s, g, q, b):
+    return s.add_device(g[0], b["device"])
+
+
+def r_device_remove(s, g, q, b):
+    return s.remove_device(g[0], b["nickname"])
+
+
+def r_device_field(s, g, q, b):
+    return s.set_device_field(g[0], b["nickname"], b["field"], b.get("value"))
+
+
+def r_import_inventory_preview(s, g, q, b):
+    return s.import_inventory_preview(g[0], b["text"])
+
+
+def r_import_inventory_apply(s, g, q, b):
+    return s.import_inventory_apply(g[0], b["devices"])
+
+
+def r_import_scan_preview(s, g, q, b):
+    return s.import_scan_preview(g[0], b["text"], b.get("filename") or "")
+
+
+def r_import_scan_apply(s, g, q, b):
+    return s.import_scan_apply(g[0], b["assignments"], b.get("source") or "scan")
+
+
+def r_sort_apply(s, g, q, b):
+    return s.apply_sort(g[0])
+
+
 def r_license(s, g, q, b):
     return s.license_status()
 
@@ -193,6 +241,18 @@ ROUTES = [
     ("GET", r"/api/facility/(%s)/records" % ID, r_records),
     ("POST", r"/api/facility/(%s)/record" % ID, r_record_add),
     ("POST", r"/api/facility/(%s)/transfer" % ID, r_transfer),
+    ("GET", r"/api/plan/(%s)/wizard" % ID, r_wizard),
+    ("GET", r"/api/plan/(%s)/step/(%s)" % (ID, ID), r_step),
+    ("GET", r"/api/plan/(%s)/progress" % ID, r_progress),
+    ("GET", r"/api/plan/(%s)/followups" % ID, r_followups),
+    ("POST", r"/api/plan/(%s)/device" % ID, r_device_add),
+    ("POST", r"/api/plan/(%s)/device/remove" % ID, r_device_remove),
+    ("POST", r"/api/plan/(%s)/device/field" % ID, r_device_field),
+    ("POST", r"/api/plan/(%s)/import/inventory/preview" % ID, r_import_inventory_preview),
+    ("POST", r"/api/plan/(%s)/import/inventory/apply" % ID, r_import_inventory_apply),
+    ("POST", r"/api/plan/(%s)/import/scan/preview" % ID, r_import_scan_preview),
+    ("POST", r"/api/plan/(%s)/import/scan/apply" % ID, r_import_scan_apply),
+    ("POST", r"/api/plan/(%s)/sort/apply" % ID, r_sort_apply),
     ("GET", r"/api/license", r_license),
     ("POST", r"/api/license/entitlements", r_entitlements),
 ]
@@ -327,6 +387,35 @@ def check(as_of):
          {"category": "exercise", "fields": {"date_held": "2026-05-01", "description": "check",
                                                "participants": ["a"], "lessons_learned": "none"},
           "custodian": "Robert Williams", "accountable_officer": "Jordan Kim"}),
+        ("GET", "/api/plan/%s/wizard" % plan, {}),
+        ("GET", "/api/plan/%s/step/facility" % plan, {}),
+        ("GET", "/api/plan/%s/step/inventory" % plan, {}),
+        ("POST", "/api/plan/%s/import/inventory/preview" % plan,
+         {"text": open(os.path.join(GUI_DIR, "samples", "inventory-template.csv"), encoding="utf-8").read()}),
+        ("POST", "/api/plan/%s/import/inventory/apply" % plan,
+         {"devices": [{"nickname": "PLC-BERTH-02", "component_type": "PLC", "system_function": "Automation",
+                       "is_ot": True, "public_facing": True, "ip": "10.50.9.9"}]}),
+        ("POST", "/api/plan/%s/import/scan/preview" % plan,
+         {"text": open(os.path.join(GUI_DIR, "samples", "example-scan.nessus"), encoding="utf-8").read(),
+          "filename": "example-scan.nessus"}),
+        ("POST", "/api/plan/%s/import/scan/apply" % plan,
+         {"assignments": [{"device": "OCC-HMI-01", "host": "10.50.1.21",
+                           "cves": ["CVE-2024-38112", "CVE-2016-2183", "CVE-2019-0708"]}],
+          "source": "example-scan.nessus"}),
+        ("POST", "/api/plan/%s/device" % plan, {"device": {"nickname": "SW-CORE-01", "component_type": "Switch"}}),
+        ("POST", "/api/plan/%s/device/field" % plan, {"nickname": "SW-CORE-01", "field": "is_ot", "value": False}),
+        ("POST", "/api/plan/%s/device/remove" % plan, {"nickname": "SW-CORE-01"}),
+        ("POST", "/api/plan/%s/criticality/answer" % plan,
+         {"asset_id": "OCC-HMI-01", "question_id": "tsi_possible", "value": "yes", "participant_id": "facilitator"}),
+        ("POST", "/api/plan/%s/criticality/answer" % plan,
+         {"asset_id": "PLC-BERTH-02", "question_id": "is_critical", "value": "no", "participant_id": "facilitator"}),
+        ("POST", "/api/plan/%s/criticality/answer" % plan,
+         {"asset_id": "PLC-BERTH-02", "question_id": "tsi_possible", "value": "no", "participant_id": "facilitator"}),
+        ("GET", "/api/plan/%s/step/sort" % plan, {}),
+        ("GET", "/api/plan/%s/followups" % plan, {}),
+        ("GET", "/api/plan/%s/step/followups" % plan, {}),
+        ("GET", "/api/plan/%s/progress" % plan, {}),
+        ("GET", "/api/plan/%s/step/review" % plan, {}),
         ("GET", "/api/license", {}),
         ("POST", "/api/license/entitlements", {"capabilities": ["criticality"]}),
         ("GET", "/api/plan/%s/evaluate" % plan, {}),
@@ -345,6 +434,22 @@ def check(as_of):
                 note = "kev-without-delay=%s export_allowed=%s" % (kv["status"], result["summary"]["export_allowed"])
             elif url.path.endswith("/crosswalk"):
                 note = "unavailable" if result.get("unavailable") else "%d rows" % len(result["rows"])
+            elif url.path.endswith("/wizard"):
+                note = "overall %d%% (%d/%d)" % (result["overall"]["percent"], result["overall"]["done"], result["overall"]["total"])
+            elif url.path.endswith("/progress"):
+                note = "overall %d%%, export %s" % (result["overall"]["percent"], result["export"]["allowed"])
+            elif url.path.endswith("/step/followups"):
+                note = "%d items, %d outstanding" % (result["followups"]["total"], result["followups"]["outstanding"])
+            elif url.path.endswith("/followups"):
+                note = "%d items, %d outstanding" % (result["total"], result["outstanding"])
+            elif url.path.endswith("/scan/preview"):
+                note = "%d matched, %d unmatched" % (len(result["matched"]), len(result["unmatched"]))
+            elif url.path.endswith("/inventory/preview"):
+                note = "%d rows, %d problems" % (result["rows"], len(result["problems"]))
+            elif url.path.endswith("/step/sort"):
+                note = "in %d out %d pending %d" % (len(result["sort"]["stage1"]["in_scope"]),
+                                                     len(result["sort"]["stage1"]["out_of_scope"]),
+                                                     len(result["sort"]["stage1"]["pending"]))
             print("  ok   %-4s %-58s %s" % (method, path, note))
         except Exception as exc:  # noqa: BLE001
             failures += 1

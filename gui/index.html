@@ -4,27 +4,31 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MTSA Cybersecurity Plan</title>
+<link rel="stylesheet" href="/gui/fonts/fonts.css">
 <link rel="stylesheet" href="/gui/style.css">
 </head>
 <body>
-<header>
-  <div class="brand">MTSA Cybersecurity Plan <span class="muted">33 CFR Part 101 Subpart F</span></div>
+<header class="topbar">
+  <div class="brand"><span class="logo">MTSA</span><span class="brand-text">Cybersecurity Plan</span></div>
+  <nav class="primary" id="primary-nav">
+    <a href="#builder" data-area="builder">Plan builder</a>
+    <a href="#facilities" data-area="tools">Consultant tools</a>
+  </nav>
   <div class="plan-select">
     <label>Plan <select id="plan"></select></label>
-    <span id="asof" class="muted"></span>
   </div>
 </header>
-<nav id="nav">
-  <a href="#facilities">1 Facilities and plans</a>
-  <a href="#interview">2 Interview</a>
-  <a href="#criticality">3 Criticality workshop</a>
-  <a href="#registers">4 Registers</a>
-  <a href="#crosswalk">5 Crosswalk</a>
-  <a href="#gap">6 Gap report</a>
-  <a href="#licensing">7 Licensing</a>
-  <a href="#surveillance">8 Surveillance</a>
-  <a href="#audit">9 Audit mode</a>
-  <a href="#records">10 Records</a>
+<nav id="tools-nav" class="secondary" hidden>
+  <a href="#facilities">Facilities and plans</a>
+  <a href="#interview">Interview (full)</a>
+  <a href="#criticality">Criticality workshop</a>
+  <a href="#registers">Registers</a>
+  <a href="#crosswalk">Crosswalk</a>
+  <a href="#gap">Gap report</a>
+  <a href="#licensing">Licensing</a>
+  <a href="#surveillance">Surveillance</a>
+  <a href="#audit">Audit mode</a>
+  <a href="#records">Records</a>
 </nav>
 <div id="ssi" class="ssi"></div>
 <div id="notice" class="notice" hidden></div>

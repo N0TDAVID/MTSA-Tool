@@ -225,8 +225,16 @@ function stepHead(st) {
 }
 function stepMissing(st) {
   const chip = k => `<span class="chip ${k}">${k}</span>`;
-  if (!st.missing || !st.missing.length) return st.total ? `<p class="small ok">Nothing missing on this step.</p>` : "";
-  return `<h3 class="no-top">Still needed on this step (${st.missing.length})</h3><ul class="missing small">${st.missing.map(m => `<li>${chip(m.kind)} ${esc(m.text)}</li>`).join("")}</ul>`;
+  const missing = st.missing || [];
+  const list = missing.length ? `<ul class="missing small">${missing.map(m => `<li>${chip(m.kind)} ${esc(m.text)}</li>`).join("")}</ul>` : "";
+  // "Nothing missing" is only ever said about a finished step. An unstarted
+  // step says so, whether or not there is anything to list yet.
+  if (st.status === "complete") return `<p class="small ok">Complete. Nothing missing on this step.</p>`;
+  if (st.status === "not_started") {
+    const why = st.total ? `${missing.length} item${missing.length === 1 ? "" : "s"} needed on this step` : esc(st.note || "nothing to answer here yet");
+    return `<h3 class="no-top"><span class="badge">Not started</span> <span class="small muted">${why}</span></h3>${list}`;
+  }
+  return `<h3 class="no-top"><span class="badge info">In progress</span> Still needed on this step (${missing.length})</h3>${list}`;
 }
 function stepCount(st) { return st.total ? `${st.done} of ${st.total} on this step` : ""; }
 
@@ -572,11 +580,18 @@ function reviewStep(prog, versions) {
       ${versions.length ? `<p class="small muted">Saved versions: ${versions.map(v => `#${v.sequence} on ${esc(v.as_of)}`).join(", ")}.</p>` : ""}
     </div>
   </div>
-  ${prog.sections.map(s => `<div class="card">
-    <div class="row between"><b>Section ${s.number}: ${esc(s.title)}</b>${s.percent == null ? `<span class="badge">${s.in_interview ? "checks only" : "not in this walk-through yet"}</span>` : `<span class="pct"><b>${s.percent}%</b> (${s.done} of ${s.total})</span>`}</div>
+  ${prog.sections.map(s => {
+    const complete = s.total > 0 && s.done === s.total && !s.missing.length;
+    const started = s.done > 0;
+    const status = complete ? `<span class="badge pass">Complete</span>` : started ? `<span class="badge info">In progress</span>` : `<span class="badge">Not started</span>`;
+    const list = s.missing.length ? `<ul class="missing small">${s.missing.map(m => `<li>${chip(m.kind)} ${esc(m.text)}</li>`).join("")}</ul>` : "";
+    const note = complete ? `<p class="small ok">Nothing missing.</p>` : (s.total ? "" : `<p class="small muted">Not started${s.in_interview ? "" : ": no questions in this walk-through yet"}.</p>`);
+    return `<div class="card">
+    <div class="row between"><b>Section ${s.number}: ${esc(s.title)}</b><span class="row">${status}${s.percent == null ? "" : `<span class="pct"><b>${s.percent}%</b> (${s.done} of ${s.total})</span>`}</span></div>
     ${s.percent == null ? "" : bar(s.percent)}
-    ${s.missing.length ? `<ul class="missing small">${s.missing.map(m => `<li>${chip(m.kind)} ${esc(m.text)}</li>`).join("")}</ul>` : `<p class="small ok">Nothing missing.</p>`}
-  </div>`).join("")}`;
+    ${note}${list}
+  </div>`;
+  }).join("")}`;
 }
 ACTIONS.freezePlan = async () => { const v = await post(`${P()}/freeze`, { frozen_by: "gui" }); notify(`Saved version #${v.sequence}.`); route(); };
 

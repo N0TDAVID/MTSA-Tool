@@ -812,21 +812,48 @@ class Session:
                     break
         return mapping
 
-    @staticmethod
-    def _fold_verdicts(verdicts):
+    def _vacuous(self, verdict, answers, rule_paths):
+        """A pass that checked nothing: the rule reads a collection that is empty.
+
+        for_each and every succeed over an empty list, so with no inventory the
+        KEV and internet-exposure rules pass without looking at anything. An
+        obligation over zero assets is not demonstrated, so such a pass is not
+        counted as done. A collection that is present but filtered to nothing
+        (an inventory with no public-facing OT) is a real pass and does count.
+        """
+        if verdict["status"] != "pass":
+            return False
+        for path in rule_paths.get(verdict["rule_id"], ()):
+            value = engine.resolve(path, answers, answers)
+            if isinstance(value, list) and not value:
+                return True
+        return False
+
+    def _fold_verdicts(self, verdicts, answers):
         """Count required checks into a total/done pair and list what failed.
 
-        Binding rules count: pass is done, fail or unavailable is not. Best
-        practice rules never count toward percent but are listed as
-        recommended. Not applicable rules are ignored.
+        Binding rules count: pass is done, fail, unavailable, or a vacuous pass
+        is not. Best practice rules never count toward percent but are listed
+        as recommended. Not applicable rules are ignored.
         """
+        readers = _rule_readers(self.ruleset, include_applies_to=False)
+        rule_paths = {}
+        for path, rids in readers.items():
+            for rid in rids:
+                rule_paths.setdefault(rid, set()).add(path)
         total, done, missing = 0, 0, []
         for v in verdicts:
             if v["status"] == "not_applicable":
                 continue
             if v["severity"] == "binding":
                 total += 1
-                if v["status"] == "pass":
+                if v["status"] == "pass" and self._vacuous(v, answers, rule_paths):
+                    # A passing verdict carries no message, so use the rule's own.
+                    authored = next((r.get("message") for r in self.ruleset["rules"]
+                                     if r["id"] == v["rule_id"]), None)
+                    missing.append({"kind": "asset", "text": "%s (nothing to check yet: no assets)"
+                                    % (authored or v["rule_id"])})
+                elif v["status"] == "pass":
                     done += 1
                 elif v["status"] == "fail":
                     missing.append({"kind": "required", "text": v.get("message") or v["rule_id"]})
@@ -875,7 +902,7 @@ class Session:
                 missing = [{"kind": "asset", "text": it["prompt"]} for it in f["items"] if not it["done"]]
             else:
                 total, done = 0, 0
-            r_total, r_done, r_missing = self._fold_verdicts(by_step.get(st["id"], []))
+            r_total, r_done, r_missing = self._fold_verdicts(by_step.get(st["id"], []), answers)
             total += r_total
             done += r_done
             missing += r_missing
@@ -1073,6 +1100,7 @@ class Session:
     def progress(self, plan_id):
         """Percent complete and what is missing, per section, with no citations."""
         run = self.evaluate(plan_id)
+        answers = self.answers(plan_id)
         qs = self.questions_for(plan_id)["questions"]
         follow = self.followups(plan_id)
         sections, done_all, total_all = [], 0, 0
@@ -1088,7 +1116,8 @@ class Session:
                 missing += [{"kind": "asset", "text": i["prompt"]} for i in follow["items"] if not i["done"]]
             # Required checks count toward the section, so a section with a
             # failing required item can never read 100%.
-            r_total, r_done, r_missing = self._fold_verdicts([v for v in run["verdicts"] if v.get("section") == n])
+            r_total, r_done, r_missing = self._fold_verdicts(
+                [v for v in run["verdicts"] if v.get("section") == n], answers)
             total += r_total
             done += r_done
             missing += r_missing

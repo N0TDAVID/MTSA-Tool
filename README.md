@@ -6,7 +6,41 @@ and a localhost GUI. `CLAUDE.md` is authoritative on the domain and the settled
 decisions; `GUI-HANDOFF.md` is the build brief this draft was built to;
 `QUESTIONS.md` lists what had to be assumed.
 
+## Setup
+
+```bash
+git clone <repo> && cd MTSA-Tool
+python bootstrap.py
+```
+
+`bootstrap.py` checks the interpreter and the checkout, creates `.venv`,
+installs the one dependency, then runs every entry point to prove the checkout
+works. Re-running it is safe.
+
+| Flag | Effect |
+|---|---|
+| `--offline` | make no network call at all; skip the install |
+| `--no-venv` | use the current interpreter instead of creating one |
+| `--check` | verify only: no venv, no install, no writes |
+| `--venv PATH` | somewhere other than `.venv` |
+
+Python 3.9 or newer, developed on 3.11. Standard library only, with one
+exception: `jsonschema` is the single third-party package, `validate.py` is the
+only file that imports it, and `validate.py` fails the build if anything else
+does. An install with no route to PyPI is therefore complete apart from the
+validator, which is why a failed install is a warning here and not an abort. To
+supply it offline:
+
+```bash
+.venv/bin/python -m pip install --no-index --find-links DIR jsonschema
+```
+
+There is nothing to compile and no configuration file to write.
+
 ## Run
+
+Activate first with `source .venv/bin/activate`, or `.venv\Scripts\activate`
+on Windows, or call `.venv/bin/python` directly.
 
 ```bash
 python validate.py        # schema, invariants, fixtures, module boundaries
@@ -16,8 +50,15 @@ python serve.py --check   # every GUI data path, in memory, no socket
 python serve.py           # GUI on http://127.0.0.1:8765/
 ```
 
-Python 3 standard library only. `jsonschema` is used by `validate.py` alone and
-is never imported by shipped code; `validate.py` fails the build if it is.
+`serve.py` also takes `--port` (default 8765), `--workspace` (default
+`./workspace`), and `--as-of DATE`. The workspace is the answer store on disk:
+it is created and seeded with a demo tenant on first run, and it is gitignored,
+so deleting it starts from empty. `--as-of` pins the single clock read in the
+program, which is what makes a run reproducible.
+
+`python kev.py refresh` re-fetches the CISA catalog into
+`content/kev-snapshot.json`. It is the only command in the project that reaches
+the network, apart from the one install above. Evaluation never does.
 
 ## The two areas of the GUI
 
@@ -39,6 +80,7 @@ locally under `gui/fonts/` under the SIL Open Font License.
 ## Layout
 
 ```
+bootstrap.py      tooling  interpreter check, venv, dependency, verification pass
 engine.py         tier 0   deterministic rule engine
 kev.py            tier 1   CISA KEV capability module (the worked example)
 ingest.py         tier 1   inventory CSV and scanner import: parse, exact match, propose

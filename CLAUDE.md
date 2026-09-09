@@ -23,6 +23,7 @@ audit.py        tier 1: section-scoped audit runs, deficiency vs recommendation
 app.py          tier 3: the facade. The GUI imports this and nothing else.
 serve.py        tier 3: 127.0.0.1 HTTP server and JSON API for gui/
 gui/            vanilla HTML, CSS, JS; nothing loaded from anywhere else
+bootstrap.py    tooling: interpreter check, venv, the one dependency, verification
 validate.py     schema conformance, the invariants JSON Schema cannot express,
                 the question module, GUI hygiene, and the module dependency direction
 demo_engine.py  feasibility run: engine vs the seven known-truth fixtures

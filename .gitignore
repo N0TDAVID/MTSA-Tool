@@ -8,3 +8,5 @@ reference/Existing tools/
 reference/MTSA Tool Brainstorm.vtt
 reference/lesson_*.PDF
 .claude/
+.venv/
+venv/

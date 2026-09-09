@@ -267,14 +267,30 @@ class Session:
 
     def set_answer(self, plan_id, path, value):
         answers = self.answers(plan_id)
-        cur = answers
-        parts = path.split(".")
-        for part in parts[:-1]:
-            if not isinstance(cur.get(part), dict):
-                cur[part] = {}
-            cur = cur[part]
-        cur[parts[-1]] = value
+        _set_path(answers, path, value)
         return self.save_answers(plan_id, answers)
+
+    def patch_answers(self, plan_id, patches):
+        """Apply several answers in one write. Each patch is {path, value} or
+        {device, field, value}. This is what Continue and Back call so that
+        nothing typed on a step is lost by moving off it."""
+        answers = self.answers(plan_id)
+        allowed = {f["key"] for f in self.device_fields()}
+        applied = 0
+        for p in patches:
+            if "device" in p:
+                if p.get("field") not in allowed:
+                    raise ValueError("field %r is not an asset field" % p.get("field"))
+                dev = next((d for d in answers.get("devices", [])
+                            if (d.get("nickname") or "").lower() == str(p["device"]).lower()), None)
+                if dev is None:
+                    raise ValueError("no asset named %r" % p["device"])
+                dev[p["field"]] = p.get("value")
+            else:
+                _set_path(answers, p["path"], p.get("value"))
+            applied += 1
+        self.save_answers(plan_id, answers)
+        return {"applied": applied}
 
     def questions_for(self, plan_id):
         """Question nodes with applicability decided by the engine and current values."""
@@ -759,38 +775,115 @@ class Session:
         q = next(q for q in self.questions["questions"] if q["path"] == "devices")
         return q["fields"]
 
+    def _rule_step_map(self):
+        """Which step each rule belongs to, by the answer paths it reads.
+
+        A rule that reads only the inventory and the critical flag belongs to
+        the sort step; any other rule over devices belongs to the follow-ups;
+        everything else belongs to the first questions step that carries a
+        path the rule reads. Unmapped rules count in their section only.
+        """
+        # Predicate paths only: applies_to says when a rule applies, not what
+        # it checks, and it usually reads the asset type on the first step.
+        readers = _rule_readers(self.ruleset, include_applies_to=False)
+        rule_paths = {}
+        for path, rids in readers.items():
+            for rid in rids:
+                rule_paths.setdefault(rid, set()).add(path)
+        step_ids = {st["kind"]: st["id"] for st in self.questions["steps"] if st["kind"] in ("sort", "followups")}
+        qpaths = {q["id"]: q["path"] for q in self.questions["questions"]}
+        mapping = {}
+        for rule in self.ruleset["rules"]:
+            paths = rule_paths.get(rule["id"], set())
+            dev = {p for p in paths if p == "devices" or p.startswith("devices.")}
+            if dev and dev <= {"devices", "devices.is_critical_system"}:
+                mapping[rule["id"]] = step_ids.get("sort")
+                continue
+            if dev:
+                mapping[rule["id"]] = step_ids.get("followups")
+                continue
+            mapping[rule["id"]] = None
+            for st in self.questions["steps"]:
+                if st["kind"] != "questions":
+                    continue
+                mine = [qpaths[q] for q in st["questions"]]
+                if any(p == qp or p.startswith(qp + ".") for p in paths for qp in mine):
+                    mapping[rule["id"]] = st["id"]
+                    break
+        return mapping
+
+    @staticmethod
+    def _fold_verdicts(verdicts):
+        """Count required checks into a total/done pair and list what failed.
+
+        Binding rules count: pass is done, fail or unavailable is not. Best
+        practice rules never count toward percent but are listed as
+        recommended. Not applicable rules are ignored.
+        """
+        total, done, missing = 0, 0, []
+        for v in verdicts:
+            if v["status"] == "not_applicable":
+                continue
+            if v["severity"] == "binding":
+                total += 1
+                if v["status"] == "pass":
+                    done += 1
+                elif v["status"] == "fail":
+                    missing.append({"kind": "required", "text": v.get("message") or v["rule_id"]})
+                else:
+                    missing.append({"kind": "unavailable", "text": v.get("message")})
+            elif v["status"] == "fail":
+                missing.append({"kind": "recommended", "text": v.get("message") or v["rule_id"]})
+        return total, done, missing
+
     def wizard(self, plan_id):
         plan = self.plan(plan_id)
         qmap = self._question_map(plan_id)
         answers = self.answers(plan_id)
         devices = answers.get("devices", [])
+        run = self.evaluate(plan_id)
+        step_of = self._rule_step_map()
+        by_step = {}
+        for v in run["verdicts"]:
+            by_step.setdefault(step_of.get(v["rule_id"]), []).append(v)
         steps, done_all, total_all = [], 0, 0
         for i, st in enumerate(self.questions["steps"]):
             kind = st["kind"]
             note = None
+            missing = []
             if kind == "questions":
                 applicable = [qmap[q] for q in st["questions"]
                               if qmap[q]["applicable"] and not qmap[q].get("optional")]
                 total = len(applicable)
                 done = sum(1 for q in applicable if _has_value(q["value"]))
+                missing = [{"kind": "question", "text": q["prompt"]} for q in applicable if not _has_value(q["value"])]
             elif kind == "inventory":
                 total, done = 1, (1 if devices else 0)
                 note = "%d assets" % len(devices)
+                if not devices:
+                    missing = [{"kind": "question", "text": "Add at least one asset"}]
             elif kind == "sort":
                 scoped = self._scope(plan_id, devices)
                 total = len(devices)
                 done = len(scoped["in_scope"]) + len(scoped["out_of_scope"])
                 note = None if devices else "add assets first"
+                missing = [{"kind": "asset", "text": "Sort %s" % r["asset_id"]} for r in scoped["pending"]]
             elif kind == "followups":
                 f = self.followups(plan_id)
                 total, done = f["total"], f["total"] - f["outstanding"]
                 note = None if total else "nothing to ask until assets are sorted in"
+                missing = [{"kind": "asset", "text": it["prompt"]} for it in f["items"] if not it["done"]]
             else:
                 total, done = 0, 0
+            r_total, r_done, r_missing = self._fold_verdicts(by_step.get(st["id"], []))
+            total += r_total
+            done += r_done
+            missing += r_missing
             percent = int(round(100.0 * done / total)) if total else 0
             steps.append({
                 "index": i + 1, "id": st["id"], "title": st["title"], "blurb": st.get("blurb", ""),
                 "kind": kind, "total": total, "done": done, "percent": percent, "note": note,
+                "missing": missing,
                 "status": ("complete" if total and done == total else "in_progress" if done else "not_started"),
             })
             if kind != "review":
@@ -993,14 +1086,12 @@ class Session:
                 total += follow["total"]
                 done += follow["total"] - follow["outstanding"]
                 missing += [{"kind": "asset", "text": i["prompt"]} for i in follow["items"] if not i["done"]]
-            for v in run["verdicts"]:
-                if v.get("section") != n:
-                    continue
-                if v["status"] == "fail":
-                    missing.append({"kind": "required" if v["severity"] == "binding" else "recommended",
-                                    "text": v.get("message") or v["rule_id"]})
-                elif v["status"] == "unavailable":
-                    missing.append({"kind": "unavailable", "text": v.get("message")})
+            # Required checks count toward the section, so a section with a
+            # failing required item can never read 100%.
+            r_total, r_done, r_missing = self._fold_verdicts([v for v in run["verdicts"] if v.get("section") == n])
+            total += r_total
+            done += r_done
+            missing += r_missing
             sections.append({
                 "number": n, "title": s["title"], "total": total, "done": done,
                 "percent": (int(round(100.0 * done / total)) if total else None),
@@ -1045,6 +1136,16 @@ def _has_value(v):
     return v not in (None, "", [], {})
 
 
+def _set_path(answers, path, value):
+    cur = answers
+    parts = path.split(".")
+    for part in parts[:-1]:
+        if not isinstance(cur.get(part), dict):
+            cur[part] = {}
+        cur = cur[part]
+    cur[parts[-1]] = value
+
+
 def _view(columns, rows, not_captured=None, unavailable=None):
     return {
         "columns": columns,
@@ -1056,7 +1157,7 @@ def _view(columns, rows, not_captured=None, unavailable=None):
     }
 
 
-def _rule_readers(ruleset):
+def _rule_readers(ruleset, include_applies_to=True):
     """Map answer path -> rule ids whose predicate reads it (top-level paths only)."""
     readers = {}
 
@@ -1083,7 +1184,8 @@ def _rule_readers(ruleset):
 
     for rule in ruleset["rules"]:
         walk(rule.get("predicate"), rule["id"])
-        walk(rule.get("applies_to"), rule["id"])
+        if include_applies_to:
+            walk(rule.get("applies_to"), rule["id"])
     return readers
 
 

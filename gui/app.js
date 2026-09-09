@@ -112,9 +112,15 @@ async function boot() {
 window.addEventListener("hashchange", route);
 
 async function route() {
+  // Whatever is still unsaved on the screen being left is written first, so
+  // Continue, Back, the navigation bar, and the browser back button all keep
+  // typed answers.
+  try { await saveDirty(); } catch (e) { notify("Could not save: " + e.message); }
+  Object.keys(lists).forEach(k => delete lists[k]);
   const hash = (location.hash || "#builder").slice(1);
   const [screen, arg] = hash.split("/");
   state.screen = screen;
+  state.stepId = screen === "step" ? arg : null;
   const area = TOOL_SCREENS.includes(screen) ? "tools" : "builder";
   document.querySelectorAll("#primary-nav a").forEach(a => a.classList.toggle("active", a.dataset.area === area));
   const tools = document.getElementById("tools-nav");
@@ -131,6 +137,44 @@ async function route() {
   } catch (e) { setMain(err(e)); }
 }
 const SCREENS = {};
+
+// ---------------------------------------------------------------- dirty tracking
+// Every editable control carries the value it was rendered with. collectDirty
+// compares the current value against it; saveDirty writes the differences in
+// one request. Change handlers also save immediately and refresh the marker.
+
+function collectDirty() {
+  const patches = [];
+  document.querySelectorAll("[data-qid][data-path]").forEach(wrap => {
+    const qid = attr(wrap, "qid");
+    if (!document.getElementById("in-" + qid)) return;
+    const value = readScalar("in-" + qid, attr(wrap, "type"));
+    if (JSON.stringify(value) !== wrap.dataset.initial) patches.push({ path: attr(wrap, "path"), value, _wrap: wrap });
+  });
+  Object.keys(lists).forEach(qid => {
+    if (!document.getElementById("in-" + qid)) return;
+    const rows = collectList(qid);
+    if (JSON.stringify(rows) !== lists[qid].saved) patches.push({ path: lists[qid].node.path, value: rows, _list: qid, _rows: rows });
+  });
+  document.querySelectorAll("input[data-change=deviceField]").forEach(el => {
+    const value = el.value || null;
+    if (JSON.stringify(value) !== el.dataset.initial) patches.push({ device: attr(el, "nickname"), field: attr(el, "field"), value, _el: el });
+  });
+  return patches;
+}
+async function saveDirty() {
+  if (!state.plan) return 0;
+  const patches = collectDirty();
+  if (!patches.length) return 0;
+  await post(`${P()}/answers/patch`, { patches: patches.map(p => ({ path: p.path, device: p.device, field: p.field, value: p.value })) });
+  patches.forEach(p => {
+    if (p._wrap) { p._wrap.dataset.initial = JSON.stringify(p.value); const s = p._wrap.querySelector(".saved"); if (s) s.textContent = "saved"; }
+    if (p._list) { lists[p._list].rows = p._rows; lists[p._list].saved = JSON.stringify(p._rows); }
+    if (p._el) p._el.dataset.initial = JSON.stringify(p.value);
+  });
+  notify(`Saved ${patches.length} change${patches.length === 1 ? "" : "s"}.`);
+  return patches.length;
+}
 
 // ================================================================ PLAN BUILDER
 
@@ -173,18 +217,26 @@ SCREENS.builder = async function () {
 };
 ACTIONS.go = el => { location.hash = "#" + attr(el, "hash"); };
 
-SCREENS.step = async function (stepId) {
-  ssi(true);
-  const st = await get(`${P()}/step/${stepId}`);
-  const head = `
-  <p class="pct">Step ${st.index} of ${st.count} &middot; plan <b>${st.overall.percent}%</b> complete</p>
+function stepHead(st) {
+  return `<p class="pct" id="step-line">Step ${st.index} of ${st.count} &middot; plan <b>${st.overall.percent}%</b> complete</p>
   ${bar(st.overall.percent)}
   <h1>${esc(st.title)}</h1>
   <p class="lead">${esc(st.blurb)}</p>`;
+}
+function stepMissing(st) {
+  const chip = k => `<span class="chip ${k}">${k}</span>`;
+  if (!st.missing || !st.missing.length) return st.total ? `<p class="small ok">Nothing missing on this step.</p>` : "";
+  return `<h3 class="no-top">Still needed on this step (${st.missing.length})</h3><ul class="missing small">${st.missing.map(m => `<li>${chip(m.kind)} ${esc(m.text)}</li>`).join("")}</ul>`;
+}
+function stepCount(st) { return st.total ? `${st.done} of ${st.total} on this step` : ""; }
+
+SCREENS.step = async function (stepId) {
+  ssi(true);
+  const st = await get(`${P()}/step/${stepId}`);
   const nav = `<div class="stepnav">
     <div>${st.previous ? `<button class="secondary" data-action="go" data-hash="step/${esc(st.previous)}">Back</button>` : `<button class="secondary" data-action="go" data-hash="builder">Overview</button>`}</div>
-    <div class="inline"><span class="pct">${st.total ? `${st.done} of ${st.total} on this step` : ""}</span>
-      ${st.next ? `<button class="primary" data-action="go" data-hash="step/${esc(st.next)}">Continue</button>` : `<button class="primary" data-action="go" data-hash="builder">Back to overview</button>`}</div>
+    <div class="inline"><span class="pct" id="step-count">${stepCount(st)}</span>
+      ${st.next ? `<button class="primary" data-action="go" data-hash="step/${esc(st.next)}">Save and continue</button>` : `<button class="primary" data-action="go" data-hash="builder">Save and return to overview</button>`}</div>
   </div>`;
   let body;
   if (st.kind === "questions") body = st.questions.map(guidedQuestion).join("");
@@ -192,9 +244,41 @@ SCREENS.step = async function (stepId) {
   else if (st.kind === "sort") body = sortStep(st.sort);
   else if (st.kind === "followups") body = followupsStep(st.followups);
   else body = reviewStep(st.progress, st.versions);
-  setMain(head + `<div class="panel">${body}</div>` + nav);
+  const missingPanel = st.kind === "review" ? "" : `<div class="panel" id="step-missing">${stepMissing(st)}</div>`;
+  setMain(`<div id="step-head">${stepHead(st)}</div>` + missingPanel + `<div class="panel" id="step-body">${body}</div>` + nav);
   if (st.kind === "inventory") renderPending();
 };
+
+// Re-fetch the current step and update the parts that depend on answers, in
+// place: the header percent, the still-needed list, the count, and which
+// conditional questions are applicable. Nothing the user is typing in is
+// re-rendered.
+async function refreshStep() {
+  if (state.screen !== "step" || !state.stepId) return;
+  const st = await get(`${P()}/step/${state.stepId}`);
+  const head = document.getElementById("step-head");
+  if (head) { head.innerHTML = stepHead(st); applyBars(); }
+  const miss = document.getElementById("step-missing");
+  if (miss) miss.innerHTML = stepMissing(st);
+  const count = document.getElementById("step-count");
+  if (count) count.textContent = stepCount(st);
+  if (st.kind !== "questions") return;
+  const body = document.getElementById("step-body");
+  let prev = null;
+  st.questions.forEach(q => {
+    let block = document.getElementById("gq-" + q.id);
+    if (q.applicable && !block) {
+      const html = guidedQuestion(q);
+      if (prev) prev.insertAdjacentHTML("afterend", html); else body.insertAdjacentHTML("afterbegin", html);
+      block = document.getElementById("gq-" + q.id);
+    } else if (!q.applicable && block) {
+      block.remove();
+      delete lists[q.id];
+      block = null;
+    }
+    if (block) prev = block;
+  });
+}
 
 // ---- guided questions: prompt, help, input. No citations, no paths.
 
@@ -202,11 +286,12 @@ function guidedQuestion(n) {
   if (!n.applicable) return "";
   const help = (n.optional || n.help) ? `<div class="help">${n.optional ? "Optional. " : ""}${esc(n.help || "")}</div>` : "";
   if (n.type === "entity_list") {
-    lists[n.id] = { node: n, rows: JSON.parse(JSON.stringify(Array.isArray(n.value) ? n.value : [])) };
-    return `<div class="gq"><div class="prompt">${esc(n.prompt)}</div>${help}<div id="in-${esc(n.id)}">${renderList(n.id)}</div></div>`;
+    const rows = JSON.parse(JSON.stringify(Array.isArray(n.value) ? n.value : []));
+    lists[n.id] = { node: n, rows, saved: JSON.stringify(rows) };
+    return `<div class="gq" id="gq-${esc(n.id)}"><div class="prompt">${esc(n.prompt)}</div>${help}<div id="in-${esc(n.id)}">${renderList(n.id)}</div></div>`;
   }
-  return `<div class="gq"><div class="prompt">${esc(n.prompt)}</div>${help}
-    <div class="field inline" data-qid="${esc(n.id)}" data-path="${esc(n.path)}" data-type="${esc(n.type)}">
+  return `<div class="gq" id="gq-${esc(n.id)}"><div class="prompt">${esc(n.prompt)}</div>${help}
+    <div class="field inline" data-qid="${esc(n.id)}" data-path="${esc(n.path)}" data-type="${esc(n.type)}" data-initial="${esc(JSON.stringify(n.value === undefined ? null : n.value))}">
       ${scalarInput("in-" + n.id, n.type, n.value, n.options, n.format, "saveScalar")}<span class="saved">${n.value != null && n.value !== "" ? "answered" : ""}</span></div></div>`;
 }
 
@@ -236,7 +321,9 @@ CHANGES.saveScalar = async el => {
   const wrap = el.closest("[data-qid]");
   const value = readScalar("in-" + attr(wrap, "qid"), attr(wrap, "type"));
   await post(`${P()}/answer`, { path: attr(wrap, "path"), value });
+  wrap.dataset.initial = JSON.stringify(value);
   wrap.querySelector(".saved").textContent = "saved";
+  await refreshStep();
 };
 
 function renderList(qid) {
@@ -259,9 +346,11 @@ ACTIONS.listSave = async el => {
   const rows = collectList(qid);
   await post(`${P()}/answer`, { path: lists[qid].node.path, value: rows });
   lists[qid].rows = rows;
+  lists[qid].saved = JSON.stringify(rows);
   document.getElementById("in-" + qid).innerHTML = renderList(qid);
   document.querySelector(`#in-${CSS.escape(qid)} .saved`).textContent = `saved ${rows.length} rows`;
   notify(`Saved ${rows.length} rows.`);
+  await refreshStep();
 };
 
 // ---- inventory step: by hand, spreadsheet upload, scanner import
@@ -395,7 +484,6 @@ function sortStep(c) {
       <option value="">${e.state === "unanswered" ? "choose" : "change"}</option><option>yes</option><option>no</option><option>not_applicable</option></select>
       <div><span class="badge ${cls}">${esc(e.state === "agreed" ? e.value : e.state)}</span>${by ? ` <span class="small muted">${esc(by)}</span>` : ""}</div>`;
   };
-  const a = c.stage1;
   return `
   <div class="card"><div class="inline">
     <label>Who is answering <select id="recorder" data-change="setRecorder">${pOpts(state.recorder)}</select></label>
@@ -408,12 +496,30 @@ function sortStep(c) {
   ${table(["asset", "OT", "answer"], c.assets, (col, x) => col === "asset" ? esc(x.nickname) : col === "OT" ? fmt(x.is_ot) : cell(x, "is_critical"))}
   <h3>${esc(q2.prompt)}</h3>
   ${table(["asset", "OT", "answer"], c.assets, (col, x) => col === "asset" ? esc(x.nickname) : col === "OT" ? fmt(x.is_ot) : cell(x, "tsi_possible"))}
-  <div class="grid3">
-    <div class="card"><h3>In scope (${a.in_scope.length})</h3><p class="small">${esc(a.in_scope.map(r => r.asset_id).join(", ") || "none yet")}</p></div>
-    <div class="card"><h3>Out of scope (${a.out_of_scope.length})</h3><p class="small">${esc(a.out_of_scope.map(r => r.asset_id).join(", ") || "none yet")}</p></div>
-    <div class="card"><h3>Not yet sorted (${a.pending.length})</h3><p class="small">${esc(a.pending.map(r => r.asset_id).join(", ") || "none")}</p></div>
-  </div>
+  <div class="grid3" id="sort-summary">${sortSummary(c.stage1)}</div>
   <p class="small muted">An asset is in scope when both answers are yes and everyone who answered agrees. The follow-up questions, the registers, and what is missing all update as you sort. ${c.stage2 && c.stage2.rank ? ph(c.stage2.rank) : ""}</p>`;
+}
+function sortSummary(a) {
+  return `<div class="card"><h3>In scope (${a.in_scope.length})</h3><p class="small">${esc(a.in_scope.map(r => r.asset_id).join(", ") || "none yet")}</p></div>
+    <div class="card"><h3>Out of scope (${a.out_of_scope.length})</h3><p class="small">${esc(a.out_of_scope.map(r => r.asset_id).join(", ") || "none yet")}</p></div>
+    <div class="card"><h3>Not yet sorted (${a.pending.length})</h3><p class="small">${esc(a.pending.map(r => r.asset_id).join(", ") || "none")}</p></div>`;
+}
+// After an answer is recorded, update only the badge beside each select and
+// the summary cards. The page, the scroll position, and the other selects
+// stay where they are.
+function refreshSortView(c) {
+  document.querySelectorAll("select[data-change=critAnswer]").forEach(sel => {
+    const a = c.assets.find(x => x.nickname === attr(sel, "asset"));
+    if (!a) return;
+    const e = a.effective[attr(sel, "question")];
+    const cls = e.state === "agreed" ? (e.value === "yes" ? "pass" : "na") : e.state === "disputed" ? "fail" : "warn";
+    const by = Object.entries(e.by).map(([k, v]) => `${k}: ${v}`).join("; ");
+    sel.value = "";
+    sel.options[0].textContent = e.state === "unanswered" ? "choose" : "change";
+    sel.nextElementSibling.innerHTML = `<span class="badge ${cls}">${esc(e.state === "agreed" ? e.value : e.state)}</span>${by ? ` <span class="small muted">${esc(by)}</span>` : ""}`;
+  });
+  const summary = document.getElementById("sort-summary");
+  if (summary) summary.innerHTML = sortSummary(c.stage1);
 }
 CHANGES.setRecorder = el => { state.recorder = el.value; };
 CHANGES.setOnBehalf = el => { state.onBehalf = el.value; };
@@ -423,10 +529,11 @@ ACTIONS.addParticipant = async () => {
 };
 CHANGES.critAnswer = async el => {
   if (!el.value) return;
-  await post(`${P()}/criticality/answer`, { asset_id: attr(el, "asset"), question_id: attr(el, "question"), value: el.value,
+  const c = await post(`${P()}/criticality/answer`, { asset_id: attr(el, "asset"), question_id: attr(el, "question"), value: el.value,
     participant_id: state.recorder, on_behalf_of: state.onBehalf || null });
   notify(`Recorded ${attr(el, "question").replace("_", " ")} = ${el.value} for ${attr(el, "asset")}.`);
-  route();
+  refreshSortView(c);
+  await refreshStep();
 };
 
 // ---- follow-ups: per-asset questions the sorted inventory needs
@@ -438,15 +545,18 @@ function followupsStep(f) {
       return `<div class="gq"><div class="prompt">${esc(i.prompt)} ${i.done ? `<span class="done-mark">answered</span>` : ""}</div>
         <div class="help">Fill in whichever applies. One is enough; the crosswalk records what was done.</div>
         ${i.fields.map(fl => `<div class="field inline"><label class="small" for="fu-${esc(i.device)}-${fl.key}">${esc(fl.prompt)}</label>
-          <input type="text" id="fu-${esc(i.device)}-${fl.key}" value="${esc(i.values[fl.key] || "")}" data-change="deviceField" data-nickname="${esc(i.device)}" data-field="${fl.key}"><span class="saved"></span></div>`).join("")}</div>`;
+          <input type="text" id="fu-${esc(i.device)}-${fl.key}" value="${esc(i.values[fl.key] || "")}" data-initial="${esc(JSON.stringify(i.values[fl.key] || null))}" data-change="deviceField" data-nickname="${esc(i.device)}" data-field="${fl.key}"><span class="saved"></span></div>`).join("")}</div>`;
     }
     return `<div class="gq"><div class="prompt">${esc(i.prompt)} ${i.done ? `<span class="done-mark">answered</span>` : ""}</div>
-      <div class="field inline"><input type="text" id="fu-${esc(i.device)}-${i.field}" value="${esc(i.value || "")}" data-change="deviceField" data-nickname="${esc(i.device)}" data-field="${i.field}"><span class="saved"></span></div></div>`;
+      <div class="field inline"><input type="text" id="fu-${esc(i.device)}-${i.field}" value="${esc(i.value || "")}" data-initial="${esc(JSON.stringify(i.value || null))}" data-change="deviceField" data-nickname="${esc(i.device)}" data-field="${i.field}"><span class="saved"></span></div></div>`;
   }).join("");
 }
 CHANGES.deviceField = async el => {
-  await post(`${P()}/device/field`, { nickname: attr(el, "nickname"), field: attr(el, "field"), value: el.value || null });
+  const value = el.value || null;
+  await post(`${P()}/device/field`, { nickname: attr(el, "nickname"), field: attr(el, "field"), value });
+  el.dataset.initial = JSON.stringify(value);
   el.parentElement.querySelector(".saved").textContent = "saved";
+  await refreshStep();
 };
 
 // ---- review: percent per section, what is missing, save a version

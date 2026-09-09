@@ -68,6 +68,10 @@ def r_set_answer(s, g, q, b):
     return s.set_answer(g[0], b["path"], b.get("value"))
 
 
+def r_patch_answers(s, g, q, b):
+    return s.patch_answers(g[0], b["patches"])
+
+
 def r_questions(s, g, q, b):
     return s.questions_for(g[0])
 
@@ -220,6 +224,7 @@ ROUTES = [
     ("GET", r"/api/plan/(%s)/answers" % ID, r_answers),
     ("POST", r"/api/plan/(%s)/answers" % ID, r_save_answers),
     ("POST", r"/api/plan/(%s)/answer" % ID, r_set_answer),
+    ("POST", r"/api/plan/(%s)/answers/patch" % ID, r_patch_answers),
     ("GET", r"/api/plan/(%s)/questions" % ID, r_questions),
     ("GET", r"/api/plan/(%s)/evaluate" % ID, r_evaluate),
     ("GET", r"/api/plan/(%s)/crosswalk" % ID, r_crosswalk),
@@ -367,6 +372,11 @@ def check(as_of):
         ("GET", "/api/plan/%s" % plan, {}),
         ("GET", "/api/plan/%s/questions" % plan, {}),
         ("POST", "/api/plan/%s/answer" % plan, {"path": "backup.critical_systems_backup_tested", "value": "not_applicable"}),
+        ("POST", "/api/plan/%s/answers/patch" % plan,
+         {"patches": [{"path": "backup.critical_systems_backup_tested", "value": "yes"},
+                      {"path": "backup.test_schedule", "value": "other"},
+                      {"device": "OCC-HMI-01", "field": "compensating_control", "value": None}]}),
+        ("GET", "/api/plan/%s/step/backups" % plan, {}),
         ("GET", "/api/plan/%s/evaluate" % plan, {}),
         ("GET", "/api/plan/%s/crosswalk" % plan, {}),
         ("GET", "/api/plan/%s/registers" % plan, {}),
@@ -446,6 +456,8 @@ def check(as_of):
                 note = "%d matched, %d unmatched" % (len(result["matched"]), len(result["unmatched"]))
             elif url.path.endswith("/inventory/preview"):
                 note = "%d rows, %d problems" % (result["rows"], len(result["problems"]))
+            elif url.path.endswith("/step/backups"):
+                note = "applicable: %s" % [q["id"] for q in result["questions"] if q["applicable"]]
             elif url.path.endswith("/step/sort"):
                 note = "in %d out %d pending %d" % (len(result["sort"]["stage1"]["in_scope"]),
                                                      len(result["sort"]["stage1"]["out_of_scope"]),

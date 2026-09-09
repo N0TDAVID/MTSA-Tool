@@ -13,7 +13,7 @@
     { "id": "inventory", "title": "Asset inventory", "blurb": "Collect the IT and OT systems this Plan covers: add them by hand, upload a spreadsheet, or import scanner output.", "kind": "inventory" },
     { "id": "sort", "title": "Sort your assets", "blurb": "Two questions per asset decide which ones the Plan must cover. Answer them as a group.", "kind": "sort" },
     { "id": "followups", "title": "Critical asset follow-ups", "blurb": "Questions that only apply to the assets you sorted in.", "kind": "followups" },
-    { "id": "backups", "title": "Backups", "blurb": "Whether backups of critical systems are tested.", "kind": "questions", "questions": ["q-backup-tested"] },
+    { "id": "backups", "title": "Backups", "blurb": "Whether backups of critical systems are tested, and how often.", "kind": "questions", "questions": ["q-backup-tested", "q-backup-test-schedule", "q-backup-test-schedule-other"] },
     { "id": "review", "title": "Review and save", "blurb": "What is complete, what is missing, and saving a version.", "kind": "review" }
   ],
   "questions": [
@@ -231,6 +231,28 @@
       "options": ["yes", "no", "not_applicable"],
       "prompt": "Are backups of critical IT and OT systems tested frequently?",
       "help": "Tri-state: not_applicable is a different finding from no. No rule reads this yet.",
+      "authority_ids": ["cfr:101.650(g)(4)"]
+    },
+    {
+      "id": "q-backup-test-schedule",
+      "section": 9,
+      "path": "backup.test_schedule",
+      "type": "enum",
+      "options": ["daily", "weekly", "monthly", "quarterly", "bi-annual", "annual", "other"],
+      "prompt": "How often are backups tested?",
+      "applies_to": { "eq": ["backup.critical_systems_backup_tested", "yes"] },
+      "authority_ids": ["cfr:101.650(g)(4)"]
+    },
+    {
+      "id": "q-backup-test-schedule-other",
+      "section": 9,
+      "path": "backup.test_schedule_other",
+      "type": "short_text",
+      "prompt": "Describe the backup test schedule",
+      "applies_to": { "all": [
+        { "eq": ["backup.critical_systems_backup_tested", "yes"] },
+        { "eq": ["backup.test_schedule", "other"] }
+      ] },
       "authority_ids": ["cfr:101.650(g)(4)"]
     },
     {

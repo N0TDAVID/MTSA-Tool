@@ -36,6 +36,7 @@ nav.primary a.active, nav.secondary a.active { background: var(--active); }
 nav.secondary { display: flex; flex-wrap: wrap; gap: 4px; margin: 8px 12px 0; padding: 8px 14px; background: var(--panel);
   border: 1px solid var(--panel-border); border-radius: 10px; }
 nav.secondary a { font-size: 13.5px; }
+nav.secondary[hidden], .notice[hidden] { display: none; }
 .plan-select label { font-size: 13px; color: var(--muted-2); }
 .plan-select select { margin-left: 6px; }
 .ssi { margin: 8px 12px 0; padding: 6px 14px; border-radius: 8px; background: var(--ssi); color: #fff; font-size: 12px; letter-spacing: .02em; }

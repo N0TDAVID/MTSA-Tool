@@ -38,9 +38,25 @@ SSI_NOTICE = ("SENSITIVE SECURITY INFORMATION. This screen renders plan content 
 
 def r_state(s, g, q, b):
     return {"as_of": s.as_of, "versions": s.versions(), "capabilities": s.capabilities(),
-            "tenants": s.tenants(), "facilities": s.facilities(), "plans": s.plans(),
+            "tenant_id": s.tenant_id, "tenants": s.tenants(), "clients": s.clients(),
+            "facilities": s.facilities(), "plans": s.plans(),
+            "asset_types": list(app.ASSET_TYPES), "delivery_modes": app.DELIVERY_MODES,
             "spine": s.spine(), "appendices": s.appendices(),
             "shared_cyso": s.shared_cyso_coverage(), "ssi_notice": SSI_NOTICE}
+
+
+def r_client_add(s, g, q, b):
+    return s.add_client(b.get("name"), b.get("contact"), b.get("note"))
+
+
+def r_facility_add(s, g, q, b):
+    return s.add_facility(b.get("client_id"), b.get("name"), b.get("asset_type"),
+                          b.get("cognizant_cotp"))
+
+
+def r_plan_add(s, g, q, b):
+    return s.add_plan(b.get("facility_ids") or [], b.get("title"),
+                      b.get("delivery_mode") or "separate_submission")
 
 
 def r_registry(s, g, q, b):
@@ -218,6 +234,9 @@ def r_entitlements(s, g, q, b):
 
 ROUTES = [
     ("GET", r"/api/state", r_state),
+    ("POST", r"/api/client", r_client_add),
+    ("POST", r"/api/facility", r_facility_add),
+    ("POST", r"/api/plan", r_plan_add),
     ("GET", r"/api/registry", r_registry),
     ("GET", r"/api/authority/([A-Za-z0-9._:()+-]+)", r_authority),
     ("GET", r"/api/plan/(%s)" % ID, r_plan),
@@ -431,7 +450,26 @@ def check(as_of):
         ("GET", "/api/plan/%s/evaluate" % plan, {}),
         ("GET", "/api/plan/%s/crosswalk" % plan, {}),
         ("POST", "/api/license/entitlements", {"capabilities": ["kev", "criticality", "surveillance"]}),
+        ("POST", "/api/client", {"name": "ACME Marine Holdings", "contact": {"name": "Pat Lee", "email": "pat@example.invalid"}}),
+        ("POST", "/api/facility", {"client_id": "acme-marine-holdings", "name": "ACME Terminal",
+                                   "asset_type": "facility", "cognizant_cotp": "USCG Sector Houston-Galveston"}),
+        ("POST", "/api/facility", {"client_id": "acme-marine-holdings", "name": "ACME Barge 7",
+                                   "asset_type": "vessel"}),
+        ("POST", "/api/plan", {"facility_ids": ["acme-terminal"]}),
+        ("POST", "/api/plan", {"facility_ids": ["acme-terminal", "acme-barge-7"],
+                               "title": "ACME multi-facility plan", "delivery_mode": "annex"}),
+        ("GET", "/api/plan/acme-terminal-cybersecurity-plan/wizard", {}),
+        ("GET", "/api/plan/acme-terminal-cybersecurity-plan/step/facility", {}),
+        ("GET", "/api/plan/acme-terminal-cybersecurity-plan/progress", {}),
+        ("GET", "/api/plan/acme-terminal-cybersecurity-plan/evaluate", {}),
+        ("GET", "/api/plan/acme-terminal-cybersecurity-plan/step/sort", {}),
+        ("GET", "/api/plan/acme-terminal-cybersecurity-plan/step/review", {}),
+        # meg-1-platform leaves while meg-westport stays: the client is cloned
         ("POST", "/api/facility/meg-1-platform/transfer", {"to_tenant_id": "successor-consulting", "reason": "check"}),
+        # both ACME facilities leave: the client moves with the second one
+        ("POST", "/api/facility/acme-terminal/transfer", {"to_tenant_id": "successor-consulting", "reason": "check"}),
+        ("POST", "/api/facility/acme-barge-7/transfer", {"to_tenant_id": "successor-consulting", "reason": "check"}),
+        ("GET", "/api/state", {}),
     ]
     failures = 0
     for method, path, body in steps:
@@ -454,6 +492,12 @@ def check(as_of):
                 note = "%d items, %d outstanding" % (result["total"], result["outstanding"])
             elif url.path.endswith("/scan/preview"):
                 note = "%d matched, %d unmatched" % (len(result["matched"]), len(result["unmatched"]))
+            elif url.path.endswith("/transfer"):
+                note = "client %s" % ((result["client"] or {}).get("action") or "none")
+            elif url.path == "/api/state":
+                note = "%d clients, %d facilities, %d plans" % (len(result["clients"]), len(result["facilities"]), len(result["plans"]))
+            elif url.path in ("/api/client", "/api/facility", "/api/plan"):
+                note = "id=%s" % result["id"]
             elif url.path.endswith("/inventory/preview"):
                 note = "%d rows, %d problems" % (result["rows"], len(result["problems"]))
             elif url.path.endswith("/step/backups"):

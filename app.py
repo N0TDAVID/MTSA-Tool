@@ -56,6 +56,17 @@ REGISTER_APPENDIX = {
 
 DEV_PUBLIC_KEY = None   # no issuer key exists yet; see license.verify_signature
 
+# The covered_asset discriminator. One asset model, not three apps.
+ASSET_TYPES = ("vessel", "facility", "ocs_facility")
+
+# 101.630(a): the four ways a Cybersecurity Plan may be delivered.
+DELIVERY_MODES = {
+    "within_security_plan": "Within the VSP, FSP, or OCS FSP",
+    "annex": "As an annex to the VSP, FSP, or OCS FSP",
+    "alternative_security_program": "As part of an approved Alternative Security Program",
+    "separate_submission": "As a separate submission",
+}
+
 
 def _load(path):
     with io.open(path, encoding="utf-8") as fh:
@@ -103,6 +114,7 @@ class Session:
         answer_store = store.InMemoryStore() if memory else store.JsonFileStore(workspace)
         if not answer_store.ids("tenants"):
             seed(answer_store, content, as_of)
+        backfill_clients(answer_store)
 
         identifiers = collect_identifiers()
         try:
@@ -209,16 +221,87 @@ class Session:
 
     # ------------------------------------------------------------ tenancy
 
+    @property
+    def tenant_id(self):
+        """The tenant this install is licensed to. New clients, facilities, and
+        plans are created under it; the token names it, nothing here guesses."""
+        return licensing.parse_token(self.token)["payload"]["tenant"]
+
     def tenants(self):
         return self.store.all("tenants")
 
+    def clients(self):
+        out = []
+        for c in self.store.all("clients"):
+            c["facility_ids"] = [f["id"] for f in self.store.where("facilities", client_id=c["id"])]
+            out.append(c)
+        return out
+
     def facilities(self):
         out = []
+        names = {c["id"]: c["name"] for c in self.store.all("clients")}
         for f in self.store.all("facilities"):
             f["plan_ids"] = [p["id"] for p in self.store.all("plans")
                              if f["id"] in p.get("facility_ids", [])]
+            if f.get("client_id"):
+                f["owner_operator"] = names.get(f["client_id"], f["client_id"])
             out.append(f)
         return out
+
+    # ------------------------------------------------------------ onboarding
+    # Client, then facility, then plan. Each is created under the tenant this
+    # install is licensed to. Ids derive from names and are made unique,
+    # never typed.
+
+    def add_client(self, name, contact=None, note=None):
+        """The owner or operator, the responsible party under 101.620(a). Not
+        the tenant: the tenant is the consulting org that manages them."""
+        if not (name or "").strip():
+            raise ValueError("a client needs a name")
+        cid = store.unique_id(self.store, "clients", store.slug(name))
+        doc = {"tenant_id": self.tenant_id, "name": name.strip(), "kind": "owner_operator",
+               "contact": {k: (v or "").strip() for k, v in (contact or {}).items()
+                           if k in ("name", "email", "phone")},
+               "note": (note or "").strip() or None, "created": self.as_of}
+        return self.store.put("clients", cid, doc)
+
+    def add_facility(self, client_id, name, asset_type, cognizant_cotp=None):
+        if not (name or "").strip():
+            raise ValueError("a facility needs a name")
+        if asset_type not in ASSET_TYPES:
+            raise ValueError("asset_type must be one of %s" % ", ".join(ASSET_TYPES))
+        client = self.store.get("clients", client_id)
+        fid = store.unique_id(self.store, "facilities", store.slug(name))
+        doc = {"tenant_id": client["tenant_id"], "client_id": client_id, "name": name.strip(),
+               "asset_type": asset_type, "cognizant_cotp": (cognizant_cotp or "").strip() or None,
+               "created": self.as_of}
+        return self.store.put("facilities", fid, doc)
+
+    def add_plan(self, facility_ids, title=None, delivery_mode="separate_submission"):
+        """A plan over one or more facilities (101.630(d)(2) for several). The
+        answer set starts with the asset identity copied from the first
+        facility; the builder asks everything else."""
+        if not facility_ids:
+            raise ValueError("a plan needs at least one facility")
+        if delivery_mode not in DELIVERY_MODES:
+            raise ValueError("delivery_mode must be one of %s" % ", ".join(DELIVERY_MODES))
+        facilities = [self.store.get("facilities", f) for f in facility_ids]
+        tenants = {f["tenant_id"] for f in facilities}
+        if len(tenants) > 1:
+            raise ValueError("a plan cannot span tenants: %s" % ", ".join(sorted(tenants)))
+        first = facilities[0]
+        title = (title or "").strip() or "%s Cybersecurity Plan" % first["name"]
+        pid = store.unique_id(self.store, "plans", store.slug(title))
+        plans = self.store.all("plans")
+        doc = {"tenant_id": first["tenant_id"], "facility_ids": list(facility_ids), "title": title,
+               "delivery_mode": delivery_mode,
+               "sequence": max([p.get("sequence", 0) for p in plans] + [0]) + 1,
+               "created": self.as_of,
+               "answers": {"asset": {"type": first["asset_type"], "name": first["name"],
+                                     "cognizant_cotp": first.get("cognizant_cotp")},
+                           "devices": []}}
+        stored = self.store.put("plans", pid, doc)
+        return {k: v for k, v in stored.items() if k != "answers"}
 
     def plans(self):
         out = []
@@ -1270,6 +1353,27 @@ def collect_identifiers():
     return {"values": values, "status": status}
 
 
+def backfill_clients(answer_store):
+    """Workspaces written before `clients` existed carry the owner or operator
+    as a name string on the facility. Promote each distinct name under a
+    tenant to a client record and repoint the facility. Idempotent."""
+    for f in answer_store.all("facilities"):
+        if f.get("client_id") or not f.get("owner_operator"):
+            continue
+        match = [c for c in answer_store.where("clients", tenant_id=f["tenant_id"])
+                 if c["name"] == f["owner_operator"]]
+        if match:
+            cid = match[0]["id"]
+        else:
+            cid = store.unique_id(answer_store, "clients", store.slug(f["owner_operator"]))
+            answer_store.put("clients", cid, {
+                "tenant_id": f["tenant_id"], "name": f["owner_operator"], "kind": "owner_operator",
+                "contact": {}, "note": "backfilled from facility.owner_operator"})
+        f["client_id"] = cid
+        del f["owner_operator"]
+        answer_store.put("facilities", f["id"], f)
+
+
 def seed(answer_store, content, as_of):
     """Seed a fresh workspace from the fixture. Demo data, labelled as such."""
     fixture = _load(FIXTURE)
@@ -1279,13 +1383,17 @@ def seed(answer_store, content, as_of):
     answer_store.put("tenants", "successor-consulting",
                      {"name": "Successor Consulting LLC", "kind": "consulting_org", "seed": True,
                       "note": "exists so the facility transfer path can be exercised"})
+    answer_store.put("clients", "meg", {
+        "tenant_id": "harbor-cyber-consulting", "name": content["facility"]["name"],
+        "kind": "owner_operator", "contact": {}, "note": None, "seed": True})
     answer_store.put("facilities", "meg-westport", {
-        "tenant_id": "harbor-cyber-consulting", "name": answers["asset"]["name"],
-        "asset_type": "facility", "owner_operator": content["facility"]["name"],
+        "tenant_id": "harbor-cyber-consulting", "client_id": "meg", "name": answers["asset"]["name"],
+        "asset_type": "facility",
         "cognizant_cotp": answers["asset"]["cognizant_cotp"], "seed": True})
     answer_store.put("facilities", "meg-1-platform", {
-        "tenant_id": "harbor-cyber-consulting", "name": content["facility"]["profile"]["offshore_asset"],
-        "asset_type": "ocs_facility", "owner_operator": content["facility"]["name"],
+        "tenant_id": "harbor-cyber-consulting", "client_id": "meg",
+        "name": content["facility"]["profile"]["offshore_asset"],
+        "asset_type": "ocs_facility",
         "cognizant_cotp": None, "seed": True,
         "note": "seeded from the content instance profile so a multi-facility plan and a shared "
                 "CySO can be shown; carries no assessment data of its own"})

@@ -25,7 +25,9 @@ import tempfile
 
 COLLECTIONS = (
     "tenants",          # the consulting org. Tenant is the org, not the facility.
-    "facilities",       # child entity of a tenant; the owner/operator is the responsible party
+    "clients",          # the owner or operator, the responsible party under 101.620(a);
+                        # a child of the tenant and the parent of its facilities
+    "facilities",       # child entity of a tenant; client_id names its owner or operator
     "plans",            # a Cybersecurity Plan and its live, mutable answer set
     "plan_versions",    # frozen answer sets, append-only
     "records",          # 101.640 record entries with their retention clocks
@@ -145,13 +147,66 @@ class AnswerStore:
             self.put("plans", plan["id"], plan)
             moved.append(plan["id"])
 
+        # The client travels with the facility, so no facility ever points at a
+        # client under another tenant. If the destination already holds a
+        # client of the same name, the facility joins it. Otherwise, if every
+        # facility the client owns is leaving, the client itself changed
+        # consultants and moves; if some stay, it is cloned under the
+        # destination and the origin keeps its own record of the same owner.
+        client_note = None
+        client_id = facility.get("client_id")
+        if client_id and self.exists("clients", client_id):
+            client = self.get("clients", client_id)
+            staying = [f["id"] for f in self.where("facilities", client_id=client_id)
+                       if f["id"] != facility_id]
+            twin = next((c for c in self.where("clients", tenant_id=to_tenant_id)
+                         if c["name"] == client["name"]), None)
+            if twin:
+                facility["client_id"] = twin["id"]
+                client_note = {"client_id": twin["id"], "action": "joined"}
+                if not staying:
+                    # nothing references the origin record any more; it was a
+                    # duplicate of the destination one by construction
+                    self.delete("clients", client_id)
+                    client_note["origin_removed"] = client_id
+            elif staying:
+                clone_id = unique_id(self, "clients", client_id)
+                client["tenant_id"] = to_tenant_id
+                client["cloned_from"] = client_id
+                self.put("clients", clone_id, client)
+                facility["client_id"] = clone_id
+                client_note = {"client_id": clone_id, "action": "cloned",
+                               "origin_keeps": client_id, "origin_facilities": staying}
+            else:
+                client["tenant_id"] = to_tenant_id
+                self.put("clients", client_id, client)
+                client_note = {"client_id": client_id, "action": "moved"}
+
         facility["tenant_id"] = to_tenant_id
         history = facility.setdefault("transfer_history", [])
         history.append({"from": from_tenant, "to": to_tenant_id,
                         "effective_date": effective_date, "reason": reason})
         self.put("facilities", facility_id, facility)
         return {"facility_id": facility_id, "from": from_tenant, "to": to_tenant_id,
-                "plans_moved": moved, "plans_held_multi_facility": held}
+                "plans_moved": moved, "plans_held_multi_facility": held, "client": client_note}
+
+
+def slug(text):
+    """A document id from a display name: lowercase, hyphenated, ASCII only."""
+    out = "".join(c if c.isalnum() else "-" for c in str(text).lower().encode("ascii", "ignore").decode())
+    out = "-".join(part for part in out.split("-") if part)
+    if not out:
+        raise StoreError("cannot derive an id from %r" % (text,))
+    return out
+
+
+def unique_id(answer_store, collection, base):
+    """`base`, or `base-2`, `base-3`, ... until one is free in the collection."""
+    candidate, n = base, 1
+    while answer_store.exists(collection, candidate):
+        n += 1
+        candidate = "%s-%d" % (base, n)
+    return candidate
 
 
 def _check_collection(collection):

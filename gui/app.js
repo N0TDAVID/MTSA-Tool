@@ -98,15 +98,22 @@ document.addEventListener("change", async e => {
 
 // ---------------------------------------------------------------- boot and routing
 
-const TOOL_SCREENS = ["facilities", "interview", "criticality", "registers", "crosswalk", "gap", "licensing", "surveillance", "audit", "records"];
+const TOOL_SCREENS = ["facilities", "new", "interview", "criticality", "registers", "crosswalk", "gap", "licensing", "surveillance", "audit", "records"];
+
+// The header plan list is rebuilt from state on every route so a plan created
+// or transferred on one screen is selectable on the next without a reload.
+function syncPlanSelect() {
+  const sel = document.getElementById("plan");
+  const plans = state.data.plans;
+  if (!plans.some(p => p.id === state.plan)) state.plan = plans.length ? plans[0].id : null;
+  sel.innerHTML = plans.map(p => `<option value="${esc(p.id)}">${esc(p.title)}</option>`).join("");
+  sel.value = state.plan;
+}
 
 async function boot() {
   state.data = await get("/api/state");
-  const sel = document.getElementById("plan");
-  sel.innerHTML = state.data.plans.map(p => `<option value="${esc(p.id)}">${esc(p.title)}</option>`).join("");
-  state.plan = state.plan || state.data.plans[0].id;
-  sel.value = state.plan;
-  sel.addEventListener("change", () => { state.plan = sel.value; route(); });
+  syncPlanSelect();
+  document.getElementById("plan").addEventListener("change", e => { state.plan = e.target.value; route(); });
   route();
 }
 window.addEventListener("hashchange", route);
@@ -129,6 +136,7 @@ async function route() {
   setMain(`<p class="muted">Loading.</p>`);
   try {
     state.data = await get("/api/state");
+    syncPlanSelect();
     const v = state.data.versions;
     document.getElementById("footer").innerHTML = `as_of ${esc(state.data.as_of)} | ruleset ${esc(v.ruleset_pin)} | question module ${esc(v.question_module)} | ` +
       `entitlements: ${esc(state.data.capabilities.join(", ") || "(none)")} | ${ph(v.ruleset_signature)}`;
@@ -605,12 +613,25 @@ SCREENS.facilities = async function () {
   const facName = id => (d.facilities.find(f => f.id === id) || {}).name || id;
   setMain(`
   <h1>Facilities and plans</h1>
-  <p class="lead">Tenant is the consulting org. Facility is a child entity whose owner or operator is the responsible party. Plan to facility is many-to-many.</p>
+  <p class="lead">Tenant is the consulting org. A client is the owner or operator, the responsible party. Facility is a child of the client. Plan to facility is many-to-many.</p>
+  <div class="inline"><a href="#new"><button class="primary">New client, facility, or plan</button></a></div>
   <div class="grid2">
   <div class="panel"><h2>Tenants</h2>
-    ${table(["id", "name", "kind", "facilities", "plans"], d.tenants.map(t => ({ id: t.id, name: t.name, kind: t.kind,
+    ${table(["id", "name", "kind", "clients", "facilities", "plans"], d.tenants.map(t => ({ id: t.id, name: t.name, kind: t.kind,
+      clients: d.clients.filter(c => c.tenant_id === t.id).length,
       facilities: d.facilities.filter(f => f.tenant_id === t.id).length, plans: d.plans.filter(p => p.tenant_id === t.id).length })))}
   </div>
+  <div class="panel"><h2>Clients</h2>
+    ${table(["name", "tenant", "contact", "facilities", "note"], d.clients, (c, k) => {
+      if (c === "tenant") return esc(tenantName(k.tenant_id));
+      if (c === "contact") return esc([k.contact.name, k.contact.email, k.contact.phone].filter(Boolean).join(" | ")) || `<span class="muted">(none)</span>`;
+      if (c === "facilities") return esc(k.facility_ids.map(facName).join(", ")) || `<span class="muted">(none yet)</span>`;
+      if (c === "note") return esc(k.note || "");
+      return fmt(k[c]);
+    })}
+  </div>
+  </div>
+  <div class="grid2">
   <div class="panel"><h2>Facilities</h2>
     ${table(["name", "asset_type", "tenant", "owner_operator", "plans", "transfer"], d.facilities, (c, f) => {
       if (c === "tenant") return esc(tenantName(f.tenant_id));
@@ -626,10 +647,10 @@ SCREENS.facilities = async function () {
   </div>
   </div>
   <div class="panel"><h2>Plans</h2>
-    ${table(["title", "asset_type", "facility_ids", "delivery_mode", "tenant", "versions", "seed"], d.plans, (c, p) => {
+    ${table(["title", "asset_type", "facility_ids", "delivery_mode", "tenant", "versions", "origin"], d.plans, (c, p) => {
       if (c === "facility_ids") return esc(p.facility_ids.map(facName).join(" + "));
       if (c === "tenant") return esc(tenantName(p.tenant_id));
-      if (c === "seed") return `<span class="small muted">${esc(p.seed)}</span>`;
+      if (c === "origin") return `<span class="small muted">${esc(p.seed ? "seed: " + p.seed : "created " + (p.created || ""))}</span>`;
       return fmt(p[c]);
     })}
   </div>
@@ -653,10 +674,82 @@ SCREENS.facilities = async function () {
   <div class="panel"><h2>22 appendices</h2>${table(["designation", "title", "kind", "register", "controlled_attachment"], d.appendices)}</div>
   </div>`);
 };
+SCREENS.new = async function () {
+  ssi(true, "Client and facility identity only; no plan answers on this screen.");
+  const d = state.data;
+  const tenant = d.tenants.find(t => t.id === d.tenant_id) || { name: d.tenant_id };
+  const mine = d.clients.filter(c => c.tenant_id === d.tenant_id);
+  const facs = d.facilities.filter(f => f.tenant_id === d.tenant_id);
+  const clientName = id => (mine.find(c => c.id === id) || {}).name || id;
+  const submission = { vessel: "Marine Safety Center", facility: "cognizant COTP", ocs_facility: "cognizant COTP or OCMI" };
+  setMain(`
+  <h1>New client, facility, or plan</h1>
+  <p class="lead">Three steps, in order: the client is the owner or operator, the facility is theirs, and the plan covers one or more of their facilities. Everything here is created under <b>${esc(tenant.name)}</b>.</p>
+  <div class="panel"><h2>1. New client</h2>
+    <p class="small muted">The owner or operator is the responsible party under 101.620(a). Not the tenant: the tenant is the consulting org. A client may own several facilities, and they keep their client record if they change consultants.</p>
+    <div class="form">
+      <label for="nc-name">Organisation name</label><input type="text" id="nc-name" placeholder="e.g. ACME Marine Holdings">
+      <label for="nc-contact">Primary contact</label><input type="text" id="nc-contact" placeholder="name">
+      <label for="nc-email">Email</label><input type="text" id="nc-email" placeholder="optional">
+      <label for="nc-phone">Phone</label><input type="text" id="nc-phone" placeholder="optional">
+      <label for="nc-note">Note</label><input type="text" id="nc-note" placeholder="optional">
+    </div>
+    <div class="inline"><button class="primary" data-action="newClient">Create client</button>
+      <span class="small muted">${mine.length} client${mine.length === 1 ? "" : "s"} so far: ${esc(mine.map(c => c.name).join(", ")) || "none"}</span></div>
+  </div>
+  <div class="panel"><h2>2. New facility</h2>
+    <p class="small muted">One asset model, three types. The type decides which questions apply and where the plan is submitted (101.630(d)): vessels to the ${esc(submission.vessel)}, facilities to the ${esc(submission.facility)}, OCS facilities to the ${esc(submission.ocs_facility)}.</p>
+    ${mine.length ? `<div class="form">
+      <label for="nf-client">Client</label><select id="nf-client">${mine.map(c => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join("")}</select>
+      <label for="nf-name">Facility or vessel name</label><input type="text" id="nf-name" placeholder="e.g. ACME Terminal">
+      <label for="nf-type">Asset type</label><select id="nf-type">${d.asset_types.map(t => `<option value="${esc(t)}" ${t === "facility" ? "selected" : ""}>${esc(t.replace("_", " "))}</option>`).join("")}</select>
+      <label for="nf-cotp">Cognizant COTP or OCMI</label><input type="text" id="nf-cotp" placeholder="e.g. USCG Sector Houston-Galveston; leave blank for a vessel">
+    </div>
+    <div class="inline"><button class="primary" data-action="newFacility">Create facility</button></div>`
+    : `<p class="muted">Create a client first.</p>`}
+  </div>
+  <div class="panel"><h2>3. New plan</h2>
+    <p class="small muted">A plan over one facility, or over several of the same owner under 101.630(d)(2). The builder starts with the asset identity copied from the first facility ticked and asks everything else. A shared CySO is derived across plans, never answered here.</p>
+    ${facs.length ? `<div class="form">
+      <label>Facilities covered</label><div class="picks">${mine.filter(c => c.facility_ids.length).map(c =>
+        `<div class="small muted">${esc(c.name)}</div>` + c.facility_ids.map(fid => { const f = facs.find(x => x.id === fid); return f ?
+          `<label><input type="checkbox" class="fac-pick" value="${esc(f.id)}"> ${esc(f.name)} <span class="small muted">(${esc(f.asset_type.replace("_", " "))}${f.plan_ids.length ? `, already in ${f.plan_ids.length} plan${f.plan_ids.length === 1 ? "" : "s"}` : ""})</span></label>` : ""; }).join("")).join("")}</div>
+      <label for="np-title">Plan title</label><input type="text" id="np-title" placeholder="defaults to <facility name> Cybersecurity Plan">
+      <label for="np-mode">Delivery (101.630(a))</label><select id="np-mode">${Object.entries(d.delivery_modes).map(([k, v]) => `<option value="${esc(k)}" ${k === "separate_submission" ? "selected" : ""}>${esc(v)}</option>`).join("")}</select>
+    </div>
+    <div class="inline"><button class="primary" data-action="newPlan">Create plan and open the builder</button></div>`
+    : `<p class="muted">Create a facility first.</p>`}
+  </div>
+  <div class="panel"><h2>Facilities under ${esc(tenant.name)}</h2>
+    ${table(["name", "client", "asset_type", "cognizant_cotp", "plans"], facs, (c, f) => {
+      if (c === "client") return esc(clientName(f.client_id));
+      if (c === "plans") return esc(f.plan_ids.join(", ")) || `<span class="muted">(none yet)</span>`;
+      return fmt(f[c]);
+    })}
+  </div>`);
+};
+ACTIONS.newClient = async () => {
+  const c = await post("/api/client", { name: val("nc-name"), note: val("nc-note"),
+    contact: { name: val("nc-contact"), email: val("nc-email"), phone: val("nc-phone") } });
+  notify(`Client ${c.name} created (${c.id}).`); route();
+};
+ACTIONS.newFacility = async () => {
+  const f = await post("/api/facility", { client_id: val("nf-client"), name: val("nf-name"), asset_type: val("nf-type"), cognizant_cotp: val("nf-cotp") });
+  notify(`Facility ${f.name} created (${f.id}).`); route();
+};
+ACTIONS.newPlan = async () => {
+  const facility_ids = Array.from(document.querySelectorAll(".fac-pick:checked")).map(i => i.value);
+  if (!facility_ids.length) { notify("Tick at least one facility."); return; }
+  const p = await post("/api/plan", { facility_ids, title: val("np-title"), delivery_mode: val("np-mode") });
+  state.plan = p.id;
+  notify(`Plan ${p.title} created. Opening the builder.`);
+  location.hash = "#builder";
+};
 ACTIONS.transferFacility = async el => {
   const fid = attr(el, "fid");
   const r = await post(`/api/facility/${fid}/transfer`, { to_tenant_id: val("xfer-" + fid), reason: "transfer from GUI" });
-  notify(`Moved ${r.facility_id} from ${r.from} to ${r.to}. Plans moved: ${r.plans_moved.join(", ") || "none"}. Held: ${r.plans_held_multi_facility.map(h => h.plan_id).join(", ") || "none"}.`);
+  const client = r.client ? ` Client ${r.client.action}: ${r.client.client_id}.` : "";
+  notify(`Moved ${r.facility_id} from ${r.from} to ${r.to}. Plans moved: ${r.plans_moved.join(", ") || "none"}. Held: ${r.plans_held_multi_facility.map(h => h.plan_id).join(", ") || "none"}.${client}`);
   route();
 };
 ACTIONS.showDiff = async el => {

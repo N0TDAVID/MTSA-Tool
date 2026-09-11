@@ -39,6 +39,8 @@ nav.secondary a { font-size: 13.5px; }
 nav.secondary[hidden], .notice[hidden] { display: none; }
 .plan-select label { font-size: 13px; color: var(--muted-2); }
 .plan-select select { margin-left: 6px; }
+.plan-select a { margin-left: 10px; font-size: 13px; color: var(--ink); text-decoration: none; padding: 4px 10px; border-radius: 4px; }
+.plan-select a:hover { background: var(--active); }
 .ssi { margin: 8px 12px 0; padding: 6px 14px; border-radius: 8px; background: var(--ssi); color: #fff; font-size: 12px; letter-spacing: .02em; }
 .ssi:empty { display: none; }
 .notice { position: fixed; right: 20px; bottom: 20px; z-index: 10; max-width: 480px; padding: 10px 14px; border-radius: 10px;
@@ -110,6 +112,10 @@ button.primary { background: linear-gradient(90deg, var(--accent-deep), var(--ac
 button.secondary { background: transparent; }
 button:disabled { opacity: .45; cursor: default; }
 .inline { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.form { display: grid; grid-template-columns: 200px 1fr; gap: 10px 14px; align-items: center; margin: 10px 0 14px; max-width: 760px; }
+.form > label { font-size: 13px; color: var(--muted-2); }
+.picks label { display: block; padding: 2px 0; }
+.picks input[type=checkbox] { margin-right: 6px; }
 .inline > * { width: auto; }
 .error { background: rgba(255, 123, 114, .12); border: 1px solid var(--fail); color: #fff; padding: 10px 12px; border-radius: 8px; margin: 8px 0; }
 .saved { margin-left: 8px; color: var(--pass); font-size: 12.5px; }

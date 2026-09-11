@@ -97,6 +97,13 @@ Do not relitigate these without being asked.
 - **Tenant is the consulting org.** Facility is a child entity. Build the facility transfer
   path early: the owner or operator is the responsible party under 101.620(a), not the
   consultant, and clients change consultants.
+- **Client is the owner or operator, between tenant and facility.** A `clients` document
+  carries `tenant_id`, name, and contact; a facility carries `client_id`, and the
+  `owner_operator` string the GUI shows is derived from it. Onboarding is client, then
+  facility, then plan (`Session.add_client`, `add_facility`, `add_plan`; the `#new` screen).
+  On transfer the client travels with the facility: joined to a same-name client already
+  under the destination, moved whole if no facility stays behind, cloned otherwise. A
+  workspace written before `clients` existed is backfilled from `owner_operator` on open.
 - **Plan-to-facility is many-to-many.** Required by 101.630(d)(2) multi-facility plans and
   by 101.625(b), which makes every facility a shared CySO covers appear in every one of
   their plans. That last one is a derived field computed across facilities, not answered.

@@ -359,9 +359,11 @@ class Session:
             "source_appendices": ["I", "M", "N", "O"],
             "catalog": {"version": self.kev_snapshot["catalog_version"],
                         "count": self.kev_snapshot["count"]},
-            "disposition_note": "compensating_control is one field on the device, so a row cannot "
-                                "say which CVE it covers; every row resolves to unresolved "
-                                "until an observation is its own entity keyed (asset, cve)",
+            "disposition_note": "The three evidence fields hang off the device, not off an "
+                                "(asset, cve) pair, so a row cannot say which CVE they cover; "
+                                "every row therefore reads unresolved until an observation is "
+                                "its own entity. The evidence collected is shown beside it "
+                                "unattributed rather than read as a resolution",
         }
 
     # ---------------------------------------------------------- registers

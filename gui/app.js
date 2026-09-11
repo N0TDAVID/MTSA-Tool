@@ -721,7 +721,7 @@ SCREENS.crosswalk = async function () {
   <div class="panel">
     <p class="small">KEV catalog ${esc(x.catalog.version)} (${x.catalog.count} entries). Critical assets: ${x.critical_assets}, of which OT: ${x.ot_critical_assets}. Critical assets with no KEV row: ${esc(x.critical_assets_without_rows.join(", ") || "none")}.</p>
     ${x.ot_critical_assets ? `<p class="small"><b>Read an empty or thin join as absence of coverage, not compliance.</b> KEV is effectively an IT catalog; the real OT signal is ICS-CERT and vendor advisories.</p>` : ""}
-    ${table(["asset", "domain", "cve", "vendor_project", "product", "date_added", "ransomware", "disposition", "compensating_control"], x.rows, (c, r) => c === "disposition" ? `<span class="badge ${r.disposition === "unresolved" ? "fail" : "pass"}">${esc(r.disposition)}</span>` : fmt(r[c]))}
+    ${table(["asset", "domain", "cve", "vendor_project", "product", "date_added", "ransomware", "disposition", "compensating_control", "remediation_plan", "risk_acceptance"], x.rows, (c, r) => c === "disposition" ? `<span class="badge warn">${esc(r.disposition)}</span>` : fmt(r[c]))}
     <p class="small muted">${esc(x.disposition_note)}. The CISA dueDate is deliberately not shown.</p>
   </div>`);
 };

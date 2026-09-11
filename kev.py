@@ -261,18 +261,25 @@ def crosswalk(answers, snap, device_path="devices"):
                 "ransomware": entry["ransomware"],
                 "disposition": _disposition(device),
                 "compensating_control": device.get("compensating_control"),
+                "remediation_plan": device.get("remediation_plan"),
+                "risk_acceptance": device.get("risk_acceptance"),
             })
     rows.sort(key=lambda r: (r["asset"] or "", r["cve"]))
     return rows
 
 
 def _disposition(device):
-    if device.get("risk_acceptance"):
-        return "accepted"
-    if device.get("compensating_control"):
-        return "mitigated"
-    if device.get("remediation_plan"):
-        return "planned"
+    """Always unresolved, on purpose. See the crosswalk docstring.
+
+    The three evidence fields hang off the device, not off an (asset, cve)
+    pair, so a device carrying one compensating control and three KEVs cannot
+    say which of the three it covers. Reading the presence of that field as
+    "mitigated" for every CVE on the device is an invented disposition, and an
+    invented disposition in a compliance table is the failure mode this module
+    exists to avoid. The evidence travels with the row so a reviewer can see
+    what was collected; only the resolution claim is withheld.
+    """
+    del device  # deliberately unread until the observation entity exists
     return "unresolved"
 
 

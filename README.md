@@ -14,6 +14,7 @@ python demo_engine.py     # engine vs the seven known-truth fixtures
 python demo_kev.py        # KEV join, entitlement gate, surveillance
 python serve.py --check   # every GUI data path, in memory, no socket
 python serve.py           # GUI on http://127.0.0.1:8765/
+start.bat                 # Windows: the same server in a minimized window, browser opened
 ```
 
 Python 3 standard library only. `jsonschema` is used by `validate.py` alone and
